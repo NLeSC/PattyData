@@ -1,0 +1,18 @@
+Setting up NGINX
+****************
+
+This web server will be serving static content: the converted data (octree LAZ by the POtree converter)
+
+Modify configuration file in /etc/nginx/nginx.conf
+
+1 - Comment lines:
+#include /etc/nginx/conf.d/*.conf;
+#include /etc/nginx/sites-enabled/*;
+
+2 - Add server description:
+        server {
+            listen 80;
+            location / {
+                root /home/vadata/DATA/RAW/PC/BACKGROUND/DRIVE_1_V3;
+            }
+        }
