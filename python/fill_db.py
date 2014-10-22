@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 ################################################################################
 #    Created by Oscar Martinez                                                 #
+#            and Elena Ranguelova                                              #
 #    o.rubi@esciencecenter.nl                                                  #
 ################################################################################
 #import os, argparse, psycopg2, time, re, multiprocessing, glob, logging, shutil, subprocess
@@ -47,16 +48,35 @@ DEFAULT_DB = 'vadb'
 # Global variables
 connection = None
 
-def main(opts):
+def argument_parser():
+    """ Define the arguments and return the parser object"""
+    parser = argparse.ArgumentParser(
+    description="Run the script to populate the database")
+    #formatter_class=argparse.RawTextHelpFormatter) 
+    parser.add_argument('-i','--data',help='Input data folder',type=str, required=True)
+    parser.add_argument('-d','--dbname',default=DEFAULT_DB,help='PostgreSQL DB name where to store the geometries [default ' + DEFAULT_DB + ']',type=str , required=True)
+    parser.add_argument('-u','--dbuser',default=username,help='DB user [default ' + username + ']',type=str, required=True)
+    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=True)
+    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=True)
+    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=True)
+    
+    return parser
+    
+def apply_argument_parser(options=None):
+    """ Apply the argument parser. """
+    parser = argument_parser()
+    if options is not None:
+        args = parser.parse_args(options)
+    else:
+        args = parser.parse_args()    
+    return args
+
+def run(args):    
     t0 = time.time()
     # Check options
-    for option in (opts.data, opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport):
-        if option == '':
-            print 'ERROR - missing options!'
-            return
-    
+        
     # Absolute data path
-    dataAbsPath = os.path.abspath(opts.data)
+    dataAbsPath = os.path.abspath(args.data)
     
     # Global variables declaration
     global connection
@@ -92,15 +112,5 @@ def main(opts):
 
 username = os.popen('whoami').read().replace('\n','')
 
-if __name__ == "__main__":
-    usage = 'Usage: %prog [options]'
-    description = "Fills the DB"
-    op = argparse.ArgumentParser(usage=usage, description=description)
-    op.add_argument('-i','--data',help='Data folder',type=str, required=True)
-    op.add_argument('-d','--dbname',default=DEFAULT_DB,help='PostgreSQL DB name where to store the geometries [default ' + DEFAULT_DB + ']',type=str , required=True)
-    op.add_argument('-u','--dbuser',default=username,help='DB user [default ' + username + ']',type=str, required=True)
-    op.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=True)
-    op.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=True)
-    op.add_argument('-r','--dbport',default='',help='DB port',type=str, required=True)
-    (opts, args) = op.parse_args()
-    main(opts)
+if __name__ == '__main__':
+    run( apply_argument_parser() )
