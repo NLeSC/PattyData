@@ -39,6 +39,8 @@ import utils
 #         |  |- RAW
 #         |  \- CONV
 #                 |- pc1
+#                     |- pc1.json EXAMPLE: {"srid": 32633, "max": [0, 0, 0], "numberpoints": 20000000, "extension": "laz", "min": [0, 0, 0], "t_x" : None, ...}
+#                     \- pc1.las
 #                 |- pc2
 #                 ...
 
