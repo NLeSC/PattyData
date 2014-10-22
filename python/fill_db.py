@@ -37,12 +37,19 @@ import utils
 #         |  \- ARCH_RECONS
 #         |- PC     
 #         |  |- RAW
+#         |  |    |- pc1
+#         |  |        |- pc1.json EXAMPLE: {"srid": 32633, "max": [0, 0, 0], "numberpoints": 20000000, "extension": "laz", "min": [0, 0, 0], "t_x" : None, ...}
+#         |  |        \- pc1.las
+#         |  |    |- pc2
+#         |  |    ...
 #         |  \- CONV
-#                 |- pc1
-#                     |- pc1.json EXAMPLE: {"srid": 32633, "max": [0, 0, 0], "numberpoints": 20000000, "extension": "laz", "min": [0, 0, 0], "t_x" : None, ...}
-#                     \- pc1.las
-#                 |- pc2
-#                 ...
+#         |      |- pc1
+#         |          |- pc1v1
+#         |             |- data
+#         |             |- pc1v1.js
+#         |          |- pc1v2
+#         |          ...
+#         |      |- pc2
 
 # CONSTANTS
 DEFAULT_DB = 'vadb'
@@ -118,7 +125,7 @@ def run(args):
             utils.dbExecute(cursor, 'SELECT pc_id, last_mod FROM pc WHERE folder = %s', [rawBackgroundAbsPath,])
             row = cursor.fetchone()
             if row == None: #This folder has been added recently
-                values = []
+                values = [jsonData["srid"],jsonData["numberpoints"],jsonData["srid"],jsonData["srid"],]
                 utils.dbExecute(cursor, 'INSERT INTO pc (pc_id, srid, numberpoints, folder, extension, last_mod,last_check,minx,miny,minz,maxx,maxy,maxz) VALUES (DEFAULT,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING pc_id', values)
                     
                 
