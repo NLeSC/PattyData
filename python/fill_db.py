@@ -5,7 +5,7 @@
 #    o.rubi@esciencecenter.nl                                                  #
 ################################################################################
 #import os, argparse, psycopg2, time, re, multiprocessing, glob, logging, shutil, subprocess
-import os, argparse, time, glob
+import os, argparse, time, glob, json. logging
 import utils 
 
 # The DATA folder must have the following structure:
@@ -15,14 +15,14 @@ import utils
 # |  |- RAW
 #        |- pc1
 #            |- data
-#            |- pc1.json EXAMPLE: {"srid": 32633, "max": [0, 0, 0], "numberpoints": 20000000, "extension": "laz", "min": [0, 0, 0]}
+#            |- pc1.json EXAMPLE: {"srid": 32633, "max": [0, 0, 0], "numberpoints": 20000000, "extension": "laz", "min": [0, 0, 0], "t_x" : None, ...}
 #        |- pc2
 # ...
 # |  \- CONV
 #        |- pc1
 #            |- pc1v1
 #               |- data
-#               |- pc1v1.js EXAMPLE: {"srid": 32633, "max": [0, 0, 0], "numberpoints": 20000000, "extension": "laz", "min": [0, 0, 0]}
+#               |- pc1v1.js
 #            |- pc1v2
 #            ...
 #        |- pc2
@@ -72,6 +72,7 @@ def apply_argument_parser(options=None):
     return args
 
 def run(args):    
+    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', datefmt="%Y/%m/%d/%H:%M:%S", level=getattr(logging, opts.log))
     t0 = time.time()
     # Check options
         
@@ -93,12 +94,32 @@ def run(args):
     rawBackgrounds = sorted(os.listdir(rawBackgroundsAbsPath))
     convBackgrounds = sorted(os.listdir(convBackgroundsAbsPath))
     
+    # Check that there are not backgrounds in converted which are not in raw
+    for convBackground in convBackgrounds:
+        if convBackground not in rawBackgrounds:
+            logging.error('background ' + convBackground + ' not found in ' + rawBackgroundsAbsPath)
+    
+    checkedTime = utils.getCurrentTime()
+            
     for rawBackground in rawBackgrounds:
         if rawBackground not in convBackgrounds:
-            print 'ERROR: background ' + rawBackground + ' not found in ' + convBackgroundsAbsPath
-        rawBackgroundAbsPath = os.path.join(rawBackgroundsAbsPath,rawBackground)
-        glob.glob()
-    
+            logging.warning('background ' + rawBackground + ' not found in ' + convBackgroundsAbsPath)
+        rawBackgroundAbsPath = os.path.join(rawBackgroundsAbsPath, rawBackground)
+        modTime = utils.getCurrentTime(utils.getLastModification(rawBackgroundAbsPath))
+        jsonFiles = glob.glob(os.path.join(rawBackgroundAbsPath, '*json'))
+        if len(jsonFiles) != 1:
+            logging.error(' background ' + rawBackground + ' does not contain JSON file!')
+        else:
+            jsonAbsPath = os.path.join(rawBackgroundAbsPath,rawBackground)
+            jsonData = json.loads(open(jsonFiles[0],'r').read())
+            # {"srid": 32633, "max": [0, 0, 0], "numberpoints": 20000000, "extension": "laz", "min": [0, 0, 0]}
+            utils.dbExecute(cursor, 'SELECT pc_id, last_mod FROM pc WHERE folder = %s', [rawBackgroundAbsPath,])
+            row = cursor.fetchone()
+            if row == None: #This folder has been added recently
+                values = []
+                utils.dbExecute(cursor, 'INSERT INTO pc (pc_id, srid, numberpoints, folder, extension, last_mod,last_check,minx,miny,minz,maxx,maxy,maxz) VALUES (DEFAULT,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING pc_id', values)
+                    
+                
     
     #{"srid": 32633, "max": [0, 0, 0], "numberpoints": 20000000, "extension": "laz", "min": [0, 0, 0]}
     
