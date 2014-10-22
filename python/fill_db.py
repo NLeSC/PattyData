@@ -20,6 +20,8 @@ import utils
 # |  \- CONV
 #        |- pc1
 #            |- pc1v1
+#               |- data
+#               |- pc1v1.js EXAMPLE: {"srid": 32633, "max": [0, 0, 0], "numberpoints": 20000000, "extension": "laz", "min": [0, 0, 0]}
 #            |- pc1v2
 #            ...
 #        |- pc2
