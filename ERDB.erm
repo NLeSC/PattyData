@@ -10,9 +10,9 @@
 		<right_margin>30</right_margin>
 	</page_setting>
 	<category_index>0</category_index>
-	<zoom>1.5</zoom>
-	<x>2081</x>
-	<y>66</y>
+	<zoom>0.8</zoom>
+	<x>0</x>
+	<y>0</y>
 	<default_color>
 		<r>0</r>
 		<g>128</g>
@@ -161,7 +161,7 @@
 			</connections>
 			<display>false</display>
 			<creation_date>2014-07-10 11:04:11</creation_date>
-			<updated_date>2014-10-22 11:11:12</updated_date>
+			<updated_date>2014-10-22 13:14:30</updated_date>
 			<model_property>
 				<name>Project Name</name>
 				<value></value>
@@ -4066,7 +4066,7 @@
 				<font_name>Ubuntu</font_name>
 				<font_size>9</font_size>
 			<x>20</x>
-			<y>17</y>
+			<y>10</y>
 			<color>
 				<r>128</r>
 				<g>128</g>
