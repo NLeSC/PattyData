@@ -10,9 +10,9 @@
 		<right_margin>30</right_margin>
 	</page_setting>
 	<category_index>0</category_index>
-	<zoom>0.8</zoom>
-	<x>398</x>
-	<y>68</y>
+	<zoom>0.4635553224960671</zoom>
+	<x>-4</x>
+	<y>0</y>
 	<default_color>
 		<r>0</r>
 		<g>0</g>
@@ -162,7 +162,7 @@
 			</connections>
 			<display>false</display>
 			<creation_date>2014-07-10 11:04:11</creation_date>
-			<updated_date>2014-10-23 09:25:46</updated_date>
+			<updated_date>2014-10-23 10:06:17</updated_date>
 			<model_property>
 				<name>Project Name</name>
 				<value></value>
@@ -1467,8 +1467,8 @@
 			<binary>false</binary>
 			<args></args>
 			<description></description>
-			<logical_name>table_name</logical_name>
-			<physical_name>table_name</physical_name>
+			<logical_name>tab_name</logical_name>
+			<physical_name>tab_name</physical_name>
 			<type>text</type>
 		</word>
 		<word>

@@ -202,8 +202,7 @@ def run(args):
             utils.dbExecute(cursor, 'INSERT INTO site (site_id) VALUES (%s)', [siteId], )
         # Process the PCs
         processPC(os.path.join(sitesAbsPath,'PC'), 'site_pc', siteId)
-        # Process the PICs
-        # Process the MESHEs
+        # TODO: Process the PICs and MESHEs
             
     # Clean removed pcs
     utils.dbExecute(cursor, 'DELETE FROM pc_converted_file WHERE last_check < %s', [initialTime,])
@@ -212,10 +211,19 @@ def run(args):
     for (pcId,folder) in rows:
         utils.dbExecute(cursor, 'DELETE FROM site_pc WHERE pc_id = %s', [pcId,])    
         utils.dbExecute(cursor, 'DELETE FROM background WHERE pc_id = %s', [pcId,])
+        deletePC = True
         utils.dbExecute(cursor, 'SELECT data_folder FROM pc_converted_file WHERE pc_id = %s', [pcId,])
         if cursor.rowcount != 0:
-            logging.error("We can not delete PC row in " + folder + '. There are ')
-        
+            logging.error("We can not delete PC row in " + folder + '. There are ' + str(cursor.rowcount) + ' related pc_converted_file')
+            deletePC = False
+        utils.dbExecute(cursor, 'SELECT data_folder FROM pc_converted_table WHERE pc_id = %s', [pcId,])
+        if cursor.rowcount != 0:
+            logging.error("We can not delete PC row in " + folder + '. There are ' + str(cursor.rowcount) + ' related pc_converted_table')
+            deletePC = False
+        if deletePC:
+             utils.dbExecute(cursor, 'DELETE FROM pc WHERE pc_id = %s', [pcId,])
+             
+    #TODO: Remove old PICs and MESHEs
     
     print 'Finished!. Total time ', time.time() - t0
 
