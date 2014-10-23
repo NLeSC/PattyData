@@ -11,11 +11,11 @@ import utils
 # The DATA folder must have the following structure:
 #
 # DATA
-# |- BACKGROUND
+# |- BACKGROUNDS
 # |  |- RAW
 #        |- pc1
 #            |- data
-#            |- pc1.json EXAMPLE: {"srid": 32633, "max": [0, 0, 0], "numberpoints": 20000000, "extension": "laz", "min": [0, 0, 0], "t_x" : None, ...}
+#            |- pc1.json EXAMPLE: {"srid": 32633, "max": [0, 0, 0], "numberpoints": 20000000, "extension": "laz", "min": [0, 0, 0]}
 #        |- pc2
 # ...
 # |  \- CONV
@@ -188,8 +188,8 @@ def run(args):
     
     
     # Process the backgrounds
-    backgroundsAbsPath = os.path.join(dataAbsPath,'BACKGROUND')
-    processPC(backgroundsAbsPath, 'background')
+    backgroundsAbsPath = os.path.join(dataAbsPath,'BACKGROUNDS')
+    processPC(backgroundsAbsPath, 'background_pc')
         
     #Process sites
     sitesAbsPath = os.path.join(dataAbsPath,'SITES')
@@ -210,7 +210,7 @@ def run(args):
     rows = cursor.fetchall()
     for (pcId,folder) in rows:
         utils.dbExecute(cursor, 'DELETE FROM site_pc WHERE pc_id = %s', [pcId,])    
-        utils.dbExecute(cursor, 'DELETE FROM background WHERE pc_id = %s', [pcId,])
+        utils.dbExecute(cursor, 'DELETE FROM background_pc WHERE pc_id = %s', [pcId,])
         deletePC = True
         utils.dbExecute(cursor, 'SELECT data_folder FROM pc_converted_file WHERE pc_id = %s', [pcId,])
         if cursor.rowcount != 0:

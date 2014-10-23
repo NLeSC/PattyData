@@ -107,43 +107,22 @@ def dbExecute(cursor, query, queryArgs = None, mogrify = True):
         cursor.execute(query, queryArgs)
     cursor.connection.commit()
     
-def getLASParams(inputFile, tool = 'liblas'):
+def getLASParams(inputFile):
     (count, minX, minY, minZ, maxX, maxY, maxZ, scaleX, scaleY, scaleZ, offsetX, offsetY, offsetZ) = (None, None, None, None, None, None, None, None, None, None, None, None, None )
-    outputLASInfo = subprocess.Popen('lasinfo ' + inputFile, shell = True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-    if tool == 'liblas':
-        for line in outputLASInfo[0].split('\n'):
-            if line.count('Min X Y Z:'):
-                [minX, minY, minZ] = line.split(':')[-1].strip().split(' ')
-            elif line.count('Max X Y Z:'):
-                [maxX, maxY, maxZ] = line.split(':')[-1].strip().split(' ')
-            elif line.count('Actual Point Count:'):
-                count = line.split(':')[-1].strip()
-            elif line.count('Scale Factor X Y Z:'):
-                [scaleX, scaleY, scaleZ] = line.split(':')[-1].strip().split(' ')
-            elif line.count('Offset X Y Z:'):
-                [offsetX, offsetY, offsetZ] = line.split(':')[-1].strip().split(' ')
-    else:
-        for line in outputLASInfo[1].split('\n'):
-            if line.count('min x y z:'):
-                [minX, minY, minZ] = line.split(':')[-1].strip().split(' ')
-            elif line.count('max x y z:'):
-                [maxX, maxY, maxZ] = line.split(':')[-1].strip().split(' ')
-            elif line.count('number of point records:'):
-                count = line.split(':')[-1].strip()
-            elif line.count('scale factor x y z:'):
-                [scaleX, scaleY, scaleZ] = line.split(':')[-1].strip().split(' ')
-            elif line.count('offset x y z:'):
-                [offsetX, offsetY, offsetZ] = line.split(':')[-1].strip().split(' ')
+    outputLASInfo = subprocess.Popen('lasinfo ' + inputFile  + ' -nc -nv -nco -merged', shell = True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    for line in outputLASInfo[1].split('\n'):
+        if line.count('min x y z:'):
+            [minX, minY, minZ] = line.split(':')[-1].strip().split(' ')
+        elif line.count('max x y z:'):
+            [maxX, maxY, maxZ] = line.split(':')[-1].strip().split(' ')
+        elif line.count('number of point records:'):
+            count = line.split(':')[-1].strip()
+        elif line.count('scale factor x y z:'):
+            [scaleX, scaleY, scaleZ] = line.split(':')[-1].strip().split(' ')
+        elif line.count('offset x y z:'):
+            [offsetX, offsetY, offsetZ] = line.split(':')[-1].strip().split(' ')
 
     return (count, minX, minY, minZ, maxX, maxY, maxZ, scaleX, scaleY, scaleZ, offsetX, offsetY, offsetZ)
-
-def getOSGDescrition(siteId, inType, objectId, fileName = None):
-    if inType not in ('pc','mesh','bg','pic','obj'):
-        raise Exception('Unknown inType ' + inType)
-    c = str(siteId) + "_" + inType +"_" + str(objectId)
-    if fileName != None:
-        c += '_' + fileName
-    return c
 
 def getPositionFromFootprint(cursor, siteId, rawDataPath):
     bgFolder = os.path.abspath(os.path.join(rawDataPath, DEFAULT_BACKGROUND))
@@ -158,10 +137,3 @@ def getPositionFromFootprint(cursor, siteId, rawDataPath):
     else:
         logging.error('Not possible to get position from footprint: background ' + DEFAULT_BACKGROUND + ' not found')
     return (0,0)
-    
-
-def addSiteObject(cursor, siteId, objectNumber, proto, x = 0, y = 0):
-    dbExecute(cursor, 'INSERT INTO boundings (name) SELECT %s WHERE NOT EXISTS (SELECT bounding_id FROM boundings WHERE name = %s)', [proto,proto])
-    dbExecute(cursor, 'SELECT bounding_id FROM boundings WHERE name = %s', [proto,])
-    boundingId = cursor.fetchone()[0]
-    dbExecute(cursor, 'INSERT INTO active_objects_sites_objects (site_id, object_id, bounding_id, x,y,z) VALUES (%s,%s,%s,%s,%s,%s)', [siteId, objectNumber, boundingId, x,y, DEFAULT_Z])
