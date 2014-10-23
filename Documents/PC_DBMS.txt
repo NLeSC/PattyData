@@ -1,0 +1,16 @@
+Point cloud visualization/ query system using database backend.
+
+This document describes the alternative system for point cloud visualization and querying using point clouds and their semantics stored in a database system.
+
+Steps:
+1) create a database system storing the point cloud representation created by the POTree converter;
+
+2) Set up a web-server for dynamic content. The server receives the URL requests from the POTree viewer and modifies them into database queries to extract the requested .js or .laz files, and returns the responce to the viewer.
+
+Step 1:
+1.1 Install PostgreSQL
+1.2 Create database and user
+1.3 Create the database schema from file xxx
+1.4 Populate the database with the data from the converter using the python script xxx
+
+
