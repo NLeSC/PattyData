@@ -48,7 +48,7 @@ def run(args):
     cursor = connection.cursor()
     
     # get all sites for which we have converted Point Clouds (PCs)
-    cursor.execute('select site_pc.site_id,pc_converted_file.pc_converted_file_id from pc, pc_converted_file, site_pc where (pc.pc_id = pc_converted_file.pc_id) and (pc.pc_id = site_pc.pc_id)')
+    cursor.execute('select distinct site_pc.site_id from pc, pc_converted_file, site_pc where (pc.pc_id = pc_converted_file.pc_id) and (pc.pc_id = site_pc.pc_id)')
     
     pc_ids = cursor.fetchall()
     
