@@ -5,17 +5,17 @@
 #    o.rubi@esciencecenter.nl                                                  #
 ################################################################################
 #import os, argparse, psycopg2, time, re, multiprocessing, glob, logging, shutil, subprocess
-import os, argparse, time, glob, json. logging
+import os, argparse, time, glob, json, logging, psycopg2
 import utils 
 
 # The DATA folder must have the following structure:
 #
 # DATA
-# |- BACKGROUND
+# |- BACKGROUNDS
 # |  |- RAW
 #        |- pc1
 #            |- data
-#            |- pc1.json EXAMPLE: {"srid": 32633, "max": [0, 0, 0], "numberpoints": 20000000, "extension": "laz", "min": [0, 0, 0], "t_x" : None, ...}
+#            |- pc1.json EXAMPLE: {"srid": 32633, "max": [0, 0, 0], "numberpoints": 20000000, "extension": "laz", "min": [0, 0, 0]}
 #        |- pc2
 # ...
 # |  \- CONV
@@ -85,12 +85,16 @@ def apply_argument_parser(options=None):
         args = parser.parse_args()    
     return args
 
-def processPC(pcAbsPath, tableName, siteId):
+def processPC(pcAbsPath, tableName, siteId = None):
     rawPCAbsPath = os.path.join(pcAbsPath,'RAW')
     convPCAbsPath = os.path.join(pcAbsPath,'CONV')
     
-    rawPCs = sorted(os.listdir(rawPCAbsPath))
-    convPCs = sorted(os.listdir(convPCAbsPath))
+    rawPCs = []
+    if os.path.isdir(rawPCAbsPath):
+        rawPCs = sorted(os.listdir(rawPCAbsPath))
+    convPCs = []
+    if os.path.isdir(convPCAbsPath):
+        convPCs = sorted(os.listdir(convPCAbsPath))
     
     # Process the raw backgrounds         
     for rawPC in rawPCs:
@@ -102,17 +106,18 @@ def processPC(pcAbsPath, tableName, siteId):
     for convPC in convPCs:
         if convPC not in rawPCs:
             logging.error(tableName + ' ' + convPC + ' not found in ' + rawPCAbsPath)
-        processConvertedPC(convPC, os.path.join(convPCsAbsPath, convPC), tableName)
+        processConvertedPC(convPC, os.path.join(convPCAbsPath, convPC), tableName)
 
 
 def processRawPC(rawPCName, rawPCAbsPath, tableName, siteId = None):
-    modTime = utils.getCurrentTime(utils.getLastModification(rawPCAbsPath))
     jsonFiles = glob.glob(os.path.join(rawPCAbsPath, '*json'))
     if len(jsonFiles) != 1:
         logging.error(rawPCAbsPath + ' does not contain JSON file!')
     else:
         jsonAbsPath = os.path.join(rawPCAbsPath,jsonFiles[0])
         jsonData = json.loads(open(jsonAbsPath,'r').read())
+        checkedTime = utils.getCurrentTime()
+        modTime = utils.getCurrentTime(utils.getLastModification(jsonAbsPath))
         utils.dbExecute(cursor, 'SELECT pc_id, last_mod FROM pc WHERE folder = %s', [rawPCAbsPath.replace(dataAbsPath,''),])
         row = cursor.fetchone()
         toAdd=True
@@ -126,16 +131,17 @@ def processRawPC(rawPCName, rawPCAbsPath, tableName, siteId = None):
         if toAdd: #This folder has been added recently
             (minx,miny,minz) = jsonData["min"]
             (maxx,maxy,maxz) = jsonData["max"]
-            values = [jsonData["srid"],jsonData["numberpoints"],rawPCAbsPath.replace(dataAbsPath,''),jsonData["extension"],modTime,checkedTime,minx,miny,minz,maxx,maxy,maxz]
-            utils.dbExecute(cursor, 'INSERT INTO pc (pc_id, srid, numberpoints, folder, extension, last_mod,last_check,minx,miny,minz,maxx,maxy,maxz) VALUES (DEFAULT,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING pc_id', values)
+            values = [jsonData["srid"],jsonData["numberpoints"],rawPCAbsPath.replace(dataAbsPath,''),jsonData["extension"],modTime,minx,miny,minz,maxx,maxy,maxz]
+            utils.dbExecute(cursor, 'INSERT INTO pc (pc_id, srid, numberpoints, folder, extension, last_mod,minx,miny,minz,maxx,maxy,maxz) VALUES (DEFAULT,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) RETURNING pc_id', values)
             (pcId,) = cursor.fetchone()
             names = ['name', 'pc_id']
             values = [rawPCName, pcId]
-            if siteId == None:
+            if siteId != None:
                 names.append('site_id')
                 values.append(siteId)
                 
             utils.dbExecute(cursor, 'INSERT INTO ' + tableName + ' (' + ','.join(names) + ') VALUES (' +  ('%s,' * len(values))[:-1] + ')', values)
+        utils.dbExecute(cursor, 'UPDATE pc SET last_check = %s where pc_id = %s', [checkedTime, pcId])
 
 def processConvertedPC(convPCName, convPCAbsPath, tableName):
     # Check that there is a related RAW PC
@@ -147,49 +153,50 @@ def processConvertedPC(convPCName, convPCAbsPath, tableName):
         # List different possible versions
         convPCVersions = sorted(os.listdir(convPCAbsPath))
         for convPCVersion in convPCVersions:
+            checkedTime = utils.getCurrentTime()
             convPCVersionAbsPath = os.path.join(convPCAbsPath,convPCVersion)
-            modTime = utils.getCurrentTime(utils.getLastModification(convPCAbsPath))
             #Check that data directory exists and it is not empty
-            dataAbsPath = os.path.join(convPCVersionAbsPath, 'data')
-            if os.path.isdir(dataAbsPath) and os.listdir(dataAbsPath) != []:
+            convPCDataAbsPath = os.path.join(convPCVersionAbsPath, 'data')
+            if os.path.isdir(convPCDataAbsPath):
                 jsFiles = glob.glob(os.path.join(convPCVersionAbsPath, '*js'))
+                jsAbsPath = os.path.join(convPCVersionAbsPath, jsFiles[0])
+                modTime = utils.getCurrentTime(utils.getLastModification(jsAbsPath))
                 if len(jsFiles) == 1:
-                    utils.dbExecute(cursor, 'SELECT pc_id, last_mod FROM pc_converted_file WHERE data_folder = %s', [dataAbsPath.replace(dataAbsPath,''),])
+                    utils.dbExecute(cursor, 'SELECT pc_converted_file_id, last_mod FROM pc_converted_file WHERE data_folder = %s', [convPCDataAbsPath.replace(dataAbsPath,''),])
                     row = cursor.fetchone()
                     toAdd=True
                     if row != None:
-                        (pcId, timeStamp) = row
+                        (pcConvId, timeStamp) = row
                         if modTime > timeStamp:
-                            utils.dbExecute(cursor, 'DELETE FROM pc_converted_file WHERE pc_id = %s', [pcId,])
+                            utils.dbExecute(cursor, 'DELETE FROM pc_converted_file WHERE pc_converted_file_id = %s', [pcConvId,])
                         else:
                             toAdd = False
                     if toAdd:
-                        utils.dbExecute(cursor, 'INSERT INTO pc_converted_file (pc_id, data_folder, js_path) VALUES (%s,%s, %s)', [pcId, dataAbsPath.replace(dataAbsPath,''), os.path.join(convPCVersionAbsPath, jsFiles[0]).replace(dataAbsPath,'')])
+                        utils.dbExecute(cursor, 'INSERT INTO pc_converted_file (pc_id, data_folder, js_path, last_mod) VALUES (%s,%s, %s, %s) returning pc_converted_file_id', [pcId, convPCDataAbsPath.replace(dataAbsPath,''), jsAbsPath.replace(dataAbsPath,''), modTime])
+                        (pcConvId,) = cursor.fetchone()
                 else:
                     logging.error('There are ' + str(len(jsFiles)) + ' JS files in ' + convPCVersionAbsPath)
             else:
-                logging.error(dataAbsPath + ' does not exist')
+                logging.error(convPCDataAbsPath + ' does not exist')
+            utils.dbExecute(cursor, 'UPDATE pc_converted_file SET last_check = %s where pc_converted_file_id = %s', [checkedTime, pcConvId]) 
+
 def run(args):    
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', datefmt="%Y/%m/%d/%H:%M:%S", level=getattr(logging, args.log))
     t0 = time.time()
     # Global variables declaration
     global cursor
     global dataAbsPath
-    global checkedTime
     
     # Absolute data path
-    dataAbsPath = os.path.abspath(args.data)  
+    dataAbsPath = os.path.abspath(args.data) + '/' 
     
     # Start DB connection
     connection = psycopg2.connect(utils.postgresConnectString(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport, False))
     cursor = connection.cursor()
     
-    checkedTime = utils.getCurrentTime()
-    
-    
     # Process the backgrounds
-    backgroundsAbsPath = os.path.join(dataAbsPath,'BACKGROUND')
-    processPC(backgroundsAbsPath, 'background')
+    backgroundsAbsPath = os.path.join(dataAbsPath,'BACKGROUNDS')
+    processPC(backgroundsAbsPath, 'background_pc')
         
     #Process sites
     sitesAbsPath = os.path.join(dataAbsPath,'SITES')
@@ -201,7 +208,7 @@ def run(args):
             logging.warning('Site ' + site + ' not found in site table. Inserting it with NULL name and geom')
             utils.dbExecute(cursor, 'INSERT INTO site (site_id) VALUES (%s)', [siteId], )
         # Process the PCs
-        processPC(os.path.join(sitesAbsPath,'PC'), 'site_pc', siteId)
+        processPC(os.path.join(os.path.join(sitesAbsPath,site),'PC'), 'site_pc', siteId)
         # TODO: Process the PICs and MESHEs
             
     # Clean removed pcs
@@ -210,13 +217,13 @@ def run(args):
     rows = cursor.fetchall()
     for (pcId,folder) in rows:
         utils.dbExecute(cursor, 'DELETE FROM site_pc WHERE pc_id = %s', [pcId,])    
-        utils.dbExecute(cursor, 'DELETE FROM background WHERE pc_id = %s', [pcId,])
+        utils.dbExecute(cursor, 'DELETE FROM background_pc WHERE pc_id = %s', [pcId,])
         deletePC = True
         utils.dbExecute(cursor, 'SELECT data_folder FROM pc_converted_file WHERE pc_id = %s', [pcId,])
         if cursor.rowcount != 0:
             logging.error("We can not delete PC row in " + folder + '. There are ' + str(cursor.rowcount) + ' related pc_converted_file')
             deletePC = False
-        utils.dbExecute(cursor, 'SELECT data_folder FROM pc_converted_table WHERE pc_id = %s', [pcId,])
+        utils.dbExecute(cursor, 'SELECT tab_name FROM pc_converted_table WHERE pc_id = %s', [pcId,])
         if cursor.rowcount != 0:
             logging.error("We can not delete PC row in " + folder + '. There are ' + str(cursor.rowcount) + ' related pc_converted_table')
             deletePC = False
