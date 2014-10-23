@@ -109,7 +109,7 @@ def dbExecute(cursor, query, queryArgs = None, mogrify = True):
     
 def getLASParams(inputFile):
     (count, minX, minY, minZ, maxX, maxY, maxZ, scaleX, scaleY, scaleZ, offsetX, offsetY, offsetZ) = (None, None, None, None, None, None, None, None, None, None, None, None, None )
-    outputLASInfo = subprocess.Popen('lasinfo ' + inputFile  + ' -nc -nv -nco -merged', shell = True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+    outputLASInfo = subprocess.Popen('lasinfo -i ' + inputFile  + ' -nc -nv -nco -merged', shell = True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
     for line in outputLASInfo[1].split('\n'):
         if line.count('min x y z:'):
             [minX, minY, minZ] = line.split(':')[-1].strip().split(' ')
