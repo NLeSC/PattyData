@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 ################################################################################
-#    Created by Oscar Martinez, Elena Ranguelova                                                 #
+#    Created by Oscar Martinez, Elena Ranguelova, Milena Ivanova                                                 #
 #    o.rubi@esciencecenter.nl                                                  #
 ################################################################################
 import os, time, math, subprocess
