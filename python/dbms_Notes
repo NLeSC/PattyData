@@ -1,0 +1,22 @@
+To run dbms_populate.py and dbms_webServer.py you should create your own enviroment.
+
+To create your own env:
+virtualenv env
+
+Note: The command above will create directory env.
+
+To start
+. env/bin/activate
+
+To stop
+deactivate
+
+To drop the env:
+rm -fr env/
+
+Python modules which you will need to install using pip for dbms_populate and dbms_webServer:
+pip install psycopg2 
+pip install pyramid
+pip install numpy
+pip install bitarray
+pip install sqlalchemy
