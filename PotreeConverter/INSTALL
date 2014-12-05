@@ -1,0 +1,20 @@
+#Before reading this document you should read the README.md
+
+#PotreeConverter needs to have libLAS installed and boost
+
+#In case you want to convert data stored in LAZ files, you should install first LASzip and then link it with libLAS.
+
+#Once all the dependencies are installed, edit config file by setting the paths to the location where each library by Default it assumes they were installed under share directory
+
+#create directory build at the PotreeConverter dir
+mkdir build
+cd build
+
+#Run the following cmake to create the Makefiles
+cmake -DCMAKE_FIND_ROOT_PATH=$LIBLAS_HOME -DCMAKE_INSTALL_PREFIX=$POTREECONV_HOME -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" ../
+
+#install PotreeConverter
+make -j
+make -j install
+
+#If you encounter problems contact r.goncalves@esciencecenter.nl 
