@@ -16,3 +16,7 @@ Modify configuration file in /etc/nginx/nginx.conf
                 root /home/vadata/DATA/RAW/PC/BACKGROUND/DRIVE_1_V3;
             }
         }
+        
+3 - To add authentication see https://www.digitalocean.com/community/tutorials/how-to-set-up-http-authentication-with-nginx-on-ubuntu-12-10
+
+ 
