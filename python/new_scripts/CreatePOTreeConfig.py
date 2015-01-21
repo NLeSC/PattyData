@@ -12,12 +12,16 @@ import os, argparse, time
 import json
 import psycopg2 as pcpg2
 import utils 
+import logging
 
 # CONSTANTS
-DEFAULT_DB = 'vadb'
+DEFAULT_DB = 'vadb' # this should be overrridden eventually by what is the the utils.py
+LOG_FILENAME = 'CreatePOTreeConfig.log'
 
 # Global variables
-connection = None
+jsonData ={}
+connection= None
+
 username = os.popen('whoami').read().replace('\n','')
 
 def argument_parser():
@@ -29,7 +33,7 @@ def argument_parser():
     parser.add_argument('-u','--dbuser',default=username,help='DB user [default ' + username + ']',type=str, required=True)
     parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=True)
     parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=True)
-    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=True)
+    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
     
     return parser
     
@@ -42,23 +46,69 @@ def apply_argument_parser(options=None):
         args = parser.parse_args()    
     return args
 
-def run(args):    
-    t0 = time.time()          
-       
-    # Global variables declaration
-    global connection
+def connect_to_db(args):
+    global connection 
     
     # Start DB connection
-    connection = pcpg2.connect(utils.postgresConnectString(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport, False))
-    cursor = connection.cursor()
+    try: 
+        connection = pcpg2.connect(utils.postgresConnectString(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport, False))
+        
+    except Exception, E:
+        err_msg = 'Cannot connect to %s DB.'% args.dbname
+        print(err_msg)
+        logging.error((err_msg, "; %s: %s" % (E.__class__.__name__, E)))
+        raise
+        
+    msg = 'Succesful connection to %s DB.'%args.dbname
+    print msg
+    logging.debug(msg)
     
-    # get all sites for which we have converted Point Clouds (PCs)
-    cursor.execute('select distinct site_pc.site_id from pc, pc_converted_file, site_pc where (pc.pc_id = pc_converted_file.pc_id) and (pc.pc_id = site_pc.pc_id)')
+    # if the connection succeeded get a cursor    
+    cursor = connection.cursor()
+        
+    return cursor
+    
+def close_db_connection(cursor):
+    global connection 
+    
+    cursor.close()
+    connection.close()    
+    
+    msg = 'Connection to the DB is closed.'
+    print msg
+    logging.debug(msg)
+    
+    return
+
+def fetch_data_from_db(cursor):
+    
+    # get all sites for which there are converted PCes with the POTree converter
+    sql_statement = 'select distinct site_pc_id from potree_site_pc'
+    
+    try:
+        cursor.execute(sql_statement)
+    except Exception, E:
+        err_msg = "Cannot execute the SQL query: %s" % sql_statement
+        print(err_msg)
+        logging.error((err_msg, "; %s: %s" % (E.__class__.__name__, E)))
+        raise
     
     pc_ids = cursor.fetchall()
     
-        
-    jsonData = {}
+    num_sites = cursor.rowcount
+    msg = 'Retrived information for %s sites.'%num_sites
+    print msg
+    logging.debug(msg)
+
+    if num_sites > 0:    
+        print 'Sites: '
+        for pcid in pc_ids:
+            print pcid                
+    return pc_ids
+
+def create_fixed_json_fields():
+    global jsonData
+    
     # type of the JSON file
     jsonData["type"] = "FeatureCollection"
     jsonData["crs"] = {} 
@@ -67,10 +117,51 @@ def run(args):
     coord_system = {}
     coord_system["type"] = "name"
     crs_props={}
-    crs_props["name"] = "urn:ogc:def:crs:EPSG::32633"
+    # crs_props["name"] = "urn:ogc:def:crs:EPSG::32633" - original line
+    crs_props["name"] = "urn:ogc:def:crs:EPSG::"
     coord_system["properties"]=crs_props 
     jsonData["crs"] = coord_system
     
+    msg = 'Created fixed JSON file parts'
+    print(msg)
+    logging.debug(msg)
+    pretty_json = json.dumps(jsonData, indent=4, separators=(',', ': '))
+    print(pretty_json)
+    logging.debug(pretty_json)
+
+    
+#------------------------------------------------------------------------------        
+def run(args):    
+    
+    # start logging    
+    logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)  
+    localtime = time.asctime( time.localtime(time.time()) )   
+    msg = 'CreatePOTreeConfig scipt logging start at %s'% localtime
+    print msg
+    logging.info(msg)
+
+    t0 = time.time()          
+       
+    # connect to DB and get a cursor   
+    cursor = connect_to_db(args)
+        
+    # get all sites for which we have converted Point Clouds (PCs)        
+    pc_ids = fetch_data_from_db(cursor)
+    
+    # generate the generic JSON file parts
+    create_fixed_json_fields()
+    
+    # close the Db connection
+    close_db_connection(cursor)    
+    
+    # end logging
+    localtime = time.asctime( time.localtime(time.time()) )   
+    msg = 'CreatePOTreeConfig script logging end at %s'% localtime
+    print(msg)
+    logging.info(msg)
+    
+    return    
+            
     # features per sites
     featuresList = []
     
@@ -130,8 +221,7 @@ def run(args):
     jsonData["features"] = featuresList      
    
     
-    cursor.close()
-    connection.close()
+
     
     # save the data into JSON file
     with open(args.output, 'w') as outfile:
