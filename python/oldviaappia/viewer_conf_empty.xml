@@ -1,0 +1,33 @@
+<?xml version="1.0" standalone="no" ?>
+<osgRCconfiguration version="0.">
+    <cameras>
+    </cameras>
+    <materials>
+    </materials>
+    <contexts>
+    </contexts>
+    <interpretationsSites>
+    </interpretationsSites>
+    <participants>
+    </participants>
+    <tufoTypes>
+    </tufoTypes>
+    <techniques>
+    </techniques>
+    <objectTypes>
+    </objectTypes>
+    <decorationTypes>
+    </decorationTypes>
+    <interpretationsObjects>
+    </interpretationsObjects>
+    <depictionTypes>
+    </depictionTypes>
+    <dates>
+    </dates>
+    <depressions>
+    </depressions>
+    <staticObjects>
+    </staticObjects>
+    <activeObjects>
+    </activeObjects>
+</osgRCconfiguration>
