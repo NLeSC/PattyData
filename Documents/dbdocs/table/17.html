@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>SITE_PC</title>
+		<title>OSG_SITE_MESH</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="SITE_PC";
+	parent.document.title="OSG_SITE_MESH";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   SITE_PC</h2>
+		<h2>Table   OSG_SITE_MESH</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>SITE_PC<br><br></dd>
+		<dd>OSG_SITE_MESH<br><br></dd>
 </dl>
 
 <dl>
@@ -101,101 +101,20 @@ function asd() {
 	</tr>
 	<tr>
 	<tr>
-	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
+	<td align="center">&nbsp;</td>
 	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#151">site_pc_id</a>&nbsp;</td>
-	<td>site_pc_id&nbsp;</td>
+	<td><a href="#188">osg_site_data_item_id</a>&nbsp;</td>
+	<td>osg_site_data_item_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#245">srid</a>&nbsp;</td>
-	<td>srid&nbsp;</td>
+	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
+	<td><a href="#257">site_mesh_id</a>&nbsp;</td>
+	<td>site_mesh_id&nbsp;</td>
 	<td>int&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#246">number_points</a>&nbsp;</td>
-	<td>number_points&nbsp;</td>
-	<td>int&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#247">extension</a>&nbsp;</td>
-	<td>extension&nbsp;</td>
-	<td>varchar(3)&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#248">minx</a>&nbsp;</td>
-	<td>minx&nbsp;</td>
-	<td>double precision&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#249">miny</a>&nbsp;</td>
-	<td>miny&nbsp;</td>
-	<td>double precision&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#250">minz</a>&nbsp;</td>
-	<td>minz&nbsp;</td>
-	<td>double precision&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#251">maxx</a>&nbsp;</td>
-	<td>maxx&nbsp;</td>
-	<td>double precision&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#252">maxy</a>&nbsp;</td>
-	<td>maxy&nbsp;</td>
-	<td>double precision&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#253">maxz</a>&nbsp;</td>
-	<td>maxz&nbsp;</td>
-	<td>double precision&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#254">color_8bit</a>&nbsp;</td>
-	<td>color_8bit&nbsp;</td>
-	<td>boolean&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
 </tr>
@@ -222,9 +141,18 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#151">site_pc_id&nbsp;</a></td>
-	<td><a href="../table/20.html">SITE_DATA_ITEM&nbsp;</a></td>
-	<td><a href="../table/20.html#220">site_data_item_id&nbsp;</a></td>
+	<td><a href="#188">osg_site_data_item_id&nbsp;</a></td>
+	<td><a href="../table/8.html">OSG_SITE_DATA_ITEM&nbsp;</a></td>
+	<td><a href="../table/8.html#150">osg_site_data_item_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#257">site_mesh_id&nbsp;</a></td>
+	<td><a href="../table/20.html">SITE_MESH&nbsp;</a></td>
+	<td><a href="../table/20.html#157">site_mesh_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
@@ -251,61 +179,7 @@ function asd() {
 		<th width="12%">Cardinality of parent</th>
 		<th width="12%">Cardinality of child</th>
 	</tr>
-	<tr>
-	<td><a href="#151">site_pc_id&nbsp;</a></td>
-	<td><a href="../table/22.html">POTREE_SITE_PC&nbsp;</a></td>
-	<td><a href="../table/22.html#255">site_pc_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#151">site_pc_id&nbsp;</a></td>
-	<td><a href="../table/11.html">ALIGNED_SITE_PC&nbsp;</a></td>
-	<td><a href="../table/11.html#209">site_pc_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#151">site_pc_id&nbsp;</a></td>
-	<td><a href="../table/11.html">ALIGNED_SITE_PC&nbsp;</a></td>
-	<td><a href="../table/11.html#210">site_background_pc_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#151">site_pc_id&nbsp;</a></td>
-	<td><a href="../table/3.html">ALIGNED_SITE_MESH&nbsp;</a></td>
-	<td><a href="../table/3.html#156">site_pc_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#151">site_pc_id&nbsp;</a></td>
-	<td><a href="../table/23.html">OSG_SITE_BACKGROUND_PC&nbsp;</a></td>
-	<td><a href="../table/23.html#256">site_pc_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#151">site_pc_id&nbsp;</a></td>
-	<td><a href="../table/1.html">OSG_SITE_PC&nbsp;</a></td>
-	<td><a href="../table/1.html#149">site_pc_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-</tr>
-
+	
 </table>
 
 <p>
@@ -360,11 +234,11 @@ function asd() {
 	</tr>
 </table>
 
-<a name="151"></a>
-<h3><img src="../image/icons/pkey.gif"> <img src="../image/icons/foreign_key.gif"> site_pc_id</h3>
+<a name="188"></a>
+<h3> <img src="../image/icons/foreign_key.gif"> osg_site_data_item_id</h3>
 
 <dl>
-	<dd>site_pc_id
+	<dd>osg_site_data_item_id
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -381,32 +255,11 @@ function asd() {
 <p>
 
 <hr>
-<a name="245"></a>
-<h3>  srid</h3>
+<a name="257"></a>
+<h3> <img src="../image/icons/foreign_key.gif"> site_mesh_id</h3>
 
 <dl>
-	<dd>srid
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>int<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="246"></a>
-<h3>  number_points</h3>
-
-<dl>
-	<dd>number_points
+	<dd>site_mesh_id
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -414,174 +267,6 @@ function asd() {
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>TRUE<br></dt>
 		<dt><b>Type : </b>int<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="247"></a>
-<h3>  extension</h3>
-
-<dl>
-	<dd>extension
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>varchar(3)<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="248"></a>
-<h3>  minx</h3>
-
-<dl>
-	<dd>minx
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>double precision<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="249"></a>
-<h3>  miny</h3>
-
-<dl>
-	<dd>miny
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>double precision<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="250"></a>
-<h3>  minz</h3>
-
-<dl>
-	<dd>minz
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>double precision<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="251"></a>
-<h3>  maxx</h3>
-
-<dl>
-	<dd>maxx
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>double precision<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="252"></a>
-<h3>  maxy</h3>
-
-<dl>
-	<dd>maxy
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>double precision<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="253"></a>
-<h3>  maxz</h3>
-
-<dl>
-	<dd>maxz
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>double precision<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="254"></a>
-<h3>  color_8bit</h3>
-
-<dl>
-	<dd>color_8bit
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>boolean<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>

@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>OSG_SITE_DATA_ITEM</title>
+		<title>tbl1_object</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="OSG_SITE_DATA_ITEM";
+	parent.document.title="tbl1_object";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   OSG_SITE_DATA_ITEM</h2>
+		<h2>Table   tbl1_object</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>OSG_SITE_DATA_ITEM<br><br></dd>
+		<dd>tbl1_object<br><br></dd>
 </dl>
 
 <dl>
@@ -101,46 +101,28 @@ function asd() {
 	</tr>
 	<tr>
 	<tr>
-	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#150">osg_site_data_item_id</a>&nbsp;</td>
-	<td>osg_site_data_item_id&nbsp;</td>
-	<td>serial&nbsp;</td>
+	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
+	<td><a href="#172">site_id</a>&nbsp;</td>
+	<td>site_id&nbsp;</td>
+	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
+	<td align="center">&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#185">osg_location_id</a>&nbsp;</td>
-	<td>osg_location_id&nbsp;</td>
+	<td><a href="#181">object_id</a>&nbsp;</td>
+	<td>object_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
+	<td align="center">&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#186">abs_path</a>&nbsp;</td>
-	<td>abs_path&nbsp;</td>
-	<td>text&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#187">xml_abs_path</a>&nbsp;</td>
-	<td>xml_abs_path&nbsp;</td>
-	<td>text&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#188">cast_shadow</a>&nbsp;</td>
-	<td>cast_shadow&nbsp;</td>
+	<td><a href="#189">in_situ</a>&nbsp;</td>
+	<td>in_situ&nbsp;</td>
 	<td>boolean&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -148,18 +130,108 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#189">last_mod</a>&nbsp;</td>
-	<td>last_mod&nbsp;</td>
-	<td>int&nbsp;</td>
+	<td><a href="#190">ancient</a>&nbsp;</td>
+	<td>ancient&nbsp;</td>
+	<td>boolean&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#190">last_check</a>&nbsp;</td>
-	<td>last_check&nbsp;</td>
-	<td>int&nbsp;</td>
+	<td><a href="#191">condition</a>&nbsp;</td>
+	<td>condition&nbsp;</td>
+	<td>varchar(255)&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#192">modern_restoration</a>&nbsp;</td>
+	<td>modern_restoration&nbsp;</td>
+	<td>boolean&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#193">description_object</a>&nbsp;</td>
+	<td>description_object&nbsp;</td>
+	<td>text&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#194">object_type</a>&nbsp;</td>
+	<td>object_type&nbsp;</td>
+	<td>varchar(255)&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#195">object_interpretation_list</a>&nbsp;</td>
+	<td>object_interpretation_list&nbsp;</td>
+	<td>varchar(255)&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#196">object_interpretation</a>&nbsp;</td>
+	<td>object_interpretation&nbsp;</td>
+	<td>varchar(255)&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#197">period</a>&nbsp;</td>
+	<td>period&nbsp;</td>
+	<td>varchar(255)&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#198">date_specific</a>&nbsp;</td>
+	<td>date_specific&nbsp;</td>
+	<td>varchar(255)&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#199">material_remarks</a>&nbsp;</td>
+	<td>material_remarks&nbsp;</td>
+	<td>text&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#200">date_entry</a>&nbsp;</td>
+	<td>date_entry&nbsp;</td>
+	<td>timestamp&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#201">description_restorations</a>&nbsp;</td>
+	<td>description_restorations&nbsp;</td>
+	<td>varchar(255)&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
 </tr>
@@ -186,13 +258,31 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#185">osg_location_id&nbsp;</a></td>
-	<td><a href="../table/14.html">OSG_LOCATION&nbsp;</a></td>
-	<td><a href="../table/14.html#167">osg_location_id&nbsp;</a></td>
+	<td><a href="#172">site_id&nbsp;</a></td>
+	<td><a href="../table/6.html">tbl1_site&nbsp;</a></td>
+	<td><a href="../table/6.html#147">site_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
+	<td align="center">0..1&nbsp;</td>
 	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#172">site_id&nbsp;</a></td>
+	<td><a href="../table/24.html">SITE_OBJECT&nbsp;</a></td>
+	<td><a href="../table/24.html#173">site_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">0..1&nbsp;</td>
+	<td align="center">0..1&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#181">object_id&nbsp;</a></td>
+	<td><a href="../table/24.html">SITE_OBJECT&nbsp;</a></td>
+	<td><a href="../table/24.html#202">object_number&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">0..1&nbsp;</td>
+	<td align="center">0..1&nbsp;</td>
 </tr>
 
 </table>
@@ -216,31 +306,58 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#150">osg_site_data_item_id&nbsp;</a></td>
-	<td><a href="../table/18.html">OSG_SITE_MESH&nbsp;</a></td>
-	<td><a href="../table/18.html#191">osg_site_data_item_id&nbsp;</a></td>
+	<td><a href="#172">site_id&nbsp;</a></td>
+	<td><a href="../table/23.html">tbl2_object_decoration&nbsp;</a></td>
+	<td><a href="../table/23.html#203">site_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1&nbsp;</td>
+	<td align="center">0..1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
 </tr>
 <tr>
-	<td><a href="#150">osg_site_data_item_id&nbsp;</a></td>
-	<td><a href="../table/1.html">OSG_SITE_PC&nbsp;</a></td>
-	<td><a href="../table/1.html#148">osg_site_data_item_id&nbsp;</a></td>
+	<td><a href="#181">object_id&nbsp;</a></td>
+	<td><a href="../table/23.html">tbl2_object_decoration&nbsp;</a></td>
+	<td><a href="../table/23.html#204">object_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1&nbsp;</td>
+	<td align="center">0..1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
 </tr>
 <tr>
-	<td><a href="#150">osg_site_data_item_id&nbsp;</a></td>
-	<td><a href="../table/2.html">OSG_SITE_PICTURE&nbsp;</a></td>
-	<td><a href="../table/2.html#152">osg_site_data_item_id&nbsp;</a></td>
+	<td><a href="#172">site_id&nbsp;</a></td>
+	<td><a href="../table/7.html">tbl2_object_material&nbsp;</a></td>
+	<td><a href="../table/7.html#175">site_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1&nbsp;</td>
+	<td align="center">0..1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#181">object_id&nbsp;</a></td>
+	<td><a href="../table/7.html">tbl2_object_material&nbsp;</a></td>
+	<td><a href="../table/7.html#176">object_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">0..1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#172">site_id&nbsp;</a></td>
+	<td><a href="../table/18.html">tbl2_object_depression&nbsp;</a></td>
+	<td><a href="../table/18.html#205">site_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">0..1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#181">object_id&nbsp;</a></td>
+	<td><a href="../table/18.html">tbl2_object_depression&nbsp;</a></td>
+	<td><a href="../table/18.html#206">object_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">0..1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
 </tr>
 
 </table>
@@ -252,13 +369,89 @@ function asd() {
 <a name="complex_unique_key"><!-- --></a>
 <table border="1" cellpadding="3" cellspacing="0" width="100%" class="AttributeTable">
 	<tr class="TableHeadingColor">
-		<th colspan="1">Complex Unique Key</th>
+		<th colspan="2">Complex Unique Key</th>
 	</tr>
 	<tr class="TableSubHeadingColor">
 		<th>&nbsp;</th>
-		
+				<th>&nbsp;</th>
+
 	</tr>
-	
+		<tr>
+		<th class="TableSubHeadingColor" align="left">site_id&nbsp;</th>
+				<td align="center">1&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">object_id&nbsp;</th>
+				<td align="center">2&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">in_situ&nbsp;</th>
+				<td align="center">&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">ancient&nbsp;</th>
+				<td align="center">&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">condition&nbsp;</th>
+				<td align="center">&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">modern_restoration&nbsp;</th>
+				<td align="center">&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">description_object&nbsp;</th>
+				<td align="center">&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">object_type&nbsp;</th>
+				<td align="center">&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">object_interpretation_list&nbsp;</th>
+				<td align="center">&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">object_interpretation&nbsp;</th>
+				<td align="center">&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">period&nbsp;</th>
+				<td align="center">&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">date_specific&nbsp;</th>
+				<td align="center">&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">material_remarks&nbsp;</th>
+				<td align="center">&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">date_entry&nbsp;</th>
+				<td align="center">&nbsp;</td>
+
+	</tr>
+	<tr>
+		<th class="TableSubHeadingColor" align="left">description_restorations&nbsp;</th>
+				<td align="center">&nbsp;</td>
+
+	</tr>
+
 </table>
 
 
@@ -297,38 +490,17 @@ function asd() {
 	</tr>
 </table>
 
-<a name="150"></a>
-<h3><img src="../image/icons/pkey.gif">  osg_site_data_item_id</h3>
+<a name="172"></a>
+<h3> <img src="../image/icons/foreign_key.gif"> site_id</h3>
 
 <dl>
-	<dd>osg_site_data_item_id
+	<dd>site_id
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>serial<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="185"></a>
-<h3> <img src="../image/icons/foreign_key.gif"> osg_location_id</h3>
-
-<dl>
-	<dd>osg_location_id
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
 		<dt><b>Type : </b>int<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
@@ -339,18 +511,18 @@ function asd() {
 <p>
 
 <hr>
-<a name="186"></a>
-<h3>  abs_path</h3>
+<a name="181"></a>
+<h3> <img src="../image/icons/foreign_key.gif"> object_id</h3>
 
 <dl>
-	<dd>abs_path
+	<dd>object_id
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>text<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>int<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>
@@ -360,32 +532,11 @@ function asd() {
 <p>
 
 <hr>
-<a name="187"></a>
-<h3>  xml_abs_path</h3>
+<a name="189"></a>
+<h3>  in_situ</h3>
 
 <dl>
-	<dd>xml_abs_path
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>text<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="188"></a>
-<h3>  cast_shadow</h3>
-
-<dl>
-	<dd>cast_shadow
+	<dd>in_situ
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -402,18 +553,18 @@ function asd() {
 <p>
 
 <hr>
-<a name="189"></a>
-<h3>  last_mod</h3>
+<a name="190"></a>
+<h3>  ancient</h3>
 
 <dl>
-	<dd>last_mod
+	<dd>ancient
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>int<br></dt>
+		<dt><b>Type : </b>boolean<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>
@@ -423,18 +574,228 @@ function asd() {
 <p>
 
 <hr>
-<a name="190"></a>
-<h3>  last_check</h3>
+<a name="191"></a>
+<h3>  condition</h3>
 
 <dl>
-	<dd>last_check
+	<dd>condition
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>int<br></dt>
+		<dt><b>Type : </b>varchar(255)<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="192"></a>
+<h3>  modern_restoration</h3>
+
+<dl>
+	<dd>modern_restoration
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>boolean<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="193"></a>
+<h3>  description_object</h3>
+
+<dl>
+	<dd>description_object
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>text<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="194"></a>
+<h3>  object_type</h3>
+
+<dl>
+	<dd>object_type
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>varchar(255)<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="195"></a>
+<h3>  object_interpretation_list</h3>
+
+<dl>
+	<dd>object_interpretation_list
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>varchar(255)<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="196"></a>
+<h3>  object_interpretation</h3>
+
+<dl>
+	<dd>object_interpretation
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>varchar(255)<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="197"></a>
+<h3>  period</h3>
+
+<dl>
+	<dd>period
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>varchar(255)<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="198"></a>
+<h3>  date_specific</h3>
+
+<dl>
+	<dd>date_specific
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>varchar(255)<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="199"></a>
+<h3>  material_remarks</h3>
+
+<dl>
+	<dd>material_remarks
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>text<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="200"></a>
+<h3>  date_entry</h3>
+
+<dl>
+	<dd>date_entry
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>timestamp<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="201"></a>
+<h3>  description_restorations</h3>
+
+<dl>
+	<dd>description_restorations
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>varchar(255)<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>

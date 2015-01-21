@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>SITE</title>
+		<title>OSG_LOCATION</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="SITE";
+	parent.document.title="OSG_LOCATION";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   SITE</h2>
+		<h2>Table   OSG_LOCATION</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>SITE<br><br></dd>
+		<dd>OSG_LOCATION<br><br></dd>
 </dl>
 
 <dl>
@@ -103,27 +103,108 @@ function asd() {
 	<tr>
 	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#160">site_id</a>&nbsp;</td>
-	<td>site_id&nbsp;</td>
+	<td><a href="#160">osg_location_id</a>&nbsp;</td>
+	<td>osg_location_id&nbsp;</td>
+	<td>serial&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#222">srid</a>&nbsp;</td>
+	<td>srid&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
+	<td align="center">&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#221">background</a>&nbsp;</td>
-	<td>background&nbsp;</td>
+	<td><a href="#223">x</a>&nbsp;</td>
+	<td>x&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#224">y</a>&nbsp;</td>
+	<td>y&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#225">z</a>&nbsp;</td>
+	<td>z&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#226">xs</a>&nbsp;</td>
+	<td>xs&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#227">ys</a>&nbsp;</td>
+	<td>ys&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#228">zs</a>&nbsp;</td>
+	<td>zs&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#229">h</a>&nbsp;</td>
+	<td>h&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#230">p</a>&nbsp;</td>
+	<td>p&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#231">r</a>&nbsp;</td>
+	<td>r&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#232">cast_shadow</a>&nbsp;</td>
+	<td>cast_shadow&nbsp;</td>
 	<td>boolean&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#222">geom</a>&nbsp;</td>
-	<td>geom&nbsp;</td>
-	<td>polygon&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
 </tr>
@@ -171,40 +252,40 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#160">site_id&nbsp;</a></td>
-	<td><a href="../table/4.html">SITE_OBJECT&nbsp;</a></td>
-	<td><a href="../table/4.html#158">site_id&nbsp;</a></td>
+	<td><a href="#160">osg_location_id&nbsp;</a></td>
+	<td><a href="../table/14.html">OSG_SITE_OBJECT&nbsp;</a></td>
+	<td><a href="../table/14.html#233">osg_location_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 	<td align="center">1..n&nbsp;</td>
 </tr>
 <tr>
-	<td><a href="#160">site_id&nbsp;</a></td>
-	<td><a href="../table/20.html">SITE_DATA_ITEM&nbsp;</a></td>
-	<td><a href="../table/20.html#223">site_id&nbsp;</a></td>
+	<td><a href="#160">osg_location_id&nbsp;</a></td>
+	<td><a href="../table/8.html">OSG_SITE_DATA_ITEM&nbsp;</a></td>
+	<td><a href="../table/8.html#182">osg_location_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 	<td align="center">1..n&nbsp;</td>
 </tr>
 <tr>
-	<td><a href="#160">site_id&nbsp;</a></td>
-	<td><a href="../table/6.html">OSG_SITE_CAMERA&nbsp;</a></td>
-	<td><a href="../table/6.html#169">site_id&nbsp;</a></td>
+	<td><a href="#160">osg_location_id&nbsp;</a></td>
+	<td><a href="../table/4.html">OSG_CAMERA&nbsp;</a></td>
+	<td><a href="../table/4.html#159">osg_location_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 	<td align="center">1..n&nbsp;</td>
 </tr>
 <tr>
-	<td><a href="#160">site_id&nbsp;</a></td>
-	<td><a href="../table/7.html">tbl1_site&nbsp;</a></td>
-	<td><a href="../table/7.html#147">site_id&nbsp;</a></td>
+	<td><a href="#160">osg_location_id&nbsp;</a></td>
+	<td><a href="../table/15.html">OSG_LABEL&nbsp;</a></td>
+	<td><a href="../table/15.html#234">osg_location_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">0..1&nbsp;</td>
-	<td align="center">0..1&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
 </tr>
 
 </table>
@@ -262,38 +343,17 @@ function asd() {
 </table>
 
 <a name="160"></a>
-<h3><img src="../image/icons/pkey.gif">  site_id</h3>
+<h3><img src="../image/icons/pkey.gif">  osg_location_id</h3>
 
 <dl>
-	<dd>site_id
+	<dd>osg_location_id
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>int<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="221"></a>
-<h3>  background</h3>
-
-<dl>
-	<dd>background
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>boolean<br></dt>
+		<dt><b>Type : </b>serial<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>
@@ -304,17 +364,227 @@ function asd() {
 
 <hr>
 <a name="222"></a>
-<h3>  geom</h3>
+<h3>  srid</h3>
 
 <dl>
-	<dd>geom
+	<dd>srid
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>polygon<br></dt>
+		<dt><b>Type : </b>int<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="223"></a>
+<h3>  x</h3>
+
+<dl>
+	<dd>x
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="224"></a>
+<h3>  y</h3>
+
+<dl>
+	<dd>y
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="225"></a>
+<h3>  z</h3>
+
+<dl>
+	<dd>z
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="226"></a>
+<h3>  xs</h3>
+
+<dl>
+	<dd>xs
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="227"></a>
+<h3>  ys</h3>
+
+<dl>
+	<dd>ys
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="228"></a>
+<h3>  zs</h3>
+
+<dl>
+	<dd>zs
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="229"></a>
+<h3>  h</h3>
+
+<dl>
+	<dd>h
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="230"></a>
+<h3>  p</h3>
+
+<dl>
+	<dd>p
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="231"></a>
+<h3>  r</h3>
+
+<dl>
+	<dd>r
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="232"></a>
+<h3>  cast_shadow</h3>
+
+<dl>
+	<dd>cast_shadow
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>boolean<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>

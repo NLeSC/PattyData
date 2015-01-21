@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>SITE_DATA_ITEM</title>
+		<title>SITE_MESH</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="SITE_DATA_ITEM";
+	parent.document.title="SITE_MESH";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   SITE_DATA_ITEM</h2>
+		<h2>Table   SITE_MESH</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>SITE_DATA_ITEM<br><br></dd>
+		<dd>SITE_MESH<br><br></dd>
 </dl>
 
 <dl>
@@ -102,18 +102,9 @@ function asd() {
 	<tr>
 	<tr>
 	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#220">site_data_item_id</a>&nbsp;</td>
-	<td>site_data_item_id&nbsp;</td>
-	<td>serial&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
 	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#223">site_id</a>&nbsp;</td>
-	<td>site_id&nbsp;</td>
+	<td><a href="#157">site_mesh_id</a>&nbsp;</td>
+	<td>site_mesh_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
@@ -121,29 +112,11 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#263">abs_path</a>&nbsp;</td>
-	<td>abs_path&nbsp;</td>
-	<td>text&nbsp;</td>
+	<td><a href="#266">current_mesh</a>&nbsp;</td>
+	<td>current_mesh&nbsp;</td>
+	<td>boolean&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#264">last_mod</a>&nbsp;</td>
-	<td>last_mod&nbsp;</td>
-	<td>int&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#265">last_check</a>&nbsp;</td>
-	<td>last_check&nbsp;</td>
-	<td>int&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
 </tr>
 
 	</tr>
@@ -168,13 +141,13 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#223">site_id&nbsp;</a></td>
-	<td><a href="../table/13.html">SITE&nbsp;</a></td>
-	<td><a href="../table/13.html#160">site_id&nbsp;</a></td>
+	<td><a href="#157">site_mesh_id&nbsp;</a></td>
+	<td><a href="../table/19.html">SITE_DATA_ITEM&nbsp;</a></td>
+	<td><a href="../table/19.html#218">site_data_item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
+	<td align="center">1&nbsp;</td>
 </tr>
 
 </table>
@@ -198,31 +171,22 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#220">site_data_item_id&nbsp;</a></td>
-	<td><a href="../table/17.html">SITE_PC&nbsp;</a></td>
-	<td><a href="../table/17.html#151">site_pc_id&nbsp;</a></td>
+	<td><a href="#157">site_mesh_id&nbsp;</a></td>
+	<td><a href="../table/17.html">OSG_SITE_MESH&nbsp;</a></td>
+	<td><a href="../table/17.html#257">site_mesh_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 </tr>
 <tr>
-	<td><a href="#220">site_data_item_id&nbsp;</a></td>
-	<td><a href="../table/21.html">SITE_MESH&nbsp;</a></td>
-	<td><a href="../table/21.html#157">site_mesh_id&nbsp;</a></td>
+	<td><a href="#157">site_mesh_id&nbsp;</a></td>
+	<td><a href="../table/3.html">ALIGNED_SITE_MESH&nbsp;</a></td>
+	<td><a href="../table/3.html#155">site_mesh_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#220">site_data_item_id&nbsp;</a></td>
-	<td><a href="../table/12.html">SITE_PICTURE&nbsp;</a></td>
-	<td><a href="../table/12.html#154">site_picture_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
 </tr>
 
 </table>
@@ -279,32 +243,11 @@ function asd() {
 	</tr>
 </table>
 
-<a name="220"></a>
-<h3><img src="../image/icons/pkey.gif">  site_data_item_id</h3>
+<a name="157"></a>
+<h3><img src="../image/icons/pkey.gif"> <img src="../image/icons/foreign_key.gif"> site_mesh_id</h3>
 
 <dl>
-	<dd>site_data_item_id
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>serial<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="223"></a>
-<h3> <img src="../image/icons/foreign_key.gif"> site_id</h3>
-
-<dl>
-	<dd>site_id
+	<dd>site_mesh_id
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -321,60 +264,18 @@ function asd() {
 <p>
 
 <hr>
-<a name="263"></a>
-<h3>  abs_path</h3>
+<a name="266"></a>
+<h3>  current_mesh</h3>
 
 <dl>
-	<dd>abs_path
+	<dd>current_mesh
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>text<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="264"></a>
-<h3>  last_mod</h3>
-
-<dl>
-	<dd>last_mod
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>int<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="265"></a>
-<h3>  last_check</h3>
-
-<dl>
-	<dd>last_check
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>int<br></dt>
+		<dt><b>Type : </b>boolean<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>

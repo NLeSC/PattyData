@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>OSG_LABEL</title>
+		<title>SITE_PC</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="OSG_LABEL";
+	parent.document.title="SITE_PC";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   OSG_LABEL</h2>
+		<h2>Table   SITE_PC</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>OSG_LABEL<br><br></dd>
+		<dd>SITE_PC<br><br></dd>
 </dl>
 
 <dl>
@@ -102,18 +102,9 @@ function asd() {
 	<tr>
 	<tr>
 	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#237">osg_label_name</a>&nbsp;</td>
-	<td>osg_label_name&nbsp;</td>
-	<td>text&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
 	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#235">osg_location_id</a>&nbsp;</td>
-	<td>osg_location_id&nbsp;</td>
+	<td><a href="#151">site_pc_id</a>&nbsp;</td>
+	<td>site_pc_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
@@ -121,65 +112,92 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#238">text</a>&nbsp;</td>
-	<td>text&nbsp;</td>
-	<td>text&nbsp;</td>
+	<td><a href="#245">srid</a>&nbsp;</td>
+	<td>srid&nbsp;</td>
+	<td>int&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#246">number_points</a>&nbsp;</td>
+	<td>number_points&nbsp;</td>
+	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#239">red</a>&nbsp;</td>
-	<td>red&nbsp;</td>
-	<td>float&nbsp;</td>
+	<td><a href="#247">extension</a>&nbsp;</td>
+	<td>extension&nbsp;</td>
+	<td>varchar(3)&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#240">green</a>&nbsp;</td>
-	<td>green&nbsp;</td>
-	<td>float&nbsp;</td>
+	<td><a href="#248">minx</a>&nbsp;</td>
+	<td>minx&nbsp;</td>
+	<td>double precision&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#241">blue</a>&nbsp;</td>
-	<td>blue&nbsp;</td>
-	<td>float&nbsp;</td>
+	<td><a href="#249">miny</a>&nbsp;</td>
+	<td>miny&nbsp;</td>
+	<td>double precision&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#242">rotate_screen</a>&nbsp;</td>
-	<td>rotate_screen&nbsp;</td>
+	<td><a href="#250">minz</a>&nbsp;</td>
+	<td>minz&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#251">maxx</a>&nbsp;</td>
+	<td>maxx&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#252">maxy</a>&nbsp;</td>
+	<td>maxy&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#253">maxz</a>&nbsp;</td>
+	<td>maxz&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#254">color_8bit</a>&nbsp;</td>
+	<td>color_8bit&nbsp;</td>
 	<td>boolean&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#243">outline</a>&nbsp;</td>
-	<td>outline&nbsp;</td>
-	<td>boolean&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#244">font</a>&nbsp;</td>
-	<td>font&nbsp;</td>
-	<td>text&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 
 	</tr>
@@ -204,13 +222,13 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#235">osg_location_id&nbsp;</a></td>
-	<td><a href="../table/14.html">OSG_LOCATION&nbsp;</a></td>
-	<td><a href="../table/14.html#167">osg_location_id&nbsp;</a></td>
+	<td><a href="#151">site_pc_id&nbsp;</a></td>
+	<td><a href="../table/19.html">SITE_DATA_ITEM&nbsp;</a></td>
+	<td><a href="../table/19.html#218">site_data_item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
+	<td align="center">1&nbsp;</td>
 </tr>
 
 </table>
@@ -233,7 +251,61 @@ function asd() {
 		<th width="12%">Cardinality of parent</th>
 		<th width="12%">Cardinality of child</th>
 	</tr>
-	
+	<tr>
+	<td><a href="#151">site_pc_id&nbsp;</a></td>
+	<td><a href="../table/10.html">ALIGNED_SITE_PC&nbsp;</a></td>
+	<td><a href="../table/10.html#208">site_background_pc_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#151">site_pc_id&nbsp;</a></td>
+	<td><a href="../table/21.html">POTREE_SITE_PC&nbsp;</a></td>
+	<td><a href="../table/21.html#255">site_pc_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#151">site_pc_id&nbsp;</a></td>
+	<td><a href="../table/3.html">ALIGNED_SITE_MESH&nbsp;</a></td>
+	<td><a href="../table/3.html#156">site_pc_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#151">site_pc_id&nbsp;</a></td>
+	<td><a href="../table/1.html">OSG_SITE_PC&nbsp;</a></td>
+	<td><a href="../table/1.html#149">site_pc_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#151">site_pc_id&nbsp;</a></td>
+	<td><a href="../table/22.html">OSG_SITE_BACKGROUND_PC&nbsp;</a></td>
+	<td><a href="../table/22.html#256">site_pc_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#151">site_pc_id&nbsp;</a></td>
+	<td><a href="../table/10.html">ALIGNED_SITE_PC&nbsp;</a></td>
+	<td><a href="../table/10.html#207">site_pc_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+
 </table>
 
 <p>
@@ -288,32 +360,11 @@ function asd() {
 	</tr>
 </table>
 
-<a name="237"></a>
-<h3><img src="../image/icons/pkey.gif">  osg_label_name</h3>
+<a name="151"></a>
+<h3><img src="../image/icons/pkey.gif"> <img src="../image/icons/foreign_key.gif"> site_pc_id</h3>
 
 <dl>
-	<dd>osg_label_name
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>text<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="235"></a>
-<h3> <img src="../image/icons/foreign_key.gif"> osg_location_id</h3>
-
-<dl>
-	<dd>osg_location_id
+	<dd>site_pc_id
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -330,144 +381,207 @@ function asd() {
 <p>
 
 <hr>
-<a name="238"></a>
-<h3>  text</h3>
+<a name="245"></a>
+<h3>  srid</h3>
 
 <dl>
-	<dd>text
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>text<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="239"></a>
-<h3>  red</h3>
-
-<dl>
-	<dd>red
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>float<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="240"></a>
-<h3>  green</h3>
-
-<dl>
-	<dd>green
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>float<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="241"></a>
-<h3>  blue</h3>
-
-<dl>
-	<dd>blue
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>float<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="242"></a>
-<h3>  rotate_screen</h3>
-
-<dl>
-	<dd>rotate_screen
+	<dd>srid
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>int<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="246"></a>
+<h3>  number_points</h3>
+
+<dl>
+	<dd>number_points
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>int<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="247"></a>
+<h3>  extension</h3>
+
+<dl>
+	<dd>extension
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>varchar(3)<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="248"></a>
+<h3>  minx</h3>
+
+<dl>
+	<dd>minx
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="249"></a>
+<h3>  miny</h3>
+
+<dl>
+	<dd>miny
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="250"></a>
+<h3>  minz</h3>
+
+<dl>
+	<dd>minz
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="251"></a>
+<h3>  maxx</h3>
+
+<dl>
+	<dd>maxx
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="252"></a>
+<h3>  maxy</h3>
+
+<dl>
+	<dd>maxy
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="253"></a>
+<h3>  maxz</h3>
+
+<dl>
+	<dd>maxz
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="254"></a>
+<h3>  color_8bit</h3>
+
+<dl>
+	<dd>color_8bit
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
 		<dt><b>Type : </b>boolean<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="243"></a>
-<h3>  outline</h3>
-
-<dl>
-	<dd>outline
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>boolean<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="244"></a>
-<h3>  font</h3>
-
-<dl>
-	<dd>font
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>text<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>

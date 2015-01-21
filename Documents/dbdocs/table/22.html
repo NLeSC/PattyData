@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>POTREE_SITE_PC</title>
+		<title>OSG_SITE_BACKGROUND_PC</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="POTREE_SITE_PC";
+	parent.document.title="OSG_SITE_BACKGROUND_PC";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   POTREE_SITE_PC</h2>
+		<h2>Table   OSG_SITE_BACKGROUND_PC</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>POTREE_SITE_PC<br><br></dd>
+		<dd>OSG_SITE_BACKGROUND_PC<br><br></dd>
 </dl>
 
 <dl>
@@ -103,8 +103,8 @@ function asd() {
 	<tr>
 	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#267">pc_potree_site_id</a>&nbsp;</td>
-	<td>pc_potree_site_id&nbsp;</td>
+	<td><a href="#273">osg_site_background_pc_id</a>&nbsp;</td>
+	<td>osg_site_background_pc_id&nbsp;</td>
 	<td>serial&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
@@ -112,7 +112,7 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#255">site_pc_id</a>&nbsp;</td>
+	<td><a href="#256">site_pc_id</a>&nbsp;</td>
 	<td>site_pc_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -121,16 +121,43 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#268">asb_path</a>&nbsp;</td>
-	<td>asb_path&nbsp;</td>
+	<td><a href="#274">abs_path</a>&nbsp;</td>
+	<td>abs_path&nbsp;</td>
 	<td>text&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#275">offset_x</a>&nbsp;</td>
+	<td>offset_x&nbsp;</td>
+	<td>float&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#269">last_mod</a>&nbsp;</td>
+	<td><a href="#276">offset_y</a>&nbsp;</td>
+	<td>offset_y&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#277">offset_z</a>&nbsp;</td>
+	<td>offset_z&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#278">last_mod</a>&nbsp;</td>
 	<td>last_mod&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -139,27 +166,9 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#270">last_check</a>&nbsp;</td>
+	<td><a href="#279">last_check</a>&nbsp;</td>
 	<td>last_check&nbsp;</td>
 	<td>int&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#271">number_levels</a>&nbsp;</td>
-	<td>number_levels&nbsp;</td>
-	<td>int&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#272">spacing</a>&nbsp;</td>
-	<td>spacing&nbsp;</td>
-	<td>float&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
 </tr>
@@ -186,9 +195,9 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#255">site_pc_id&nbsp;</a></td>
-	<td><a href="../table/17.html">SITE_PC&nbsp;</a></td>
-	<td><a href="../table/17.html#151">site_pc_id&nbsp;</a></td>
+	<td><a href="#256">site_pc_id&nbsp;</a></td>
+	<td><a href="../table/16.html">SITE_PC&nbsp;</a></td>
+	<td><a href="../table/16.html#151">site_pc_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
@@ -270,11 +279,11 @@ function asd() {
 	</tr>
 </table>
 
-<a name="267"></a>
-<h3><img src="../image/icons/pkey.gif">  pc_potree_site_id</h3>
+<a name="273"></a>
+<h3><img src="../image/icons/pkey.gif">  osg_site_background_pc_id</h3>
 
 <dl>
-	<dd>pc_potree_site_id
+	<dd>osg_site_background_pc_id
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -291,7 +300,7 @@ function asd() {
 <p>
 
 <hr>
-<a name="255"></a>
+<a name="256"></a>
 <h3> <img src="../image/icons/foreign_key.gif"> site_pc_id</h3>
 
 <dl>
@@ -312,17 +321,17 @@ function asd() {
 <p>
 
 <hr>
-<a name="268"></a>
-<h3>  asb_path</h3>
+<a name="274"></a>
+<h3>  abs_path</h3>
 
 <dl>
-	<dd>asb_path
+	<dd>abs_path
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
 		<dt><b>Type : </b>text<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
@@ -333,7 +342,70 @@ function asd() {
 <p>
 
 <hr>
-<a name="269"></a>
+<a name="275"></a>
+<h3>  offset_x</h3>
+
+<dl>
+	<dd>offset_x
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="276"></a>
+<h3>  offset_y</h3>
+
+<dl>
+	<dd>offset_y
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="277"></a>
+<h3>  offset_z</h3>
+
+<dl>
+	<dd>offset_z
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="278"></a>
 <h3>  last_mod</h3>
 
 <dl>
@@ -354,7 +426,7 @@ function asd() {
 <p>
 
 <hr>
-<a name="270"></a>
+<a name="279"></a>
 <h3>  last_check</h3>
 
 <dl>
@@ -366,48 +438,6 @@ function asd() {
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>FALSE<br></dt>
 		<dt><b>Type : </b>int<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="271"></a>
-<h3>  number_levels</h3>
-
-<dl>
-	<dd>number_levels
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>int<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="272"></a>
-<h3>  spacing</h3>
-
-<dl>
-	<dd>spacing
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>float<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>
