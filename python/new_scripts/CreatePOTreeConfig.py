@@ -113,22 +113,101 @@ def create_fixed_json_fields():
     jsonData["type"] = "FeatureCollection"
     jsonData["crs"] = {} 
     
+#    # coordinate system
+#    coord_system = {}
+#    coord_system["type"] = "name"
+#    crs_props={}
+#    # crs_props["name"] = "urn:ogc:def:crs:EPSG::32633" - original line
+#    #crs_props["name"] = "urn:ogc:def:crs:EPSG::" - get this from the geometry!
+#    coord_system["properties"]=crs_props 
+#    jsonData["crs"] = coord_system
+    
+    msg = 'Created fixed JSON file parts.'
+    print(msg)
+    logging.debug(msg)
+#    pretty_json = json.dumps(jsonData, indent=4, separators=(',', ': '))
+#    print(pretty_json)
+#    logging.debug(pretty_json)
+
+def create_features_json(cursor, pc_ids):
+    global jsonData
+    
+       # features per sites
+    featuresList = []
+    
+    for pc in pc_ids:
+        
+        # initialize the features data structure        
+        siteFeaturesDict = {}
+        
+        siteFeaturesDict["type"] = "Feature"
+        siteFeaturesDict["geometry"]={}
+        (siteId,) = pc       
+        siteFeaturesDict["id"] = siteId
+        siteFeaturesDict["properties"]={}
+        siteFeaturesDict["bbox"]=""
+        
+        properties={}
+        properties["pointcloud"]=""
+        properties["description"]=""
+        properties["thumbnail"]=""
+        properties["site_context"]=""
+        properties["site_interpretation"]=""
+        properties["condition"]=""
+        
+        # fetch the BBox from the DB
+        cursor.execute('select minx, miny, minz, maxx, maxy, maxz from site_pc where site_pc_id = %s', [siteId,])
+        if (cursor.rowcount >0):
+            (minx, miny, minz, maxx, maxy, maxz) = cursor.fetchone()
+        siteFeaturesDict["bbox"] = [minx, miny, minz, maxx, maxy, maxz]
+        
+        # fetch the geometry of the site from the DB
+        cursor.execute('select st_asgeojson(geom::geometry) from site_pc where site_pc_id = %s', [siteId,])  
+        if (cursor.rowcount >0):
+            geometry = cursor.fetchone()[0]
+            siteFeaturesDict["geometry"] = json.loads(geometry)
+        
+            #crs_props["name"] = "urn:ogc:def:crs:EPSG::" - get this from the geometry!
+        
+#        # fetch the properties of the site from the DB 
+#        cursor.execute('select js_path from pc_converted_file, site_pc where (pc_converted_file.pc_id= site_pc.pc_id) and (site_id = %s)', [siteId,])
+#        if (cursor.rowcount >0):
+#            properties["pointcloud"] = cursor.fetchone()[0]
+#        
+        cursor.execute('select description_site, site_context, site_interpretation from tbl1_site where site_id = %s', [siteId,])
+        if (cursor.rowcount >0):
+            (description, context, interpretation) = cursor.fetchone()
+            properties["description"] = description
+            properties["site_context"] = context
+            properties["site_interpretation"] = interpretation
+        
+#        
+#        cursor.execute('select pic_path from site_picture where site_id = %s and thumbnail=True', [siteId,])
+#        if (cursor.rowcount >0):
+#            properties["thumbnail"]=cursor.fetchone()[0]
+        
+        siteFeaturesDict["properties"]=properties
+        
+        # add to the features
+        featuresList.append(siteFeaturesDict)
+        
+    jsonData["features"] = featuresList 
+
+
     # coordinate system
     coord_system = {}
     coord_system["type"] = "name"
     crs_props={}
-    # crs_props["name"] = "urn:ogc:def:crs:EPSG::32633" - original line
-    crs_props["name"] = "urn:ogc:def:crs:EPSG::"
+    crs_props["name"] = "urn:ogc:def:crs:EPSG::" # get this from the geometry above!     
     coord_system["properties"]=crs_props 
     jsonData["crs"] = coord_system
-    
-    msg = 'Created fixed JSON file parts'
+     
+    msg = 'Created the features in JSON format.'
     print(msg)
     logging.debug(msg)
     pretty_json = json.dumps(jsonData, indent=4, separators=(',', ': '))
     print(pretty_json)
-    logging.debug(pretty_json)
-
+    logging.debug(pretty_json)    
     
 def save2JSON(args):
     global jsonData
@@ -160,6 +239,9 @@ def run(args):
     # generate the generic JSON file parts
     create_fixed_json_fields()
     
+    # generate the features in JSON format
+    create_features_json(cursor, pc_ids)
+    
     # close the Db connection
     close_db_connection(cursor)    
 
@@ -178,68 +260,6 @@ def run(args):
     logging.info(msg)
     
     return    
-            
-    # features per sites
-    featuresList = []
-    
-    for pc in pc_ids:
-        
-        # initialize the features data structure        
-        siteFeaturesDict = {}
-        
-        siteFeaturesDict["type"] = "Feature"
-        siteFeaturesDict["geometry"]={}
-        (siteId,) = pc       
-        siteFeaturesDict["id"] = siteId
-        siteFeaturesDict["properties"]={}
-        siteFeaturesDict["bbox"]=""
-        
-        properties={}
-        properties["pointcloud"]=""
-        properties["description"]=""
-        properties["thumbnail"]=""
-        properties["site_context"]=""
-        properties["site_interpretation"]=""
-        properties["condition"]=""
-        
-        # fetch the BBox from the DB
-        cursor.execute('select minx, miny, minz, maxx, maxy, maxz from pc, site_pc where pc.pc_id = site_pc.pc_id and site_id = %s', [siteId,])
-        if (cursor.rowcount >0):
-            (minx, miny, minz, maxx, maxy, maxz) = cursor.fetchone()
-        siteFeaturesDict["bbox"] = [minx, miny, minz, maxx, maxy, maxz]
-        
-        # fetch the geometry of the site from the DB
-        cursor.execute('select st_asgeojson(geom::geometry) from site where site_id = %s', [siteId,])  
-        if (cursor.rowcount >0):
-            geometry = cursor.fetchone()[0]
-            siteFeaturesDict["geometry"] = json.loads(geometry)
-        # fetch the properties of the site from the DB 
-        cursor.execute('select js_path from pc_converted_file, site_pc where (pc_converted_file.pc_id= site_pc.pc_id) and (site_id = %s)', [siteId,])
-        if (cursor.rowcount >0):
-            properties["pointcloud"] = cursor.fetchone()[0]
-        
-        cursor.execute('select description_site, site_context, site_interpretation from tbl1_site where site_id = %s', [siteId,])
-        if (cursor.rowcount >0):
-            (description, context, interpretation) = cursor.fetchone()
-            properties["description"] = description
-            properties["site_context"] = context
-            properties["site_interpretation"] = interpretation
-        
-        
-        cursor.execute('select pic_path from site_picture where site_id = %s and thumbnail=True', [siteId,])
-        if (cursor.rowcount >0):
-            properties["thumbnail"]=cursor.fetchone()[0]
-        
-        siteFeaturesDict["properties"]=properties
-        
-        # add to the features
-        featuresList.append(siteFeaturesDict)
-        
-    jsonData["features"] = featuresList      
-   
-    
-
-
 
 if __name__ == '__main__':
     run( apply_argument_parser() )
