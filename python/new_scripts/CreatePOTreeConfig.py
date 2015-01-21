@@ -130,6 +130,15 @@ def create_fixed_json_fields():
     logging.debug(pretty_json)
 
     
+def save2JSON(args):
+    global jsonData
+    
+    with open(args.output, 'w') as outfile:
+        pretty_json = json.dumps(jsonData, indent=4, separators=(',', ': '))
+        outfile.write(pretty_json)
+    msg = 'JSON data written to the output file.'
+    print(msg)
+    logging.debug(msg)
 #------------------------------------------------------------------------------        
 def run(args):    
     
@@ -153,7 +162,15 @@ def run(args):
     
     # close the Db connection
     close_db_connection(cursor)    
+
+    # save the data into JSON file
+    save2JSON(args)
     
+    elapsed_time = time.time() - t0    
+    msg = 'Finished. Total elapsed time: %s s.' %elapsed_time
+    print(msg)
+    logging.info(msg)
+
     # end logging
     localtime = time.asctime( time.localtime(time.time()) )   
     msg = 'CreatePOTreeConfig script logging end at %s'% localtime
@@ -221,14 +238,6 @@ def run(args):
     jsonData["features"] = featuresList      
    
     
-
-    
-    # save the data into JSON file
-    with open(args.output, 'w') as outfile:
-        pretty_json = json.dumps(jsonData, indent=4, separators=(',', ': '))
-        outfile.write(pretty_json)
-    
-    print 'Finished!. Total time ', time.time() - t0
 
 
 
