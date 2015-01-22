@@ -127,6 +127,11 @@ def define_create_target_dir(opts, logger):
     # check if TARGETDIR exists, create otherwise
     if not os.path.isdir(TARGETDIR):
         os.makedirs(TARGETDIR)  # create directories recursively
+    else:
+        # Raise error if TARGETDIR exists
+        # REMOVE/RECREATE to overwrite in future?
+        logger.error(TARGETDIR + ' already exists, exiting.')
+        raise IOError(TARGETDIR + ' already exists, exiting.')
     logger.info('Finished creating target directory '+TARGETDIR)
     return TARGETDIR
 
