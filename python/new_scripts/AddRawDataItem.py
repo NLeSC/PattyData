@@ -199,7 +199,7 @@ if __name__ == "__main__":
     requiredNamed.add_argument('-f', '--file', action='store',
                                help='Input file/directory name to copy',
                                required=True)
-    requiredNamedPCMESH.add_argument('--verrecno', action='store',
+    requiredNamedPCMESH.add_argument('--verrecno', action='store', type=int,
                                      help='Version or reconstruction number')
     requiredNamedMESHPIC.add_argument('-p', '--period', action='store',
                                       help='Period (choose from ' +
@@ -213,11 +213,9 @@ if __name__ == "__main__":
                         choices=['debug', 'info', 'error'],
                         default=utils.DEFAULT_LOG_LEVEL)
     requiredNamedSITE.add_argument('--siteno', action='store',
-                                   help='Site number')
+                                   type=int, help='Site number')
     # extract user entered arguments
     opts = parser.parse_args()
-
-    opts.data = "/home/ronald/pattytest/RAW"  # tmp, remove this line later
 
     # run main
     main(opts)
