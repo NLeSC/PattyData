@@ -84,7 +84,8 @@ def fetch_data_from_db(cursor):
     sql_statement = 'select distinct site_pc_id from potree_site_pc'
     
     try:
-        cursor.execute(sql_statement)
+        #cursor.execute(sql_statement)
+        utils.dbExecute(cursor, sql_statement, None, True)
     except Exception, E:
         err_msg = "Cannot execute the SQL query: %s" % sql_statement
         print(err_msg)

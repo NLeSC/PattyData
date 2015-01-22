@@ -4,6 +4,7 @@
 #    o.rubi@esciencecenter.nl                                                  #
 ################################################################################
 import os, subprocess, time, calendar, logging
+import psycopg2
 
 # Python Module containing methods used in other scripts
 PROPERTIES = {'administrator':('initials', 'list_participants'),
@@ -38,6 +39,19 @@ DEFAULT_BACKGROUND_FOLDER = DEFAULT_RAW_DATA_FOLDER + 'PC/BACKGROUND/' + DEFAULT
 SRID = 32633
 DEFAULT_CAMERA_PREFIX = 'DEF_CAM_'
 USER_CAMERA = 'SITE_'
+
+# Folder tags for the file structure
+RAW_FT = 'RAW'
+OSG_FT = 'OSG'
+POT_FT = 'POTREE'
+PC_FT = 'PC'
+MESH_FT = 'MESH'
+PIC_FT = 'PICT'
+BG_FT = 'BACK'
+SITE_FT = 'SITE'
+CURR_FT = 'CURR'
+ARCREC_FT = 'ARCH_REC'
+HIST_FT = 'HIST'
 
 def getLastModification(absPath, initialLMTime = None):
     """
@@ -103,6 +117,27 @@ def postgresConnectString(dbName = None, userName= None, password = None, dbHost
             connString += " port=" + dbPort
     return connString
 
+def connectToDB(dbName = None, userName= None, password = None, dbHost = None, dbPort = None):
+     
+    # Start DB connection
+    try: 
+        connection = psycopg2.connect(postgresConnectString(dbName, userName, password, dbHost, dbPort, False))
+        
+    except Exception, E:
+        err_msg = 'Cannot connect to %s DB.'% dbName
+        print(err_msg)
+        logging.error((err_msg, "; %s: %s" % (E.__class__.__name__, E)))
+        raise
+        
+    msg = 'Succesful connection to %s DB.'%dbName
+    print msg
+    logging.debug(msg)
+    
+    # if the connection succeeded get a cursor    
+    cursor = connection.cursor()
+        
+    return connection, cursor
+    
 def dbExecute(cursor, query, queryArgs = None, mogrify = True):
     if queryArgs == None:
         if mogrify:
@@ -113,23 +148,6 @@ def dbExecute(cursor, query, queryArgs = None, mogrify = True):
             logging.debug(cursor.mogrify(query, queryArgs))
         cursor.execute(query, queryArgs)
     cursor.connection.commit()
-    
-def getLASParams(inputFile):
-    (count, minX, minY, minZ, maxX, maxY, maxZ, scaleX, scaleY, scaleZ, offsetX, offsetY, offsetZ) = (None, None, None, None, None, None, None, None, None, None, None, None, None )
-    outputLASInfo = subprocess.Popen('lasinfo -i ' + inputFile  + ' -nc -nv -nco -merged', shell = True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-    for line in outputLASInfo[1].split('\n'):
-        if line.count('min x y z:'):
-            [minX, minY, minZ] = line.split(':')[-1].strip().split(' ')
-        elif line.count('max x y z:'):
-            [maxX, maxY, maxZ] = line.split(':')[-1].strip().split(' ')
-        elif line.count('number of point records:'):
-            count = line.split(':')[-1].strip()
-        elif line.count('scale factor x y z:'):
-            [scaleX, scaleY, scaleZ] = line.split(':')[-1].strip().split(' ')
-        elif line.count('offset x y z:'):
-            [offsetX, offsetY, offsetZ] = line.split(':')[-1].strip().split(' ')
-
-    return (count, minX, minY, minZ, maxX, maxY, maxZ, scaleX, scaleY, scaleZ, offsetX, offsetY, offsetZ)
 
 def getPositionFromFootprint(cursor, siteId, rawDataPath):
     bgFolder = os.path.abspath(os.path.join(rawDataPath, DEFAULT_BACKGROUND))
