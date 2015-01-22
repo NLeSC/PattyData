@@ -34,6 +34,7 @@ def argument_parser():
     parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=True)
     parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=True)
     parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
+    parser.add_argument('-l','--location',default='',help='POTree root directory location',type=str, required=False)
     
     return parser
     
@@ -129,8 +130,10 @@ def create_fixed_json_fields():
 #    print(pretty_json)
 #    logging.debug(pretty_json)
 
-def create_features_json(cursor, pc_ids):
+def create_features_json(cursor, pc_ids, args):
     global jsonData
+    
+    relative_to_path = args.location
     
        # features per sites
     featuresList = []
@@ -162,18 +165,25 @@ def create_features_json(cursor, pc_ids):
         siteFeaturesDict["bbox"] = [minx, miny, minz, maxx, maxy, maxz]
         
         # fetch the geometry of the site from the DB
-        cursor.execute('select st_asgeojson(geom::geometry) from site_pc where site_pc_id = %s', [siteId,])  
+        cursor.execute('select st_asgeojson(geom::geometry,15,4) from site_pc where site_pc_id = %s', [siteId,])  
         if (cursor.rowcount >0):
-            geometry = cursor.fetchone()[0]
-            siteFeaturesDict["geometry"] = json.loads(geometry)
+            data = cursor.fetchone()[0]
+            json_data = json.loads(data)
+            json_data_crs = json_data['crs'];
+            json_data_geometry= dict(json_data)
+            json_data_geometry.pop('crs')
         
-            #crs_props["name"] = "urn:ogc:def:crs:EPSG::" - get this from the geometry!
         
-#        # fetch the properties of the site from the DB 
-#        cursor.execute('select js_path from pc_converted_file, site_pc where (pc_converted_file.pc_id= site_pc.pc_id) and (site_id = %s)', [siteId,])
-#        if (cursor.rowcount >0):
-#            properties["pointcloud"] = cursor.fetchone()[0]
-#        
+            siteFeaturesDict["geometry"] = json_data_geometry
+            siteFeaturesDict["crs"] = json_data_crs
+        
+        # fetch the properties of the site from the DB 
+        cursor.execute('select abs_path from site_data_item, site_pc where (site_data_item.site_id= site_pc.site_pc_id) and (site_id = %s)', [siteId,])
+        if (cursor.rowcount >0):
+             abs_path =  cursor.fetchone()[0]
+             rel_path = abs_path.replace(relative_to_path,'')
+             properties["pointcloud"] = rel_path
+        
         cursor.execute('select description_site, site_context, site_interpretation from tbl1_site where site_id = %s', [siteId,])
         if (cursor.rowcount >0):
             (description, context, interpretation) = cursor.fetchone()
@@ -181,10 +191,13 @@ def create_features_json(cursor, pc_ids):
             properties["site_context"] = context
             properties["site_interpretation"] = interpretation
         
-#        
-#        cursor.execute('select pic_path from site_picture where site_id = %s and thumbnail=True', [siteId,])
-#        if (cursor.rowcount >0):
-#            properties["thumbnail"]=cursor.fetchone()[0]
+        
+        cursor.execute('select abs_path from site_picture, site_data_item where (site_data_item.site_id= site_picture.site_picture_id)  and site_id = %s and thumbnail=True', [siteId,])
+        if (cursor.rowcount >0):
+             abs_path =  cursor.fetchone()[0]
+             rel_path = abs_path.replace(relative_to_path,'')
+             properties["thumbnail"] = rel_path
+
         
         siteFeaturesDict["properties"]=properties
         
@@ -195,12 +208,12 @@ def create_features_json(cursor, pc_ids):
 
 
     # coordinate system
-    coord_system = {}
-    coord_system["type"] = "name"
-    crs_props={}
-    crs_props["name"] = "urn:ogc:def:crs:EPSG::" # get this from the geometry above!     
-    coord_system["properties"]=crs_props 
-    jsonData["crs"] = coord_system
+#    coord_system = {}
+#    coord_system["type"] = "name"
+#    crs_props={}
+#    crs_props["name"] = "urn:ogc:def:crs:EPSG::" # get this from the geometry above!     
+#    coord_system["properties"]=crs_props 
+#    jsonData["crs"] = coord_system
      
     msg = 'Created the features in JSON format.'
     print(msg)
@@ -240,7 +253,7 @@ def run(args):
     create_fixed_json_fields()
     
     # generate the features in JSON format
-    create_features_json(cursor, pc_ids)
+    create_features_json(cursor, pc_ids, args)
     
     # close the Db connection
     close_db_connection(cursor)    
