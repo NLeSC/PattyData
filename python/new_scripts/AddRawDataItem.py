@@ -1,6 +1,13 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
-# TODO: Add logging
+################################################################################
+# Description: Script to add new data item to RAW data structure
+# Author: Ronald van Haren, NLeSC, r.vanharen@esciencecenter.nl
+# Creation date: 21.01.2015
+# Modification date:
+# Modifications:
+# Notes:
+################################################################################
 
 import optparse, re, os, shutil, logging, argparse
 import utils
@@ -25,7 +32,7 @@ def check_required_options(opts,logger):
   if ( opts.type == "MESH" ): # MESHES should have a period defined
     if not ( opts.period=="CURR" or opts.period=="HIST" ):
       logger.error("[ERROR] Period should be 'CURR' or 'HIST'")
-      parser.error("Period should be 'CURR' or 'HIST'")
+      parser.error("Period should be 'CURR' odr 'HIST'")
   elif ( opts.type == "PICT" ): # PICTURES should have a period defined
     if not ( opts.period=="CURR" or opts.period=="ARCH_REC" ):
       logger.error("[ERROR] Period should be 'CURR' or 'ARCH_REC' (--period)")
@@ -137,8 +144,8 @@ def main(opts):
   copy_data(opts,TARGETDIR,logger)
   
 if __name__ == "__main__":
-  description = "Add Raw data item to the file structure."
-  
+  # define argument menu
+  description = "Add Raw data item to the file structure." 
   parser = argparse.ArgumentParser(description=description)
   # create argument groups
   requiredNamed = parser.add_argument_group('required arguments') # create a group of required arguments
