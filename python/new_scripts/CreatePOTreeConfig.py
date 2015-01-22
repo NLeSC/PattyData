@@ -10,7 +10,6 @@
 ################################################################################
 import argparse
 import json
-import psycopg2 as pcpg2
 import utils
 import logging
 
@@ -19,14 +18,13 @@ LOG_FILENAME = 'CreatePOTreeConfig.log'
 
 # Global variables
 jsonData ={}
-connection= None
 
 def argument_parser():
     """ Define the arguments and return the parser object"""
     parser = argparse.ArgumentParser(
     description="Script to generate JSON file for a Point Cloud (PC) visualization from the (ViaAppia) database")
     parser.add_argument('-o','--output',help='Output JSON file',type=str, required=True)
-    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name where the PC data are stored [default ' + utils.DEFAULT_DB + ']',type=str , required=True)
+    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name where the PC data are stored [default ' + utils.DEFAULT_DB + ']',type=str , required=False)
     parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=True)
     parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=True)
     parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=True)
@@ -44,67 +42,7 @@ def apply_argument_parser(options=None):
         args = parser.parse_args()    
     return args
 
-def connect_to_db(args):
-    global connection 
     
-    # Start DB connection
-    try: 
-        connection = pcpg2.connect(utils.postgresConnectString(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport, False))
-        
-    except Exception, E:
-        err_msg = 'Cannot connect to %s DB.'% args.dbname
-        print(err_msg)
-        logging.error((err_msg, "; %s: %s" % (E.__class__.__name__, E)))
-        raise
-        
-    msg = 'Succesful connection to %s DB.'%args.dbname
-    print msg
-    logging.debug(msg)
-    
-    # if the connection succeeded get a cursor    
-    cursor = connection.cursor()
-        
-    return cursor
-    
-def close_db_connection(cursor):
-    global connection 
-    
-    cursor.close()
-    connection.close()    
-    
-    msg = 'Connection to the DB is closed.'
-    print msg
-    logging.debug(msg)
-    
-    return
-
-def fetch_data_from_db(cursor):
-    
-    # get all sites for which there are converted PCes with the POTree converter
-    sql_statement = 'select distinct site_pc_id from potree_site_pc'
-    
-    try:
-        #cursor.execute(sql_statement)
-        utils.dbExecute(cursor, sql_statement, None, True)
-    except Exception, E:
-        err_msg = "Cannot execute the SQL query: %s" % sql_statement
-        print(err_msg)
-        logging.error((err_msg, "; %s: %s" % (E.__class__.__name__, E)))
-        raise
-    
-    pc_ids = cursor.fetchall()
-    
-    num_sites = cursor.rowcount
-    msg = 'Retrived information for %s sites.'%num_sites
-    print msg
-    logging.debug(msg)
-
-    if num_sites > 0:    
-        print 'Sites: '
-        for pcid in pc_ids:
-            print pcid                
-    return pc_ids
-
 def create_fixed_json_fields():
     global jsonData
     
@@ -243,10 +181,11 @@ def run(args):
     t0 = utils.getCurrentTime()
        
     # connect to DB and get a cursor   
-    cursor = connect_to_db(args)
+    connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbhost)
         
     # get all sites for which we have converted Point Clouds (PCs)        
-    pc_ids = fetch_data_from_db(cursor)
+    sql_statement = 'select distinct site_pc_id from potree_site_pc'        
+    pc_ids, num_pc_ids = utils.fetchDataFromDB(cursor, sql_statement)
     
     # generate the generic JSON file parts
     create_fixed_json_fields()
@@ -255,7 +194,7 @@ def run(args):
     create_features_json(cursor, pc_ids, args)
     
     # close the Db connection
-    close_db_connection(cursor)    
+    utils.closeConnectionDB(connection,cursor)    
 
     # save the data into JSON file
     save2JSON(args)
