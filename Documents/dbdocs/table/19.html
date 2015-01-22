@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>SITE_DATA_ITEM</title>
+		<title>RAW_DATA_ITEM</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="SITE_DATA_ITEM";
+	parent.document.title="RAW_DATA_ITEM";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   SITE_DATA_ITEM</h2>
+		<h2>Table   RAW_DATA_ITEM</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>SITE_DATA_ITEM<br><br></dd>
+		<dd>RAW_DATA_ITEM<br><br></dd>
 </dl>
 
 <dl>
@@ -103,8 +103,8 @@ function asd() {
 	<tr>
 	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#218">site_data_item_id</a>&nbsp;</td>
-	<td>site_data_item_id&nbsp;</td>
+	<td><a href="#218">raw_data_item_id</a>&nbsp;</td>
+	<td>raw_data_item_id&nbsp;</td>
 	<td>serial&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
@@ -112,8 +112,8 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#221">site_id</a>&nbsp;</td>
-	<td>site_id&nbsp;</td>
+	<td><a href="#221">item_id</a>&nbsp;</td>
+	<td>item_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
@@ -168,9 +168,9 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#221">site_id&nbsp;</a></td>
-	<td><a href="../table/12.html">SITE&nbsp;</a></td>
-	<td><a href="../table/12.html#163">site_id&nbsp;</a></td>
+	<td><a href="#221">item_id&nbsp;</a></td>
+	<td><a href="../table/12.html">ITEM&nbsp;</a></td>
+	<td><a href="../table/12.html#163">item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
@@ -198,27 +198,27 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#218">site_data_item_id&nbsp;</a></td>
-	<td><a href="../table/16.html">SITE_PC&nbsp;</a></td>
-	<td><a href="../table/16.html#151">site_pc_id&nbsp;</a></td>
+	<td><a href="#218">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/16.html">RAW_DATA_ITEM_PC&nbsp;</a></td>
+	<td><a href="../table/16.html#151">raw_data_item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 </tr>
 <tr>
-	<td><a href="#218">site_data_item_id&nbsp;</a></td>
-	<td><a href="../table/11.html">SITE_PICTURE&nbsp;</a></td>
-	<td><a href="../table/11.html#154">site_picture_id&nbsp;</a></td>
+	<td><a href="#218">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/20.html">RAW_DATA_ITEM_MESH&nbsp;</a></td>
+	<td><a href="../table/20.html#157">raw_data_item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 </tr>
 <tr>
-	<td><a href="#218">site_data_item_id&nbsp;</a></td>
-	<td><a href="../table/20.html">SITE_MESH&nbsp;</a></td>
-	<td><a href="../table/20.html#157">site_mesh_id&nbsp;</a></td>
+	<td><a href="#218">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/11.html">RAW_DATA_ITEM_PICTURE&nbsp;</a></td>
+	<td><a href="../table/11.html#154">raw_data_item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
@@ -280,10 +280,10 @@ function asd() {
 </table>
 
 <a name="218"></a>
-<h3><img src="../image/icons/pkey.gif">  site_data_item_id</h3>
+<h3><img src="../image/icons/pkey.gif">  raw_data_item_id</h3>
 
 <dl>
-	<dd>site_data_item_id
+	<dd>raw_data_item_id
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -301,10 +301,10 @@ function asd() {
 
 <hr>
 <a name="221"></a>
-<h3> <img src="../image/icons/foreign_key.gif"> site_id</h3>
+<h3> <img src="../image/icons/foreign_key.gif"> item_id</h3>
 
 <dl>
-	<dd>site_id
+	<dd>item_id
 	<p>
 	<dd><pre></pre>
 	<p>
