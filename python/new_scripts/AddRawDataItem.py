@@ -77,11 +77,11 @@ def define_create_target_dir(opts,logger):
 	logger.error('Alignment background does not exist: ' + os.path.splitext(os.path.basename(opts.aligned))[0])
 	raise IOError('Alignment background does not exist: ' + os.path.splitext(os.path.basename(opts.aligned))[0])
     if ( opts.eight and opts.aligned ):
-      al8bit = "_ALIGNED_"+opts.aligned+"_8BC" # modify this to include background alignement is to
+      al8bit = "_ALIGNED_"+opts.aligned+"_8BC"
     elif ( opts.eight and not opts.aligned ):
       al8bit = "_8BC"
     elif ( opts.aligned and not opts.eight ):
-      al8bit = "_ALIGNED_"+opts.aligned # modify this to include background alignment is to      
+      al8bit = "_ALIGNED_"+opts.aligned  
     else:
       al8bit = ""
     TARGETDIR = os.path.join(target_basedir,'S'+str(opts.siteno),inputname+'V'+str(opts.verrecno)+al8bit)
