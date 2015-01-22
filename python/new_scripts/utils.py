@@ -38,6 +38,7 @@ DEFAULT_BACKGROUND_FOLDER = DEFAULT_RAW_DATA_FOLDER + 'PC/BACKGROUND/' + DEFAULT
 SRID = 32633
 DEFAULT_CAMERA_PREFIX = 'DEF_CAM_'
 USER_CAMERA = 'SITE_'
+
 def getLastModification(absPath, initialLMTime = None):
     """
     Get the last modification time of the provided path. 
