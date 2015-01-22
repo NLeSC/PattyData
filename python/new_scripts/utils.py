@@ -70,7 +70,13 @@ def getCurrentTime(t = None):
     localUnixTime = UnixTime + 7200 [or 3600]
     """
     return calendar.timegm(time.localtime(t))
-
+    
+def getCurrentTimeAsAscii():
+    """ Return the current local time in ASCII. Use it if you want a prettyly 
+        formatted time
+    """    
+    return time.asctime( time.localtime(time.time()) )
+    
 def postgresConnectString(dbName = None, userName= None, password = None, dbHost = None, dbPort = None, cline = False):
     connString=''
     if cline:    
