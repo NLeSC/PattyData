@@ -8,14 +8,13 @@
 # Modifications:   
 # Notes:            Based on createjson.py from the Patty FFWD, October 2014
 ################################################################################
-import os, argparse, time
+import os, argparse
 import json
 import psycopg2 as pcpg2
-import utils 
+import utils
 import logging
 
 # CONSTANTS
-DEFAULT_DB = 'vadb' # this should be overrridden eventually by what is the the utils.py
 LOG_FILENAME = 'CreatePOTreeConfig.log'
 
 # Global variables
@@ -29,7 +28,7 @@ def argument_parser():
     parser = argparse.ArgumentParser(
     description="Script to generate JSON file for a Point Cloud (PC) visualization from the (ViaAppia) database")
     parser.add_argument('-o','--output',help='Output JSON file',type=str, required=True)
-    parser.add_argument('-d','--dbname',default=DEFAULT_DB,help='PostgreSQL DB name where the PC data are stored [default ' + DEFAULT_DB + ']',type=str , required=True)
+    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name where the PC data are stored [default ' + utils.DEFAULT_DB + ']',type=str , required=True)
     parser.add_argument('-u','--dbuser',default=username,help='DB user [default ' + username + ']',type=str, required=True)
     parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=True)
     parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=True)
@@ -236,12 +235,13 @@ def run(args):
     
     # start logging    
     logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)  
-    localtime = time.asctime( time.localtime(time.time()) )   
+    localtime = utils.getCurrentTimeAsAscii()
     msg = 'CreatePOTreeConfig scipt logging start at %s'% localtime
     print msg
     logging.info(msg)
 
-    t0 = time.time()          
+    #t0 = time.time()          
+    t0 = utils.getCurrentTime()
        
     # connect to DB and get a cursor   
     cursor = connect_to_db(args)
@@ -261,13 +261,13 @@ def run(args):
     # save the data into JSON file
     save2JSON(args)
     
-    elapsed_time = time.time() - t0    
+    elapsed_time = utils.getCurrentTime() - t0    
     msg = 'Finished. Total elapsed time: %s s.' %elapsed_time
     print(msg)
     logging.info(msg)
 
     # end logging
-    localtime = time.asctime( time.localtime(time.time()) )   
+    localtime = utils.getCurrentTimeAsAscii()  
     msg = 'CreatePOTreeConfig script logging end at %s'% localtime
     print(msg)
     logging.info(msg)
