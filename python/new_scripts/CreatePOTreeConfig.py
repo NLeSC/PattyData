@@ -21,15 +21,13 @@ LOG_FILENAME = 'CreatePOTreeConfig.log'
 jsonData ={}
 connection= None
 
-username = os.popen('whoami').read().replace('\n','')
-
 def argument_parser():
     """ Define the arguments and return the parser object"""
     parser = argparse.ArgumentParser(
     description="Script to generate JSON file for a Point Cloud (PC) visualization from the (ViaAppia) database")
     parser.add_argument('-o','--output',help='Output JSON file',type=str, required=True)
     parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name where the PC data are stored [default ' + utils.DEFAULT_DB + ']',type=str , required=True)
-    parser.add_argument('-u','--dbuser',default=username,help='DB user [default ' + username + ']',type=str, required=True)
+    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=True)
     parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=True)
     parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=True)
     parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
