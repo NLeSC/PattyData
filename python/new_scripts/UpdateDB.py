@@ -86,25 +86,25 @@ def main(opts):
     dataAbsPath = os.path.abspath(opts.data)
     
     if 'r' in opts.types:
-        processRaw(dataAbsPath + '/RAW', opts.itemtypes)
+        processRaw(dataAbsPath + '/' + RAW_FT, opts.itemtypes)
     
     if 'o' in opts.types:
-        processOSG(dataAbsPath + '/OSG', opts.itemtypes)
+        processOSG(dataAbsPath + '/' + OSG_FT, opts.itemtypes)
     
     if 'p' in opts.types:
-        processPOTree(dataAbsPath + '/POTREE', opts.itemtypes)
+        processPOTree(dataAbsPath + '/' + POT_FT, opts.itemtypes)
     
     if 'p' in opts.types:
-        cleanPOTree(dataAbsPath + '/POTREE', opts.itemtypes)
+        cleanPOTree(dataAbsPath + '/' + POT_FT, opts.itemtypes)
     
     if 'o' in opts.types:
-        cleanOSG(dataAbsPath + '/OSG', opts.itemtypes)
+        cleanOSG(dataAbsPath + '/' + OSG_FT, opts.itemtypes)
     
     if 'r' in opts.types:
-        cleanRaw(dataAbsPath + '/RAW', opts.itemtypes)
+        cleanRaw(dataAbsPath + '/' + RAW_FT, opts.itemtypes)
 
     if 'o' in opts.types:
-        os.system('touch ' + dataAbsPath + '/OSG/LAST_MOD')
+        os.system('touch ' + dataAbsPath + '/' + OSG_FT + '/LAST_MOD')
 
     cursor.close()
     coonection.close()
@@ -112,25 +112,25 @@ def main(opts):
 def processRaw(rawAbsPath, itemtypes):
     if 'p' in itemtypes:
         # Process point clouds
-        rawPCAbsPath = rawAbsPath + '/PC'
-        processRawPointCloudsBackgrounds(rawPCAbsPath + '/BACKGROUND')
-        processRawPointCloudsSites(rawPCAbsPath + '/SITES')
+        rawPCAbsPath = rawAbsPath + '/' + PC_FT
+        processRawPointCloudsBackgrounds(rawPCAbsPath + '/' + BG_FT)
+        processRawPointCloudsSites(rawPCAbsPath + '/' + SITE_FT)
         
     if 'm' in itemtypes:
         # Process meshes
-        rawMeshesAbsPath = rawAbsPath + '/MESHES'
-        processRawMeshesBackgrounds(rawMeshesAbsPath + '/BACKGROUND/CURR', True)
-        processRawMeshesBackgrounds(rawMeshesAbsPath + '/BACKGROUND/ARCH_REC', False)
-        processRawMeshesSites(rawMeshesAbsPath + '/SITES/CURR', True)
-        processRawMeshesSites(rawMeshesAbsPath + '/SITES/ARCH_REC', False)
+        rawMeshesAbsPath = rawAbsPath + '/' + MESH_FT 
+        processRawMeshesBackgrounds(rawMeshesAbsPath + '/' + BG_FT + '/' + CURR_FT , True)
+        processRawMeshesBackgrounds(rawMeshesAbsPath + '/' + BG_FT + '/' + ARCREC_FT , False)
+        processRawMeshesSites(rawMeshesAbsPath + '/' + SITE_FT + '/' + CURR_FT , True)
+        processRawMeshesSites(rawMeshesAbsPath + '/' + SITE_FT + '/' + ARCREC_FT , False)
         
     if 'i' in itemtypes:
         # Process pictures
-        rawPicturesAbsPath = rawAbsPath + '/PICTURES'
-        processRawPicturesBackgrounds(rawPicturesAbsPath + '/BACKGROUND/CURR', True)
-        processRawPicturesBackgrounds(rawPicturesAbsPath + '/BACKGROUND/HIST', False)
-        processRawPicturesSites(rawPicturesAbsPath + '/SITES/CURR', True)
-        processRawPicturesSites(rawPicturesAbsPath + '/SITES/HIST', False)
+        rawPicturesAbsPath = rawAbsPath + '/' + PIC_FT 
+        processRawPicturesBackgrounds(rawPicturesAbsPath + '/' + BG_FT + '/' + CURR_FT , True)
+        processRawPicturesBackgrounds(rawPicturesAbsPath + '/' + BG_FT + '/' + HIST_FT , False)
+        processRawPicturesSites(rawPicturesAbsPath + '/' + SITE_FT + '/' + CURR_FT , True)
+        processRawPicturesSites(rawPicturesAbsPath + '/' + SITE_FT + '/' + HIST_FT , False)
 
 def cleanRaw(rawAbsPath, itemtypes):
     if 'p' in itemtypes:
@@ -162,68 +162,30 @@ def cleanRaw(rawAbsPath, itemtypes):
                     logging.warning('Can not delete entry for removed ' + absPath + '. Related data items still there!')
     if 'm' in itemtypes:
         # Clean meshes
-        rawMeshesAbsPath = rawAbsPath + '/MESHES'
+        rawMeshesAbsPath = rawAbsPath + '/' + MESH_FT 
         
     if 'i' in itemtypes:
         # Clean pictures
-        rawPicturesAbsPath = rawAbsPath + '/PICTURES'
+        rawPicturesAbsPath = rawAbsPath + '/' + PIC_FT 
 
-def processRawPointCloudsBackgrounds(bgRawPCAbsPath):
+def processRawPointCloudsBackgrounds(absPath):
     t0 = time.time()
-    logging.info('Processing raw point cloud backgrounds in ' + bgRawPCAbsPath)
-    backgrounds = os.listdir(bgRawPCAbsPath)
+    logging.info('Processing raw point cloud backgrounds in ' + absPath)
+    backgrounds = os.listdir(absPath)
     for background in backgrounds:
-        backgroundAbsPath = bgRawPCAbsPath + '/' + background
-        modTime = utils.getCurrentTime(utils.getLastModification(backgroundAbsPath))
-        utils.dbExecute(cursor, 'SELECT site_data_item_id, last_mod FROM SITE_DATA_ITEM WHERE abs_path = %s', [backgroundAbsPath,])
-        row = cursor.fetchone()
-        if row == None: #This folder has been added recently
-            utils.dbExecute(cursor, "INSERT INTO SITE_DATA_ITEM (site_data_item_id, site_id, abs_path, last_mod, last_check) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING site_data_item_id", 
-                            [SITE_BACKGROUND_ID, backgroundAbsPath, modTime, initialTime])
-            siteDataItemId = cursor.fetchone()[0]
-            (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit) = readLASInfo(backgroundAbsPath)        
-            utils.dbExecute(cursor, "INSERT INTO SITE_PC (site_pc_id, srid, number_points, extension, minx, miny, minz, maxx, maxy, maxz, color_8bit) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
-                            [siteDataItemId, srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit])
-        else:
-            (siteDataItemId, lastModDB) = row
-            if modTime > lastModDB: #Data has changed
-                utils.dbExecute(cursor, 'UPDATE SITE_DATA_ITEM SET (last_mod, last_check) = (%s, %s) WHERE site_data_item_id = %s', [modTime, initialTime, siteDataItemId])
-                (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit) = readLASInfo(backgroundAbsPath)        
-                utils.dbExecute(cursor, "UPDATE SITE_PC SET (srid, number_points, extension, minx, miny, minz, maxx, maxy, maxz, color_8bit) = (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
-                            [srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit])
-            else: # Data has not changed
-                utils.dbExecute(cursor, 'UPDATE SITE_DATA_ITEM SET last_check=%s WHERE site_data_item_id = %s', [initialTime, siteDataItemId])
+        addRawPointCloud(absPath + '/' + background, SITE_BACKGROUND_ID)
     logging.info('Raw point cloud backgrounds processing finished in %.2f' % (time.time() - t0))
     
-def processRawPointCloudsSites(sRawAbsPath):
+def processRawPointCloudsSites(absPath):
     t0 = time.time()
-    logging.info('Processing raw point cloud sites in ' + sRawAbsPath)
-    sites = os.listdir(sRawAbsPath)
+    logging.info('Processing raw point cloud sites in ' + absPath)
+    sites = os.listdir(absPath)
     for site in sites:
         siteId = int(site.replace('S',''))
-        siteAbsPath = sRawAbsPath + '/' + site
+        siteAbsPath = absPath + '/' + site
         sitePCs = os.listdir(siteAbsPath)
         for sitePC in sitePCs:
-            sitePCAbsPath = siteAbsPath + '/' + sitePC
-            modTime = utils.getCurrentTime(utils.getLastModification(sitePCAbsPath))
-            utils.dbExecute(cursor, 'SELECT site_data_item_id, last_mod FROM SITE_DATA_ITEM WHERE abs_path = %s', [sitePCAbsPath,])
-            row = cursor.fetchone()
-            if row == None: #This folder has been added recently
-                utils.dbExecute(cursor, "INSERT INTO SITE_DATA_ITEM (site_data_item_id, site_id, abs_path, last_mod, last_check) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING site_data_item_id", 
-                                [SITE_BACKGROUND_ID, backgroundAbsPath, modTime, initialTime])
-                siteDataItemId = cursor.fetchone()[0]
-                (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit) = readLASInfo(backgroundAbsPath)        
-                utils.dbExecute(cursor, "INSERT INTO SITE_PC (site_pc_id, srid, number_points, extension, minx, miny, minz, maxx, maxy, maxz, color_8bit) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
-                                [siteDataItemId, srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit])
-            else:
-                (siteDataItemId, lastModDB) = row
-                if modTime > lastModDB: #Data has changed
-                    utils.dbExecute(cursor, 'UPDATE SITE_DATA_ITEM SET (last_mod, last_check) = (%s, %s) WHERE site_data_item_id = %s', [modTime, initialTime, siteDataItemId])
-                    (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit) = readLASInfo(backgroundAbsPath)        
-                    utils.dbExecute(cursor, "UPDATE SITE_PC SET (srid, number_points, extension, minx, miny, minz, maxx, maxy, maxz, color_8bit) = (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
-                                [srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit])
-                else: # Data has not changed
-                    utils.dbExecute(cursor, 'UPDATE SITE_DATA_ITEM SET last_check=%s WHERE site_data_item_id = %s', [initialTime, siteDataItemId])
+            addRawPointCloud(siteAbsPath + '/' + sitePC, siteId)
     logging.info('Raw point cloud backgrounds processing finished in %.2f' % (time.time() - t0))
 
 def addRawPointCloud(pcAbsPath, siteId):
@@ -238,8 +200,15 @@ def addRawPointCloud(pcAbsPath, siteId):
         utils.dbExecute(cursor, "INSERT INTO SITE_PC (site_pc_id, srid, number_points, extension, minx, miny, minz, maxx, maxy, maxz, color_8bit) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
                         [siteDataItemId, srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit])
         if aligned:
-            backgroundPath = dataAbsPath + '/RAW/PC/BACK' + backgroundAligned
-            utils.dbExecute(cursor, 'SELECT site_data_item_id FROM SITE_DATA_ITEM WHERE abs_path = %s', [pcAbsPath,])
+            backgroundPath = dataAbsPath + '/' + RAW_FT + '/' + PC_FT + '/' + BG_FT + '/' + backgroundAligned
+            utils.dbExecute(cursor, 'SELECT site_data_item_id FROM SITE_DATA_ITEM WHERE abs_path = %s', [backgroundPath,])
+            row = cursor.fetchone()
+            if row == None:
+                logging.error('Specified background in alignment of ' + pcAbsPath + ' not found!')
+            else:
+                backgroundId = row[0]
+                utils.dbExecute(cursor, "INSERT INTO ALIGNED_SITE_PC (site_pc_id, site_background_pc_id) VALUES (%s,%s)", 
+                        [siteDataItemId, backgroundId])
     else:
         (siteDataItemId, lastModDB) = row
         if modTime > lastModDB: #Data has changed
@@ -251,9 +220,28 @@ def addRawPointCloud(pcAbsPath, siteId):
             utils.dbExecute(cursor, 'UPDATE SITE_DATA_ITEM SET last_check=%s WHERE site_data_item_id = %s', [initialTime, siteDataItemId])
 
 
-def processRawMeshesBackgrounds(bgRawPCAbsPath):
-    return
-def processRawMeshesSites(sRawAbsPath):
+def processRawMeshesBackgrounds(absPath, isCurrent):
+    t0 = time.time()
+    logging.info('Processing raw meshes backgrounds in ' + absPath)
+    backgrounds = os.listdir(absPath)
+    for background in backgrounds:
+        addRawMesh(absPath + '/' + background, SITE_BACKGROUND_ID)
+    logging.info('Raw meshes backgrounds processing finished in %.2f' % (time.time() - t0))
+    
+    
+def processRawMeshesSites(absPath, isCurrent):
+    t0 = time.time()
+    logging.info('Processing raw meshes sites in ' + absPath)
+    sites = os.listdir(absPath)
+    for site in sites:
+        siteId = int(site.replace('S',''))
+        siteAbsPath = absPath + '/' + site
+        sitePCs = os.listdir(siteAbsPath)
+        for sitePC in sitePCs:
+            addRawMesh(siteAbsPath + '/' + sitePC, siteId)
+    logging.info('Raw meshes backgrounds processing finished in %.2f' % (time.time() - t0))
+    
+    
     return    
 def processRawPicturesBackgrounds(bgRawPCAbsPath):
     return
@@ -263,25 +251,25 @@ def processRawPicturesSites(sRawAbsPath):
 def processOSG(rawAbsPath, itemtypes):
     if 'p' in itemtypes:
         # Process point clouds
-        osgPCAbsPath = rawAbsPath + '/PC'
-        processOSGPointCloudsBackgrounds(osgPCAbsPath + '/BACKGROUND')
-        processOSGPointCloudsSites(osgPCAbsPath + '/SITES')
+        osgPCAbsPath = rawAbsPath + '/' + PC_FT 
+        processOSGPointCloudsBackgrounds(osgPCAbsPath + '/' + BG_FT )
+        processOSGPointCloudsSites(osgPCAbsPath + '/' + SITE_FT )
         
     if 'm' in itemtypes:
         # Process meshes
-        osgMeshesAbsPath = osgAbsPath + '/MESHES'
-        processOSGMeshesBackgrounds(osgMeshesAbsPath + '/BACKGROUND/CURR', True)
-        processOSGMeshesBackgrounds(osgMeshesAbsPath + '/BACKGROUND/ARCH_REC', False)
-        processOSGMeshesSites(osgMeshesAbsPath + '/SITES/CURR', True)
-        processOSGMeshesSites(osgMeshesAbsPath + '/SITES/ARCH_REC', False)
+        osgMeshesAbsPath = osgAbsPath + '/' + MESH_FT 
+        processOSGMeshesBackgrounds(osgMeshesAbsPath + '/' + BG_FT + '/' + CURR_FT , True)
+        processOSGMeshesBackgrounds(osgMeshesAbsPath + '/' + BG_FT + '/' + ARCREC_FT , False)
+        processOSGMeshesSites(osgMeshesAbsPath + '/' + SITE_FT + '/' + CURR_FT , True)
+        processOSGMeshesSites(osgMeshesAbsPath + '/' + SITE_FT + '/' + ARCREC_FT , False)
         
     if 'i' in itemtypes:
         # Process pictures
-        osgPicturesAbsPath = osgAbsPath + '/PICTURES'
-        processOSGPicturesBackgrounds(osgPicturesAbsPath + '/BACKGROUND/CURR', True)
-        processOSGPicturesBackgrounds(osgPicturesAbsPath + '/BACKGROUND/ARCH_REC', False)
-        processOSGPicturesSites(osgPicturesAbsPath + '/SITES/CURR', True)
-        processOSGPicturesSites(osgPicturesAbsPath + '/SITES/ARCH_REC', False)
+        osgPicturesAbsPath = osgAbsPath + '/' + PIC_FT 
+        processOSGPicturesBackgrounds(osgPicturesAbsPath + '/' + BG_FT + '/' + CURR_FT , True)
+        processOSGPicturesBackgrounds(osgPicturesAbsPath + '/' + BG_FT + '/' + ARCREC_FT , False)
+        processOSGPicturesSites(osgPicturesAbsPath + '/' + SITE_FT + '/' + CURR_FT , True)
+        processOSGPicturesSites(osgPicturesAbsPath + '/' + SITE_FT + '/' + ARCREC_FT , False)
         
 def processOSGPointCloudsBackgrounds(bgOsgPCAbsPath):
     return
@@ -299,25 +287,25 @@ def processOSGPicturesSites(sOsgAbsPath):
 def processPOTree(potreeAbsPath, itemtypes):
     if 'p' in itemtypes:
         # Process point clouds
-        potreePCAbsPath = potreeAbsPath + '/PC'
-        processPOTreePointCloudsBackgrounds(potreePCAbsPath + '/BACKGROUND')
-        processPOTreePointCloudsSites(potreePCAbsPath + '/SITES')
+        potreePCAbsPath = potreeAbsPath + '/' + PC_FT 
+        processPOTreePointCloudsBackgrounds(potreePCAbsPath + '/' + BG_FT )
+        processPOTreePointCloudsSites(potreePCAbsPath + '/' + SITE_FT )
         
     if 'm' in itemtypes:
         # Process meshes
-        potreeMeshesAbsPath = potreeAbsPath + '/MESHES'
-        processPOTreeMeshesBackgrounds(potreeMeshesAbsPath + '/BACKGROUND/CURR', True)
-        processPOTreeMeshesBackgrounds(potreeMeshesAbsPath + '/BACKGROUND/ARCH_REC', False)
-        processPOTreeMeshesSites(potreeMeshesAbsPath + '/SITES/CURR', True)
-        processPOTreeMeshesSites(potreeMeshesAbsPath + '/SITES/ARCH_REC', False)
+        potreeMeshesAbsPath = potreeAbsPath + '/' + MESH_FT 
+        processPOTreeMeshesBackgrounds(potreeMeshesAbsPath + '/' + BG_FT + '/' + CURR_FT , True)
+        processPOTreeMeshesBackgrounds(potreeMeshesAbsPath + '/' + BG_FT + '/' + ARCREC_FT , False)
+        processPOTreeMeshesSites(potreeMeshesAbsPath + '/' + SITE_FT + '/' + CURR_FT , True)
+        processPOTreeMeshesSites(potreeMeshesAbsPath + '/' + SITE_FT + '/' + ARCREC_FT , False)
         
     if 'i' in itemtypes:
         # Process pictures
-        potreePicturesAbsPath = potreeAbsPath + '/PICTURES'
-        processPOTreePicturesBackgrounds(potreePicturesAbsPath + '/BACKGROUND/CURR', True)
-        processPOTreePicturesBackgrounds(potreePicturesAbsPath + '/BACKGROUND/HIST', False)
-        processPOTreePicturesSites(potreePicturesAbsPath + '/SITES/CURR', True)
-        processPOTreePicturesSites(potreePicturesAbsPath + '/SITES/HIST', False)
+        potreePicturesAbsPath = potreeAbsPath + '/' + PIC_FT 
+        processPOTreePicturesBackgrounds(potreePicturesAbsPath + '/' + BG_FT + '/' + CURR_FT , True)
+        processPOTreePicturesBackgrounds(potreePicturesAbsPath + '/' + BG_FT + '/' + HIST_FT , False)
+        processPOTreePicturesSites(potreePicturesAbsPath + '/' + SITE_FT + '/' + CURR_FT , True)
+        processPOTreePicturesSites(potreePicturesAbsPath + '/' + SITE_FT + '/' + HIST_FT , False)
         
 def processPOTreePointCloudsBackgrounds(bgPotreePCAbsPath):
     return
@@ -603,34 +591,6 @@ def createOSG(inFile, outFolder, inType, abOffsetX = None, abOffsetY = None, abO
             
     return (mainOsgb, xmlPath, offsets)
 
-def checkExtension(absPath, allowMultiple = False):
-    """ Return the extension of the PC file/files in the provided folder. 
-    If the path is empty or there aren't valid PC_EXTENSIONS it returns None.
-    If allowMultiple is False it also returns None if there are multiple PC_EXTENSIONS.
-    If allowMultiple is True it return the extension of the first PC file"""
-    numFiles = len(os.listdir(absPath))
-    if numFiles:
-        extensions = []
-        for extension in PC_EXTENSIONS:
-            if len(glob.glob(os.path.join(absPath,'*'+extension))):
-                extensions.append(extension)
-        if len(extensions) > 1:
-            if allowMultiple:
-                return extensions[0]
-            else:
-                logging.warn('Ignoring folder ' + absPath + ': multiple valid PC_EXTENSIONS (' + ','.join(PC_EXTENSIONS) + ')')
-        elif len(extensions) == 0:
-            logging.warn('Ignoring folder ' + absPath + ': no data with valid PC_EXTENSIONS (' + ','.join(PC_EXTENSIONS) + ')')
-        else: #len(hasPC_EXTENSIONS) == 1:
-            return extensions[0]
-
-def checkSiteId(absPath):
-    try:
-        siteId = int(os.path.basename(absPath))
-    except:
-        logging.warn('ignoring folder ' + absPath + '. Folder name must be a siteID')
-        siteId = None
-    return siteId
 
 if __name__ == "__main__":
     usage = 'Usage: %prog [options]'
