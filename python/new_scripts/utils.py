@@ -28,8 +28,9 @@ PROPERTIES_ORDER = ['administrator', 'site_context', 'site_interpretation', 'con
 
 DEFAULT_DB = 'vadb'
 USERNAME = os.popen('whoami').read().replace('\n','')
-DEFAULT_RAW_DATA_FOLDER = '/home/vadata/DATA/RAW/'
+DEFAULT_RAW_DATA_FOLDER = '/home/vadata/DATA/RAW/' #It should be DIR instead of FOLDER
 DEFAULT_OSG_DATA_DIR = '/home/vadata/DATA/OSG/'
+DEFAULT_POTREE_DATA_DIR = '/home/vadata/DATA/OSG/'
 BOUNDINGS_XML_RELATIVE = 'BOUNDINGS/volumes.prototype.xml'
 SITE_OBJECT_NUMBER = -1
 DEFAULT_PROTO = 'Bounding Box'
@@ -62,6 +63,10 @@ SITE_FT = 'SITE'
 CURR_FT = 'CURR'
 ARCREC_FT = 'ARCH_REC'
 HIST_FT = 'HIST'
+
+#Ouput Formats
+LAS = 'LAS'
+LAZ = 'LAZ'
 
 def getLastModification(absPath, initialLMTime = None):
     """
