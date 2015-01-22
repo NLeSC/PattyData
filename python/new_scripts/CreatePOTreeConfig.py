@@ -8,7 +8,7 @@
 # Modifications:   
 # Notes:            Based on createjson.py from the Patty FFWD, October 2014
 ################################################################################
-import os, argparse
+import argparse
 import json
 import psycopg2 as pcpg2
 import utils
