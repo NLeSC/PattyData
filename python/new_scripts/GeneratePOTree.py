@@ -14,6 +14,8 @@ import utils
 CONVERTER_COMMAND = 'PotreeConverter'
 DEFAULT_SCENE_TYPE = 'bs'
 DEFAULT_OUTPUT_FORMAT = 'LAS'
+LOG_LEVELS = ('DEBUG','INFO','WARNING','ERROR')
+DEFAULT_LOG_LEVEL = LOG_LEVELS[0]
 
 # Get time when we start the update process
 initialTime = utils.getCurrentTime()
@@ -73,11 +75,11 @@ if __name__ == "__main__":
     usage = 'Usage: %prog [options]'
     description = "Creates the POTREE data for all the new data contained in the DATA/RAW folder and updates DB with information (it checks time stamps)"
     op = optparse.OptionParser(usage=usage, description=description)
-    op.add_option('-i','--rawDir',default=utils.DEFAULT_RAW_DATA_FOLDER,help='RAW data folder [default ' + DEFAULT_RAW_RAW_FOLDER + ']',type='string')
+    op.add_option('-i','--rawDir',default=utils.DEFAULT_RAW_DATA_FOLDER,help='RAW data folder [default ' + utils.DEFAULT_RAW_DATA_FOLDER + ']',type='string')
     op.add_option('-o','--potreeDir',default=utils.DEFAULT_POTREE_DATA_DIR,help='POTREE data directory [default ' + utils.DEFAULT_POTREE_DATA_DIR + ']',type='string')
     op.add_option('-s','--sceneType',default=DEFAULT_SCENE_TYPE,help='Type of Scene to be updated? b for background, s for sites [default all is checked, i.e. ' + DEFAULT_SCENE_TYPE + ']',type='string')
     op.add_option('-l','--levels',default='',help='Number of levels of the Octree, parameter for PotreeConverter.',type='string')
     op.add_option('-f','--outputFormat',default=DEFAULT_OUTPUT_FORMAT,help='Output format? LAS or LAZ [default '+ DEFAULT_OUTPUT_FORMAT + ']', type='string')
-    op.add_option('-L','--log',help='Logging level (choose from ' + ','.join(utils.LOG_LEVELS) + ' ; default ' + utils.DEFAULT_LOG_LEVEL + ')',type='choice', choices=utils.LOG_LEVELS, default=utils.DEFAULT_LOG_LEVEL)
+    op.add_option('-L','--log',help='Logging level (choose from ' + ','.join(LOG_LEVELS) + ' ; default ' + DEFAULT_LOG_LEVEL + ')',type='choice', choices=LOG_LEVELS, default=DEFAULT_LOG_LEVEL)
     (opts, args) = op.parse_args()
     main(opts)
