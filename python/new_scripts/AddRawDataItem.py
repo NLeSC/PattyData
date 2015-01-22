@@ -18,14 +18,6 @@ import argparse
 import utils
 
 # global variables
-DEFAULT_LOG_LEVEL = 'debug'
-LOG_LEVELS = {'debug': logging.DEBUG,
-              'info': logging.INFO,
-              'warning': logging.WARNING,
-              'error': logging.ERROR,
-              'critical': logging.CRITICAL}
-LOG_FORMAT = '%(asctime)-15s %(message)s'
-LOG_FILENAME = '/tmp/patty.log'
 PC_DIR = "PC"
 MESHES_DIR = "MESH"
 PICTURES_DIR = "PICT"
@@ -163,17 +155,10 @@ def copy_data(opts, TARGETDIR, logger):
     logger.info("Finished copying data to " + TARGETDIR)
 
 
-def start_logging(filename=LOG_FILENAME, level=DEFAULT_LOG_LEVEL):
-    "Start logging with given filename and level."
-    logging.basicConfig(filename=filename, level=LOG_LEVELS[level],
-                        format=LOG_FORMAT)
-    logger = logging.getLogger(__name__)
-    return logger
-
 
 def main(opts):
     # set logging level
-    logger = start_logging(filename=LOG_FILENAME, level=opts.log)
+    logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
     logger.info('#######################################')
     logger.info('Starting script AddRawDataItem.py')
     logger.info('#######################################')
@@ -226,7 +211,7 @@ if __name__ == "__main__":
                         action="store_true")
     parser.add_argument('-l', '--log', help='Log level',
                         choices=['debug', 'info', 'error'],
-                        default=DEFAULT_LOG_LEVEL)
+                        default=utils.DEFAULT_LOG_LEVEL)
     requiredNamedSITE.add_argument('--siteno', action='store',
                                    help='Site number')
     # extract user entered arguments

@@ -40,6 +40,16 @@ SRID = 32633
 DEFAULT_CAMERA_PREFIX = 'DEF_CAM_'
 USER_CAMERA = 'SITE_'
 
+# define global LOG variables
+DEFAULT_LOG_LEVEL = 'debug'
+LOG_LEVELS = {'debug': logging.DEBUG,
+              'info': logging.INFO,
+              'warning': logging.WARNING,
+              'error': logging.ERROR,
+              'critical': logging.CRITICAL}
+LOG_FORMAT = '%(asctime)-15s %(message)s'
+LOG_FILENAME = '/tmp/patty.log'
+
 # Folder tags for the file structure
 RAW_FT = 'RAW'
 OSG_FT = 'OSG'
@@ -198,3 +208,10 @@ def getPositionFromFootprint(cursor, siteId, rawDataPath):
     else:
         logging.error('Not possible to get position from footprint: background ' + DEFAULT_BACKGROUND + ' not found')
     return (0,0)
+
+def start_logging(filename=LOG_FILENAME, level=DEFAULT_LOG_LEVEL):
+    "Start logging with given filename and level."
+    logging.basicConfig(filename=filename, level=LOG_LEVELS[level],
+                        format=LOG_FORMAT)
+    logger = logging.getLogger(__name__)
+    return logger
