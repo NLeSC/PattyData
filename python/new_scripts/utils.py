@@ -118,7 +118,8 @@ def postgresConnectString(dbName = None, userName= None, password = None, dbHost
     return connString
 
 def connectToDB(dbName = None, userName= None, password = None, dbHost = None, dbPort = None):
-     
+    """ Connects to a specified DB and returns connection and cursor objects
+    """       
     # Start DB connection
     try: 
         connection = psycopg2.connect(postgresConnectString(dbName, userName, password, dbHost, dbPort, False))
@@ -137,6 +138,41 @@ def connectToDB(dbName = None, userName= None, password = None, dbHost = None, d
     cursor = connection.cursor()
         
     return connection, cursor
+    
+def closeConnectionDB(connection, cursor):
+    """ Closes a connection to a DB given the connection and cursor objects
+    """      
+    cursor.close()
+    connection.close()    
+    
+    msg = 'Connection to the DB is closed.'
+    print msg
+    logging.debug(msg)
+    
+    return    
+    
+def fetchDataFromDB(cursor, fetch_query):
+    """ Fetches data from a DB, given the sursor object and the fetch query
+        Return the fetched data items and their number
+    """ 
+    data_items = []
+    
+    try:
+        dbExecute(cursor, fetch_query, None, True)
+    except Exception, E:
+        err_msg = "Cannot execute the SQL query: %s" % fetch_query
+        print(err_msg)
+        logging.error((err_msg, "; %s: %s" % (E.__class__.__name__, E)))
+        raise
+    
+    data_items = cursor.fetchall()
+    
+    num_items = cursor.rowcount
+    msg = 'Retrived %s data_items.'%num_items
+    print msg
+    logging.debug(msg)
+
+    return data_items, num_items    
     
 def dbExecute(cursor, query, queryArgs = None, mogrify = True):
     if queryArgs == None:
