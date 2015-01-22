@@ -25,7 +25,7 @@ PROPERTIES_ORDER = ['administrator', 'site_context', 'site_interpretation', 'con
                     'object_interpretation', 'period', 'reliability', 'depression_type', 'decoration_type',
                     'depiction', 'material_type', 'material_subtype', 'material_technique']
 
-DEFAULT_DB = 'viaappiadb'
+DEFAULT_DB = 'vadb'
 USERNAME = os.popen('whoami').read().replace('\n','')
 DEFAULT_RAW_DATA_FOLDER = '/home/vadata/DATA/RAW/'
 DEFAULT_OSG_DATA_DIR = '/home/vadata/DATA/OSG/'
