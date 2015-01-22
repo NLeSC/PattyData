@@ -4,6 +4,7 @@
 #    o.rubi@esciencecenter.nl                                                  #
 ################################################################################
 import os, subprocess, time, calendar, logging
+import psycopg2
 
 # Python Module containing methods used in other scripts
 PROPERTIES = {'administrator':('initials', 'list_participants'),
@@ -103,6 +104,27 @@ def postgresConnectString(dbName = None, userName= None, password = None, dbHost
             connString += " port=" + dbPort
     return connString
 
+def connectToDB(dbName = None, userName= None, password = None, dbHost = None, dbPort = None, cline = False):
+     
+    # Start DB connection
+    try: 
+        connection = psycopg2.connect(postgresConnectString(dbName, userName, password, dbHost, dbPort, cline))
+        
+    except Exception, E:
+        err_msg = 'Cannot connect to %s DB.'% dbName
+        print(err_msg)
+        logging.error((err_msg, "; %s: %s" % (E.__class__.__name__, E)))
+        raise
+        
+    msg = 'Succesful connection to %s DB.'%dbName
+    print msg
+    logging.debug(msg)
+    
+    # if the connection succeeded get a cursor    
+    cursor = connection.cursor()
+        
+    return connection, cursor
+    
 def dbExecute(cursor, query, queryArgs = None, mogrify = True):
     if queryArgs == None:
         if mogrify:
