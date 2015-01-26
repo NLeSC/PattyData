@@ -13,7 +13,6 @@ import optparse
 import re
 import os
 import shutil
-import logging
 import argparse
 import utils
 
