@@ -12,12 +12,15 @@
 import os
 import optparse
 import psycopg2
-import logging
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
-                    datefmt="%Y/%m/%d/%H:%M:%S", level=logging.DEBUG)
 import utils
 import viewer_conf_api
 from lxml import etree as ET
+
+
+logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
+logger.info('#######################################')
+logger.info('Starting script UpdateDBFromOSG.py')
+logger.info('#######################################')
 
 
 def getDetails(ao):
@@ -121,7 +124,7 @@ def main(opts):
             updateSetting(cursor, ao, aoType, uniqueName, siteId,
                           activeObjectId, objectNumber)
         else:
-            logging.error('Update not possible. activeObject ' +
+            logger.error('Update not possible. activeObject ' +
                           str(uniqueName) + ' not found in DB')
     # Now the deletes (only possible for site objects)
     deleteAOS = data.xpath('//*[@status="deleted"]')
@@ -135,11 +138,11 @@ def main(opts):
                 deleteSiteObject(cursor, ao, aoType, uniqueName, siteId,
                                  activeObjectId, objectNumber)
             else:
-                logging.warn('Not possible to delete.. activeObject ' +
+                logger.warn('Not possible to delete.. activeObject ' +
                              str(uniqueName) +
                              ' not found in DB. Maybe already deleted?')
         else:
-            logging.error('Ignoring delete in ' + uniqueName +
+            logger.error('Ignoring delete in ' + uniqueName +
                           ': Meshes, pictures and PCs can not be deleted')
     # Finally the new objects (only possible for site objects)
     newAOS = data.xpath('//*[@status="new"]')
@@ -150,7 +153,7 @@ def main(opts):
             inDB = checkActiveObject(cursor, ao, aoType, uniqueName, siteId,
                                      activeObjectId, objectNumber)
             if inDB:
-                logging.warn('activeObject ' + str(uniqueName) +
+                logger.warning('activeObject ' + str(uniqueName) +
                              ' already in DB. Ignoring add ' + uniqueName)
             else:
                 if aoType == 'obj':
@@ -170,7 +173,7 @@ def main(opts):
                 updateSetting(cursor, ao, aoType, uniqueName, siteId,
                               activeObjectId, objectNumber)
         else:
-            logging.error('Ignoring new in ' + uniqueName +
+            logger.error('Ignoring new in ' + uniqueName +
                           ': Meshes, pictures and PCs can not be added')
 
     # Process the cameras (the DEF CAMs are added for all objects
@@ -189,7 +192,7 @@ def main(opts):
                 names.append('site_id')
                 values.append(siteId)
             except:
-                logging.warn('Incorrect camera name:' + name)
+                logger.warn('Incorrect camera name:' + name)
         for c in ('x', 'y', 'z', 'h', 'p', 'r'):
             if c in camera.keys():
                 names.append(c)
