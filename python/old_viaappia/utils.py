@@ -137,13 +137,16 @@ def getLASParams(inputFile, tool = 'liblas'):
 
     return (count, minX, minY, minZ, maxX, maxY, maxZ, scaleX, scaleY, scaleZ, offsetX, offsetY, offsetZ)
 
-def getOSGDescrition(siteId, inType, objectId, fileName = None):
-    if inType not in ('pc','mesh','bg','pic','obj'):
-        raise Exception('Unknown inType ' + inType)
-    c = str(siteId) + "_" + inType +"_" + str(objectId)
-    if fileName != None:
-        c += '_' + fileName
-    return c
+# def getOSGDescrition(siteId, inType, objectId, fileName = None):
+#     if inType not in ('pc','mesh','bg','pic','obj'):
+#         raise Exception('Unknown inType ' + inType)
+#     c = str(siteId) + "_" + inType +"_" + str(objectId)
+#     if fileName != None:
+#         c += '_' + fileName
+#     return c
+
+def getOSGDescrition(absPath):
+    return absPath.replace('home/pattydat/DATA/OSG','')
 
 def getPositionFromFootprint(cursor, siteId, rawDataPath):
     bgFolder = os.path.abspath(os.path.join(rawDataPath, DEFAULT_BACKGROUND))

@@ -86,7 +86,7 @@ def main(opts):
     dataAbsPath = os.path.abspath(opts.data)
     
     if 'r' in opts.types:
-        processRaw(dataAbsPath + '/' + RAW_FT, opts.itemtypes)
+        process(dataAbsPath + '/' + RAW_FT, opts.itemtypes, addRawPointCloud, addRawMesh, addRawPicture)
     
     if 'o' in opts.types:
         processOSG(dataAbsPath + '/' + OSG_FT, opts.itemtypes)
@@ -109,28 +109,48 @@ def main(opts):
     cursor.close()
     coonection.close()
 
-def processRaw(rawAbsPath, itemtypes):
+def process(absPath, itemtypes, addPointCloudMethod, addMeshMethod, addPictureMethod):
     if 'p' in itemtypes:
         # Process point clouds
-        rawPCAbsPath = rawAbsPath + '/' + PC_FT
-        processRawPointCloudsBackgrounds(rawPCAbsPath + '/' + BG_FT)
-        processRawPointCloudsSites(rawPCAbsPath + '/' + SITE_FT)
+        pcsAbsPath = absPath + '/' + PC_FT
+        processBackgrounds(pcsAbsPath + '/' + BG_FT, addPointCloudMethod)
+        processSites(pcsAbsPath + '/' + SITE_FT, addPointCloudMethod)
         
     if 'm' in itemtypes:
         # Process meshes
-        rawMeshesAbsPath = rawAbsPath + '/' + MESH_FT 
-        processRawMeshesBackgrounds(rawMeshesAbsPath + '/' + BG_FT + '/' + CURR_FT , True)
-        processRawMeshesBackgrounds(rawMeshesAbsPath + '/' + BG_FT + '/' + ARCREC_FT , False)
-        processRawMeshesSites(rawMeshesAbsPath + '/' + SITE_FT + '/' + CURR_FT , True)
-        processRawMeshesSites(rawMeshesAbsPath + '/' + SITE_FT + '/' + ARCREC_FT , False)
+        meshesAbsPath = absPath + '/' + MESH_FT 
+        processBackgrounds(meshesAbsPath + '/' + BG_FT + '/' + CURR_FT , addMeshMethod)
+        processBackgrounds(meshesAbsPath + '/' + BG_FT + '/' + ARCREC_FT , addMeshMethod)
+        processSites(meshesAbsPath + '/' + SITE_FT + '/' + CURR_FT , addMeshMethod)
+        processSites(meshesAbsPath + '/' + SITE_FT + '/' + ARCREC_FT , addMeshMethod)
         
     if 'i' in itemtypes:
         # Process pictures
-        rawPicturesAbsPath = rawAbsPath + '/' + PIC_FT 
-        processRawPicturesBackgrounds(rawPicturesAbsPath + '/' + BG_FT + '/' + CURR_FT , True)
-        processRawPicturesBackgrounds(rawPicturesAbsPath + '/' + BG_FT + '/' + HIST_FT , False)
-        processRawPicturesSites(rawPicturesAbsPath + '/' + SITE_FT + '/' + CURR_FT , True)
-        processRawPicturesSites(rawPicturesAbsPath + '/' + SITE_FT + '/' + HIST_FT , False)
+        picturesAbsPath = absPath + '/' + PIC_FT 
+        processBackgrounds(picturesAbsPath + '/' + BG_FT + '/' + CURR_FT, addPictureMethod)
+        processBackgrounds(picturesAbsPath + '/' + BG_FT + '/' + HIST_FT, addPictureMethod)
+        processSites(picturesAbsPath + '/' + SITE_FT + '/' + CURR_FT, addPictureMethod)
+        processSites(picturesAbsPath + '/' + SITE_FT + '/' + HIST_FT, addPictureMethod)
+
+def processBackgrounds(absPath, addMethod):
+    t0 = time.time()
+    logging.info('Processing ' + absPath)
+    backgrounds = os.listdir(absPath)
+    for background in backgrounds:
+        addMethod(absPath + '/' + background, SITE_BACKGROUND_ID)
+    logging.info('Processing ' + absPath + ' finished in %.2f' % (time.time() - t0))
+
+def processSites(absPath, addMethod):
+    t0 = time.time()
+    logging.info('Processing ' + absPath)
+    sites = os.listdir(absPath)
+    for site in sites:
+        siteId = int(site.replace('S',''))
+        siteAbsPath = absPath + '/' + site
+        sitePCs = os.listdir(siteAbsPath)
+        for sitePC in sitePCs:
+            addMethod(siteAbsPath + '/' + sitePC, siteId)
+    logging.info('Processing ' + absPath + ' finished in %.2f' % (time.time() - t0))
 
 def cleanRaw(rawAbsPath, itemtypes):
     if 'p' in itemtypes:
@@ -168,25 +188,6 @@ def cleanRaw(rawAbsPath, itemtypes):
         # Clean pictures
         rawPicturesAbsPath = rawAbsPath + '/' + PIC_FT 
 
-def processRawPointCloudsBackgrounds(absPath):
-    t0 = time.time()
-    logging.info('Processing raw point cloud backgrounds in ' + absPath)
-    backgrounds = os.listdir(absPath)
-    for background in backgrounds:
-        addRawPointCloud(absPath + '/' + background, SITE_BACKGROUND_ID)
-    logging.info('Raw point cloud backgrounds processing finished in %.2f' % (time.time() - t0))
-    
-def processRawPointCloudsSites(absPath):
-    t0 = time.time()
-    logging.info('Processing raw point cloud sites in ' + absPath)
-    sites = os.listdir(absPath)
-    for site in sites:
-        siteId = int(site.replace('S',''))
-        siteAbsPath = absPath + '/' + site
-        sitePCs = os.listdir(siteAbsPath)
-        for sitePC in sitePCs:
-            addRawPointCloud(siteAbsPath + '/' + sitePC, siteId)
-    logging.info('Raw point cloud backgrounds processing finished in %.2f' % (time.time() - t0))
 
 def addRawPointCloud(pcAbsPath, siteId):
     modTime = utils.getCurrentTime(utils.getLastModification(pcAbsPath))
@@ -220,110 +221,9 @@ def addRawPointCloud(pcAbsPath, siteId):
             utils.dbExecute(cursor, 'UPDATE SITE_DATA_ITEM SET last_check=%s WHERE site_data_item_id = %s', [initialTime, siteDataItemId])
 
 
-def processRawMeshesBackgrounds(absPath, isCurrent):
-    t0 = time.time()
-    logging.info('Processing raw meshes backgrounds in ' + absPath)
-    backgrounds = os.listdir(absPath)
-    for background in backgrounds:
-        addRawMesh(absPath + '/' + background, SITE_BACKGROUND_ID)
-    logging.info('Raw meshes backgrounds processing finished in %.2f' % (time.time() - t0))
-    
-    
-def processRawMeshesSites(absPath, isCurrent):
-    t0 = time.time()
-    logging.info('Processing raw meshes sites in ' + absPath)
-    sites = os.listdir(absPath)
-    for site in sites:
-        siteId = int(site.replace('S',''))
-        siteAbsPath = absPath + '/' + site
-        sitePCs = os.listdir(siteAbsPath)
-        for sitePC in sitePCs:
-            addRawMesh(siteAbsPath + '/' + sitePC, siteId)
-    logging.info('Raw meshes backgrounds processing finished in %.2f' % (time.time() - t0))
-    
-    
-    return    
-def processRawPicturesBackgrounds(bgRawPCAbsPath):
-    return
-def processRawPicturesSites(sRawAbsPath):
-    return    
-
-def processOSG(rawAbsPath, itemtypes):
-    if 'p' in itemtypes:
-        # Process point clouds
-        osgPCAbsPath = rawAbsPath + '/' + PC_FT 
-        processOSGPointCloudsBackgrounds(osgPCAbsPath + '/' + BG_FT )
-        processOSGPointCloudsSites(osgPCAbsPath + '/' + SITE_FT )
-        
-    if 'm' in itemtypes:
-        # Process meshes
-        osgMeshesAbsPath = osgAbsPath + '/' + MESH_FT 
-        processOSGMeshesBackgrounds(osgMeshesAbsPath + '/' + BG_FT + '/' + CURR_FT , True)
-        processOSGMeshesBackgrounds(osgMeshesAbsPath + '/' + BG_FT + '/' + ARCREC_FT , False)
-        processOSGMeshesSites(osgMeshesAbsPath + '/' + SITE_FT + '/' + CURR_FT , True)
-        processOSGMeshesSites(osgMeshesAbsPath + '/' + SITE_FT + '/' + ARCREC_FT , False)
-        
-    if 'i' in itemtypes:
-        # Process pictures
-        osgPicturesAbsPath = osgAbsPath + '/' + PIC_FT 
-        processOSGPicturesBackgrounds(osgPicturesAbsPath + '/' + BG_FT + '/' + CURR_FT , True)
-        processOSGPicturesBackgrounds(osgPicturesAbsPath + '/' + BG_FT + '/' + ARCREC_FT , False)
-        processOSGPicturesSites(osgPicturesAbsPath + '/' + SITE_FT + '/' + CURR_FT , True)
-        processOSGPicturesSites(osgPicturesAbsPath + '/' + SITE_FT + '/' + ARCREC_FT , False)
-        
-def processOSGPointCloudsBackgrounds(bgOsgPCAbsPath):
-    return
-def processOSGPointCloudsSites(sOsgAbsPath):
-    return    
-def processOSGMeshesBackgrounds(bgOsgPCAbsPath):
-    return
-def processOSGMeshesSites(sOsgAbsPath):
-    return    
-def processOSGPicturesBackgrounds(bgOsgPCAbsPath):
-    return
-def processOSGPicturesSites(sOsgAbsPath):
-    return
-
-def processPOTree(potreeAbsPath, itemtypes):
-    if 'p' in itemtypes:
-        # Process point clouds
-        potreePCAbsPath = potreeAbsPath + '/' + PC_FT 
-        processPOTreePointCloudsBackgrounds(potreePCAbsPath + '/' + BG_FT )
-        processPOTreePointCloudsSites(potreePCAbsPath + '/' + SITE_FT )
-        
-    if 'm' in itemtypes:
-        # Process meshes
-        potreeMeshesAbsPath = potreeAbsPath + '/' + MESH_FT 
-        processPOTreeMeshesBackgrounds(potreeMeshesAbsPath + '/' + BG_FT + '/' + CURR_FT , True)
-        processPOTreeMeshesBackgrounds(potreeMeshesAbsPath + '/' + BG_FT + '/' + ARCREC_FT , False)
-        processPOTreeMeshesSites(potreeMeshesAbsPath + '/' + SITE_FT + '/' + CURR_FT , True)
-        processPOTreeMeshesSites(potreeMeshesAbsPath + '/' + SITE_FT + '/' + ARCREC_FT , False)
-        
-    if 'i' in itemtypes:
-        # Process pictures
-        potreePicturesAbsPath = potreeAbsPath + '/' + PIC_FT 
-        processPOTreePicturesBackgrounds(potreePicturesAbsPath + '/' + BG_FT + '/' + CURR_FT , True)
-        processPOTreePicturesBackgrounds(potreePicturesAbsPath + '/' + BG_FT + '/' + HIST_FT , False)
-        processPOTreePicturesSites(potreePicturesAbsPath + '/' + SITE_FT + '/' + CURR_FT , True)
-        processPOTreePicturesSites(potreePicturesAbsPath + '/' + SITE_FT + '/' + HIST_FT , False)
-        
-def processPOTreePointCloudsBackgrounds(bgPotreePCAbsPath):
-    return
-def processPOTreePointCloudsSites(sPotreeAbsPath):
-    return    
-def processPOTreeMeshesBackgrounds(bgPotreePCAbsPath):
-    return
-def processPOTreeMeshesSites(sPotreeAbsPath):
-    return    
-def processPOTreePicturesBackgrounds(bgPotreePCAbsPath):
-    return
-def processPOTreePicturesSites(sPotreeAbsPath):
-    return
 
 
-
-
-
+# OLD CODE 
 def processPCBackgrounds(backgroundsAbsPath, osgBackgroundsAbsPath):
     t0 = time.time()
     cursor = connection.cursor()
