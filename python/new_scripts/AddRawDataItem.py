@@ -17,33 +17,33 @@ import logging
 import argparse
 import utils
 
-# global variables
-PC_DIR = "PC"
-MESHES_DIR = "MESH"
-PICTURES_DIR = "PICT"
-BACKGROUND_DIR = "BACK"
-SITES_DIR = "SITE"
-
 
 def check_required_options(opts, logger):
     logger.info('Checking if all required arguments are specified.')
-    if (opts.type == "MESH"):  # MESHES should have a period defined
-        if not (opts.period == "CURR" or opts.period == "HIST"):
-            logger.error("[ERROR] Period should be 'CURR' or 'HIST'")
-            parser.error("Period should be 'CURR' or 'HIST'")
-    elif (opts.type == "PICT"):  # PICTURES should have a period defined
-        if not (opts.period == "CURR" or opts.period == "ARCH_REC"):
+    if (opts.type == utils.MESH.FT):  # MESHES should have a period defined
+        if not (opts.period == utils.CURR_FT or opts.period == utils.HIST_FT):
+            logger.error("[ERROR] Period should be '" + utils.CURR_FT +
+                         "' or '" + utils.HIST_FT + "'")
+            parser.error("Period should be '" + utils.CURR_FT + "' or '" +
+                         utils.HIST_FT + "'")
+    elif (opts.type == utils.PIC_FT):  # PICTURES should have a period defined
+        if not (opts.period == utils.CURR_FT or
+                opts.period == utils.ARCREC_FT):
             logger.error(
-                "[ERROR] Period should be 'CURR' or 'ARCH_REC' (--period)")
-            parser.error("Period should be 'CURR' or 'ARCH_REC' (--period)")
+                "[ERROR] Period should be '" + utils.CURR_FT + "' or '" +
+                utils.ARCREC_FT + "' (--period)")
+            parser.error("Period should be '" + utils.CURR_FT + "' or '" +
+                         utils.ARCREC_FT + "' (--period)")
     # SITES should have a site number defined
-    if (opts.kind == "SITE"):
+    if (opts.kind == utils.SITE_FT):
         if not (opts.siteno):
             logger.error(
-                "[ERROR] site number should be defined for SITE (--siteno)")
-            parser.error("site number should be defined for SITE (--siteno)")
+                "[ERROR] Site number should be defined for " + utils.SITE_FT +
+                " (--siteno)")
+            parser.error("Site number should be defined for " + utils.SITE_FT +
+                         " (--siteno)")
     # PC/MESHES should have a version/reconstruction number defined
-    if (opts.type == "PC" or opts.type == "MESH"):
+    if (opts.type == utils.PC_FT or opts.type == utils.MESH_FT):
         if not (opts.verrecno):
             logger.error("[ERROR] Version/reconstruction " +
                          "number should be defined (--verrecno)")
@@ -54,12 +54,12 @@ def check_required_options(opts, logger):
 def check_directory_structure(RAW_BASEDIR, logger):
     logger.info('Checking if required directory structure exists.')
     # directory structure
-    DIRS = [os.path.join(RAW_BASEDIR, PC_DIR, BACKGROUND_DIR),
-            os.path.join(RAW_BASEDIR, PC_DIR, SITES_DIR),
-            os.path.join(RAW_BASEDIR, MESHES_DIR, BACKGROUND_DIR),
-            os.path.join(RAW_BASEDIR, MESHES_DIR, SITES_DIR),
-            os.path.join(RAW_BASEDIR, PICTURES_DIR, BACKGROUND_DIR),
-            os.path.join(RAW_BASEDIR, PICTURES_DIR, SITES_DIR)]
+    DIRS = [os.path.join(RAW_BASEDIR, utils.PC_FT, utils.BG_FT),
+            os.path.join(RAW_BASEDIR, utils.PC_FT, utils.SITE_FT),
+            os.path.join(RAW_BASEDIR, utils.MESH_FT, utils.BG_FT),
+            os.path.join(RAW_BASEDIR, utils.MESH_FT, utils.SITE_FT),
+            os.path.join(RAW_BASEDIR, utils.PIC_FT, utils.BG_FT),
+            os.path.join(RAW_BASEDIR, utils.PIC_FT, utils.SITE_FT)]
     # check if the directory structure exist, raise IOError if needed
     for directory in DIRS:
         if not os.path.isdir(directory):
@@ -75,14 +75,14 @@ def define_create_target_dir(opts, logger):
     # name of input data, only basename, extensions removed
     inputname = os.path.splitext(os.path.basename(opts.file))[0]
     # TARGETDIR for PC
-    if (opts.type == "PC" and opts.kind == "BACK"):
+    if (opts.type == utils.PC_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(
             target_basedir, inputname+'V'+str(opts.verrecno))
-    if (opts.type == "PC" and opts.kind == "SITE"):
+    if (opts.type == utils.PC_FT and opts.kind == utils.SITE_FT):
         if (opts.aligned):
             # check if background used for the alignment exists
             if (os.path.isdir(os.path.join(
-                              opts.data, PC_DIR, BACKGROUND_DIR,
+                              opts.data, utils.PC_FT, utils.BG_FT,
                               os.path.splitext(
                                   os.path.basename(opts.aligned))[0]))):
                 alignedTo = os.path.splitext(os.path.basename(opts.file))[0]
@@ -102,18 +102,18 @@ def define_create_target_dir(opts, logger):
         else:
             al8bit = ""
         TARGETDIR = os.path.join(target_basedir, 'S'+str(opts.siteno),
-                             inputname+'V'+str(opts.verrecno)+al8bit)
+                                 inputname+'V'+str(opts.verrecno)+al8bit)
     # TARGETDIR for MESH
-    if (opts.type == "MESH" and opts.kind == "BACK"):
+    if (opts.type == utils.MESH_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(target_basedir,
                                  opts.period, inputname+'V'+str(opts.verrecno))
-    if (opts.type == "MESH" and opts.kind == "SITE"):
+    if (opts.type == utils.MESH_FT and opts.kind == utils.SITE_FT):
         TARGETDIR = os.path.join(target_basedir, 'S'+str(opts.siteno),
                                  opts.period, inputname+'V'+str(opts.verrecno))
     # TARGETDIR for PICT
-    if (opts.type == "PICT" and opts.kind == "BACK"):
+    if (opts.type == utils.PIC_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(target_basedir, opts.period)
-    if (opts.type == "PICT" and opts.kind == "SITE"):
+    if (opts.type == utils.PIC_FT and opts.kind == utils.SITE_FT):
         TARGETDIR = os.path.join(target_basedir,
                                  'S'+str(opts.siteno), opts.period)
     # check if TARGETDIR exists, create otherwise
@@ -128,7 +128,7 @@ def define_create_target_dir(opts, logger):
     return TARGETDIR
 
 
-def copy_data(opts, TARGETDIR, logger):
+def copy_data(opts, TARGETDIR):
     logger.info('Copying data.')
     # if input was a directory:
     # copy everything inside the directory to TARGETDIR
@@ -155,7 +155,6 @@ def copy_data(opts, TARGETDIR, logger):
     logger.info("Finished copying data to " + TARGETDIR)
 
 
-
 def main(opts):
     # set logging level
     logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
@@ -179,23 +178,25 @@ if __name__ == "__main__":
     # create argument groups
     requiredNamed = parser.add_argument_group('required arguments')
     requiredNamedPCMESH = parser.add_argument_group(
-        'required arguments for PC and MESH')
+        'required arguments for ' + utils.PC_FT + ' and ' + utils.MESH_FT)
     requiredNamedMESHPIC = parser.add_argument_group(
-        'required arguments for MESH and PICT')
+        'required arguments for ' + utils.MESH_FT + ' and ' + utils.PIC_FT)
     requiredNamedPC = parser.add_argument_group(
-        'required arguments for PC SITE')
+        'required arguments for ' + utils.PC_FT + ' ' + utils.SITE_FT)
     requiredNamedSITE = parser.add_argument_group(
-        'required arguments for SITE')
+        'required arguments for ' + utils.SITE_FT)
     # fill argument groups
     parser.add_argument('-i', '--data', default=utils.DEFAULT_RAW_DATA_FOLDER,
                         help='RAW data folder [default ' +
                         utils.DEFAULT_RAW_DATA_FOLDER + ']')
     requiredNamed.add_argument('-k', '--kind', action='store',
                                help='Type of item',
-                               choices=['BACK', 'SITE'], required=True)
+                               choices=[utils.BG_FT, utils.SITE_FT],
+                               required=True)
     requiredNamed.add_argument('-t', '--type', action='store',
                                help='Type of data',
-                               choices=['PC', 'MESH', 'PICT'], required=True)
+                               choices=[utils.PC_FT, utils.MESH_FT,
+                                        utils.PIC_FT], required=True)
     requiredNamed.add_argument('-f', '--file', action='store',
                                help='Input file/directory name to copy',
                                required=True)
@@ -203,14 +204,19 @@ if __name__ == "__main__":
                                      help='Version or reconstruction number')
     requiredNamedMESHPIC.add_argument('-p', '--period', action='store',
                                       help='Period (choose from ' +
-                                      'MESH:CURR,ARCH_REC; PICT:CURR,HIST)',
-                                      choices=['CURR', 'HIST', 'ARCH_REC'])
+                                      utils.MESH_FT + ':' + utils.CURR_FT +
+                                      ',' + utils.ARCREC_FT + '; ' +
+                                      utils.PIC_FT + ':' + utils.CURR_FT +
+                                      ',' + utils.HIST_FT + ')',
+                                      choices=[utils.CURR_FT, utils.HIST_FT,
+                                               utils.ARCREC_FT])
     requiredNamedPC.add_argument('-a', '--aligned', action='store',
                                  help='Aligned to a specific background')
     parser.add_argument('--eight', help='8 bit color [only for PC SITE]',
                         action="store_true")
     parser.add_argument('-l', '--log', help='Log level',
-                        choices=['debug', 'info', 'error'],
+                        choices=['debug', 'info', 'warning', 'error',
+                                 'critical'],
                         default=utils.DEFAULT_LOG_LEVEL)
     requiredNamedSITE.add_argument('--siteno', action='store',
                                    type=int, help='Site number')
