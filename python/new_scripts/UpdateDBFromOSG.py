@@ -17,12 +17,6 @@ import viewer_conf_api
 from lxml import etree as ET
 
 
-logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
-logger.info('#######################################')
-logger.info('Starting script UpdateDBFromOSG.py')
-logger.info('#######################################')
-
-
 def getDetails(ao):
     proto = ao.get('prototype')
     uniqueName = ao.get('uniqueName')
@@ -108,6 +102,11 @@ def updateSetting(cursor, ao, aoType, uniqueName, siteId, activeObjectId,
 
 
 def main(opts):
+    # Define logger and start logging
+    logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
+    logger.info('#######################################')
+    logger.info('Starting script UpdateDBFromOSG.py')
+    logger.info('#######################################')
     data = ET.parse(opts.config).getroot()
     connection = psycopg2.connect(utils.postgresConnectString
                                   (opts.dbname, opts.dbuser, opts.dbpass,
