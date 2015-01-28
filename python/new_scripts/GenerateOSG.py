@@ -4,7 +4,7 @@
 # Authors:          Ronald van Haren, NLeSC, r.vanharen@esciencecenter.nl
 #                   Oscar Martinez, NLeSC, o.rubi@esciencecenter.nl
 # Created:          26.01.2015
-# Last modified:    -
+# Last modified:    28.01.2015
 # Changes:
 # Notes:
 ##############################################################################
@@ -41,11 +41,11 @@ def updateXMLDescription(xmlPath, siteId, inType, activeObjectId,
                          (os.path.dirname(fileName))) + '</description>\n')
         else:
             ofile.write(line)
-    os.system('rm ' + xmlPath)
-    os.system('mv ' + tempFile + ' ' + xmlPath)
+    os.remove(xmlPath)
+    shutil.move(tempFile, xmlPath)
 
 
-def createOSG(inFile, outFolder, inType, opts, abOffsetX=None,
+def createOSG(inFile, outFolder, inType, opts, logger, abOffsetX=None,
               abOffsetY=None, abOffsetZ=None, color8Bit=False):
     (mainOsgb, xmlPath, offsets) = (None, None, (0, 0, 0))
 
@@ -111,7 +111,7 @@ def createOSG(inFile, outFolder, inType, opts, abOffsetX=None,
     logFile = os.path.join(outFolder, outputPrefix + '.log')
     command += ' &> ' + logFile
 
-#    logger.info(command)
+    logger.info(command)
     subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                      shell=True).communicate()
 
@@ -120,7 +120,7 @@ def createOSG(inFile, outFolder, inType, opts, abOffsetX=None,
     for filename in outputFiles:
         shutil.move(os.path.abspath(filename),
                     os.path.join(outFolder, filename[len(outputPrefix):]))
-#    logger.info(mvcommand)
+    logger.info(mvcommand)
 
     ofiles = sorted(glob.glob(os.path.join(outFolder, '*' + ofile)))
     if len(ofiles) == 0:
@@ -149,8 +149,8 @@ def createOSG(inFile, outFolder, inType, opts, abOffsetX=None,
                 offsets[i] = float(offsets[i])
         elif aligned:
             logger.warn('No offset file was found and it was expected!')
-
-    updateXMLDescription()
+    # doesn't work yet, what are the input variables?
+    updateXMLDescription(xmlPath, itemID, inType, activeObjectId)
 
 
 def main(opts):
@@ -160,7 +160,7 @@ def main(opts):
     logger.info('Starting script GenerateOSG.py')
     logger.info('#######################################')
     createOSG('/home/ronald/pattytest', '/home/ronald/pattytest/outdir', 'PC',
-              opts)
+              opts, logger)
 
 if __name__ == "__main__":
     # define argument menu
@@ -169,13 +169,13 @@ if __name__ == "__main__":
 
     # fill argument groups
     parser.add_argument('-i', '--config', help='XML configuration file',
-                        action='store') # required?
+                        action='store')  # required? ID?
     parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
-                  help='Postgres DB name [default ' + utils.DEFAULT_DB + ']',
-                  action='store')
+                        help='Postgres DB name [default ' + utils.DEFAULT_DB +
+                        ']', action='store')
     parser.add_argument('-u', '--dbuser', default=utils.USERNAME,
-                  help='DB user [default ' + utils.USERNAME +
-                  ']', action='store')
+                        help='DB user [default ' + utils.USERNAME +
+                        ']', action='store')
     parser.add_argument('-p', '--dbpass', help='DB pass', action='store')
     parser.add_argument('-t', '--dbhost', help='DB host', action='store')
     parser.add_argument('-r', '--dbport', help='DB port', action='store')
@@ -183,7 +183,7 @@ if __name__ == "__main__":
                         choices=['debug', 'info', 'warning', 'error',
                                  'critical'],
                         default=utils.DEFAULT_LOG_LEVEL)
-    
+
     # extract user entered arguments
     opts = parser.parse_args()
 
