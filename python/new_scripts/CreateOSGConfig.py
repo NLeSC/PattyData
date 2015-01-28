@@ -17,12 +17,10 @@ import time
 import re
 import multiprocessing
 import glob
-import logging
 import shutil
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s',
-                    datefmt="%Y/%m/%d/%H:%M:%S", level=logging.DEBUG)
 import utils
 import viewer_conf_api
+logger = None
 
 DEFAULT_PREFENCES = """
 <preferences>
@@ -48,15 +46,21 @@ DEFAULT_PREFENCES = """
 
 
 def main(opts):
+    # Define logger and start logging
+    global logger
+    logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
+    logger.info('#######################################')
+    logger.info('Starting script CreateOSGConfig.py')
+    logger.info('#######################################')
+
     if not opts.output.endswith(".conf.xml"):
-        logging.error("The output file must end with .conf.xml")
-        return
+        logger.error('The output file must end with .conf.xml')
+        raise IOError('The output file must end with .conf.xml')
 
     # Create python postgres connection
-    connection = psycopg2.connect(utils.postgresConnectString
-                                  (opts.dbname, opts.dbuser, opts.dbpass,
-                                   opts.dbhost, opts.dbport, False))
-    cursor = connection.cursor()
+    connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser,
+                                           opts.dbpass, opts.dbhost,
+                                           opts.dbport)
 
     # Get the root object: the OSG configuration
     rootObject = viewer_conf_api.osgRCconfiguration()
@@ -65,11 +69,12 @@ def main(opts):
 
     # Add all the different XML of the active objects
     # (we add distinct since the boundings will share XMLs)
-    cursor.execute('select distinct xml_path from active_objects_sites')
+    # cursor.execute('SELECT DISTINCT xml_path FROM active_objects_sites')
+    cursor.execute('SELECT DISTINCT xml_abs_path FROM OSG_DATA_ITEM')
     for (xmlPath,) in cursor:
         if xmlPath.count(opts.osg) == 0:
-            logging.error('Mismatch between given OSG data directory ' +
-                          'and DB content')
+            logger.error('Mismatch between given OSG data directory ' +
+                         'and DB content')
         rootObject.add_objectLibrary(viewer_conf_api.objectLibrary
                                      (url=xmlPath.replace(opts.osg, '')))
 
@@ -78,16 +83,27 @@ def main(opts):
                                  (url=utils.BOUNDINGS_XML_RELATIVE))
 
     # Add the cameras
-    cursor.execute('select camera_name, x, y, z, h, p, r from cameras')
+    # cursor.execute('SELECT camera_name, x, y, z, h, p, r FROM cameras')
+    cursor.execute('SELECT osg_camera_name, x, y, z, h, p, r FROM ' +
+                   'OSG_CAMERA INNER JOIN OSG_LOCATION ON ' +
+                   'OSG_CAMERA.osg_location_id=OSG_LOCATION.osg_location_id')
+
     cameras = viewer_conf_api.cameras()
     for (name, x, y, z, h, p, r) in cursor:
         cameras.add_camera(viewer_conf_api.camera
                            (name=name, x=x, y=y, z=z, h=h, p=p, r=r))
-    cursor.execute('SELECT distinct site_id, x, y, z, h, p, r from ' +
-                   'active_objects_sites_objects where site_id not in ' +
-                   '(select distinct site_id from cameras where site_id ' +
-                   'is not null) and object_id = %s order by site_id',
-                   [utils.SITE_OBJECT_NUMBER])
+    # cursor.execute('SELECT DISTINCT site_id, x, y, z, h, p, r FROM ' +
+    #                'active_objects_sites_objects WHERE site_id NOT IN ' +
+    #                '(SELECT DISTINCT site_id FROM cameras WHERE site_id ' +
+    #                'IS NOT null) AND object_id = %s ORDER BY site_id',
+    #               [utils.SITE_OBJECT_NUMBER])
+    # need OSG_ITEM_CAMERA.item_id instead of OSG_CAMERA.osg_location_id ??
+    # ??? object_id -> srid ???
+    cursor.execute('SELECT DISTINCT osg_location_id, x, y, z, h, p, r FROM ' +
+                   'OSG_LOCATION WHERE osg_location_id NOT IN (SELECT ' +
+                   'DISTINCT osg_location_id FROM OSG_CAMERA WHERE ' +
+                   'osg_location_id IS NOT null) AND srid = %s ORDER ' +
+                   'BY osg_location_id', [utils.SITE_OBJECT_NUMBER])
     for (siteId, x, y, z, h, p, r) in cursor:
         cameras.add_camera(viewer_conf_api.camera
                            (name=utils.DEFAULT_CAMERA_PREFIX + str(siteId),
@@ -97,7 +113,7 @@ def main(opts):
     # cursor.execute('select xml_content from preferences')
     # row  = cursor.fetchone()
     # if row == None:
-    #    logging.warn('preferences are not set!. Setting default')
+    #    logger.warn('preferences are not set!. Setting default')
     rootObject.set_preferences(viewer_conf_api.parseString(DEFAULT_PREFENCES))
     # else:
     #    rootObject.set_preferences(viewer_conf_api.parseString(row[0]))
@@ -112,7 +128,7 @@ def main(opts):
         elements = getattr(viewer_conf_api, property + 's')()
         # We need to call the columns and tables with extra "" because
         # they were created from the Access DB
-        cursor.execute('SELECT "' + cName + '" from "' + tName + '"')
+        cursor.execute('SELECT "' + cName + '" FROM "' + tName + '"')
         for (element,) in cursor:
             getattr(elements, 'add_' + property)(getattr(
                 viewer_conf_api, property)(name=element))
@@ -121,12 +137,13 @@ def main(opts):
     rootObject.set_attributes(attributes)
 
     # Add all the static objects, i.e. the OSG from the background
-    cursor.execute('select osg_path from static_objects')
+    # cursor.execute('SELECT osg_path FROM static_objects')
+    cursor.execute('SELECT abs_path FROM OSG_DATA_ITEM_PC_BACKGROUND')
     staticObjects = viewer_conf_api.staticObjects()
     for (osgPath,) in cursor:
         if osgPath.count(opts.osg) == 0:
-            logging.error('Mismatch between given OSG ' +
-                          'data directory and DB content')
+            logger.error('Mismatch between given OSG ' +
+                         'data directory and DB content')
         staticObjects.add_staticObject(viewer_conf_api.staticObject
                                        (url=osgPath.replace(opts.osg, '')))
 
@@ -145,11 +162,19 @@ def main(opts):
                   ('meshes', 'sites_meshes', 'mesh')]
     for (layerName, tableName, inType) in layersData:
         layer = viewer_conf_api.layer(name=layerName)
-        cursor.execute('select site_id, active_object_site_id, osg_path, ' +
-                       'x, y, z, xs, ys, zs, h, p, r, cast_shadow from ' +
-                       'active_objects_sites where active_object_site_id ' +
-                       'in (select active_object_site_id from ' +
-                       tableName + ') order by site_id')
+        # cursor.execute('SELECT site_id, active_object_site_id, osg_path, ' +
+        #               'x, y, z, xs, ys, zs, h, p, r, cast_shadow FROM ' +
+        #               'active_objects_sites WHERE active_object_site_id ' +
+        #               'IN (SELECT active_object_site_id FROM ' +
+        #               tableName + ') ORDER BY site_id')
+        cursor.execute('SELECT osg_location_id, osg_data_item_id, abs_path, ' +
+                       'x, y, z, xs, ys, zs, h, p, r, cast_shadow FROM ' +
+                       'OSG_DATA_ITEM INNER JOIN OSG_LOCATION ON ' +
+                       'OSG_DATA_ITEM.osg_location_id=' +
+                       'OSG_LOCATION.osg_location_id WHERE osg_data_item_id ' +
+                       'IN (SELECT osg_data_item_id FROM ' +
+                       tableName + ') ORDER BY osg_location_id')
+
         rows = cursor.fetchall()
         for (siteId, activeObjectId, osgPath, x, y, z, xs, ys, zs, h, p, r,
              castShadow) in rows:
@@ -167,10 +192,23 @@ def main(opts):
 
     # Add the boundings
     layer = viewer_conf_api.layer(name='boundings')
-    cursor.execute('select site_id, object_id, name, x, y, z, xs, ys, zs, ' +
-                   'h, p, r, cast_shadow from active_objects_sites_objects, ' +
-                   'boundings WHERE active_objects_sites_objects.bounding_id' +
-                   ' = boundings.bounding_id order BY site_id')
+    # cursor.execute('SELECT site_id, object_id, name, x, y, z, xs, ys, zs, ' +
+    #              'h, p, r, cast_shadow FROM active_objects_sites_objects, ' +
+    #              'boundings WHERE active_objects_sites_objects.bounding_id' +
+    #              ' = boundings.bounding_id ORDER BY site_id')
+    # ??? name -> OSG_CAMERA.osg_camera_name ???
+    # ??? bounding_id ???
+    cursor.execute('SELECT osg_location_id, osg_data_item_id, ' +
+                   'osg_camera_name, x, y, z, xs, ys, zs, h, p, r, ' +
+                   'cast_shadow FROM OSG_DATA_ITEM INNER JOIN ' +
+                   'OSG_LOCATION ON OSG_DATA_ITEM.osg_location_id=' +
+                   'OSG_LOCATION.osg_location_id INNER JOIN OSG_LABEL ON ' +
+                   'OSG_LOCATION.osg_location_id=OSG_LABEL.osg_location_id ' +
+                   'INNER JOIN OSG_CAMERA ON OSG_CAMERA.osg_location=' +
+                   'OSG_LOCATION.osg_location_id ' +
+                   'WHERE active_objects_sites_objects.bounding_id' +
+                   ' = boundings.bounding_id ORDER BY site_id')
+
     rows = cursor.fetchall()
     for (siteId, objectNumber, boundingName, x, y, z, xs, ys, zs, h, p, r,
          castShadow) in rows:
@@ -187,9 +225,16 @@ def main(opts):
 
     # Add the labels
     layer = viewer_conf_api.layer(name='labels')
-    cursor.execute('select name, text, red, green, blue, rotatescreen, ' +
-                   'outline, font, x, y, z, xs, ys, zs, h, p, r, ' +
-                   'cast_shadow from active_objects_labels')
+    # cursor.execute('SELECT name, text, red, green, blue, rotatescreen, ' +
+    #               'outline, font, x, y, z, xs, ys, zs, h, p, r, ' +
+    #               'cast_shadow FROM active_objects_labels')
+    # ??? name -> OSG_CAMERA.osg_camera_name ???
+    cursor.execute('SELECT osg_camera_name, text, red, green, blue, ' +
+                   'rotate_screen, outline, font, x, y, z, xs, ys, zs, h, ' +
+                   'p, r, cast_shadow FROM OSG_LABEL INNER JOIN ' +
+                   'OSG_LOCATION ON OSG_LABEL.osg_location_id=' +
+                   'OSG_LOCATION.osg_location_id INNER JOIN OSG_CAMERA ON ' +
+                   'OSG_CAMERA.osg_location_id=OSG_LOCATION.osg_location_id')
     rows = cursor.fetchall()
     for (uname, text, red, green, blue, rotatescreen, outline, font, x, y, z,
          xs, ys, zs, h, p, r, castShadow) in rows:
