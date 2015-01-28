@@ -12,9 +12,9 @@
 import shutil
 import os
 import utils
-import optparse
 import glob
 import subprocess
+import argparse
 
 CONVERTER_COMMAND = 'ViaAppia'
 
@@ -163,21 +163,29 @@ def main(opts):
               opts)
 
 if __name__ == "__main__":
-    usage = 'Usage: %prog [options]'
+    # define argument menu
     description = "Updates DB from the changes in the XML configuration file"
-    op = optparse.OptionParser(usage=usage, description=description)
-    op.add_option('-i', '--config', default='', help='XML configuration file',
-                  type='string')
-    op.add_option('-d', '--dbname', default=utils.DEFAULT_DB,
+    parser = argparse.ArgumentParser(description=description)
+
+    # fill argument groups
+    parser.add_argument('-i', '--config', help='XML configuration file',
+                        action='store') # required?
+    parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
                   help='Postgres DB name [default ' + utils.DEFAULT_DB + ']',
-                  type='string')
-    op.add_option('-u', '--dbuser', default=utils.USERNAME,
+                  action='store')
+    parser.add_argument('-u', '--dbuser', default=utils.USERNAME,
                   help='DB user [default ' + utils.USERNAME +
-                  ']', type='string')
-    op.add_option('-p', '--dbpass', default='', help='DB pass', type='string')
-    op.add_option('-t', '--dbhost', default='', help='DB host', type='string')
-    op.add_option('-r', '--dbport', default='', help='DB port', type='string')
-    op.add_option('-l', '--log', type='string',
-                  default=utils.DEFAULT_LOG_LEVEL)
-    (opts, args) = op.parse_args()
+                  ']', action='store')
+    parser.add_argument('-p', '--dbpass', help='DB pass', action='store')
+    parser.add_argument('-t', '--dbhost', help='DB host', action='store')
+    parser.add_argument('-r', '--dbport', help='DB port', action='store')
+    parser.add_argument('-l', '--log', help='Log level',
+                        choices=['debug', 'info', 'warning', 'error',
+                                 'critical'],
+                        default=utils.DEFAULT_LOG_LEVEL)
+    
+    # extract user entered arguments
+    opts = parser.parse_args()
+
+    # run main
     main(opts)
