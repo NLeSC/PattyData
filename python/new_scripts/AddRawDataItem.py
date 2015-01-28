@@ -7,6 +7,41 @@
 # Modification date:
 # Modifications:
 # Notes:
+#
+# DIR structure RAW:
+#   RAW
+#     |- PC
+#         |_ BACK
+#         |- SITE
+#               |- S1
+#               |- ...
+#               |- Sn
+#     |- MESH
+#           |- BACK
+#                 |- CURR
+#                 |- ARCH_REC
+#           |- SITE
+#                 |- CURR
+#                       |- S1
+#                       |- ...
+#                       |- Sn
+#                 |- ARCH_REC
+#                           |- S1
+#                           |- ...
+#                           |- Sn
+#     |- PICT
+#           |- BACK
+#                 |- CURR
+#                 |- HIST
+#           |- SITE
+#                 |- CURR
+#                       |- S1
+#                       |- ...
+#                       |- Sn
+#                 |- HIST
+#                       |- S1
+#                       |- ...
+#                       |- Sn
 ###############################################################################
 
 import optparse
@@ -16,23 +51,26 @@ import shutil
 import argparse
 import utils
 
+logger = None
 
-def check_required_options(opts, logger):
+
+def check_required_options(opts):
     logger.info('Checking if all required arguments are specified.')
-    if (opts.type == utils.MESH.FT):  # MESHES should have a period defined
-        if not (opts.period == utils.CURR_FT or opts.period == utils.HIST_FT):
+    if (opts.type == utils.MESH_FT):  # MESHES should have a period defined
+        if not (opts.period == utils.CURR_FT or opts.period ==
+                utils.ARCREC_FT):
             logger.error("[ERROR] Period should be '" + utils.CURR_FT +
-                         "' or '" + utils.HIST_FT + "'")
+                         "' or '" + utils.ARCREC_FT + "'")
             parser.error("Period should be '" + utils.CURR_FT + "' or '" +
-                         utils.HIST_FT + "'")
+                         utils.ARCREC_FT + "'")
     elif (opts.type == utils.PIC_FT):  # PICTURES should have a period defined
         if not (opts.period == utils.CURR_FT or
-                opts.period == utils.ARCREC_FT):
+                opts.period == utils.HIST_FT):
             logger.error(
                 "[ERROR] Period should be '" + utils.CURR_FT + "' or '" +
-                utils.ARCREC_FT + "' (--period)")
+                utils.HIST_FT + "' (--period)")
             parser.error("Period should be '" + utils.CURR_FT + "' or '" +
-                         utils.ARCREC_FT + "' (--period)")
+                         utils.HIST_FT + "' (--period)")
     # SITES should have a site number defined
     if (opts.kind == utils.SITE_FT):
         if not (opts.siteno):
@@ -50,7 +88,7 @@ def check_required_options(opts, logger):
                 "Version/reconstruction number should be defined (--verrecno)")
 
 
-def check_directory_structure(RAW_BASEDIR, logger):
+def check_directory_structure(RAW_BASEDIR):
     logger.info('Checking if required directory structure exists.')
     # directory structure
     DIRS = [os.path.join(RAW_BASEDIR, utils.PC_FT, utils.BG_FT),
@@ -68,7 +106,7 @@ def check_directory_structure(RAW_BASEDIR, logger):
             raise IOError("Required directory does not exist: " + directory)
 
 
-def define_create_target_dir(opts, logger):
+def define_create_target_dir(opts):
     logger.info('Creating target directory.')
     target_basedir = os.path.join(opts.data, opts.type, opts.kind)
     # name of input data, only basename, extensions removed
@@ -107,14 +145,15 @@ def define_create_target_dir(opts, logger):
         TARGETDIR = os.path.join(target_basedir,
                                  opts.period, inputname+'V'+str(opts.verrecno))
     if (opts.type == utils.MESH_FT and opts.kind == utils.SITE_FT):
-        TARGETDIR = os.path.join(target_basedir, 'S'+str(opts.siteno),
-                                 opts.period, inputname+'V'+str(opts.verrecno))
+        TARGETDIR = os.path.join(target_basedir, opts.period,
+                                 'S'+str(opts.siteno),
+                                 inputname+'V'+str(opts.verrecno))
     # TARGETDIR for PICT
     if (opts.type == utils.PIC_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(target_basedir, opts.period)
     if (opts.type == utils.PIC_FT and opts.kind == utils.SITE_FT):
-        TARGETDIR = os.path.join(target_basedir,
-                                 'S'+str(opts.siteno), opts.period)
+        TARGETDIR = os.path.join(target_basedir, opts.period,
+                                 'S'+str(opts.siteno))
     # check if TARGETDIR exists, create otherwise
     if not os.path.isdir(TARGETDIR):
         os.makedirs(TARGETDIR)  # create directories recursively
@@ -137,14 +176,16 @@ def copy_data(opts, TARGETDIR):
             if (os.path.isfile(os.path.join(opts.file, file_name))):
                 shutil.copy(os.path.join(opts.file, file_name), TARGETDIR)
     elif os.path.isfile(opts.file):
-        shutil.copyfile(opts.file, TARGETDIR)
+        shutil.copyfile(opts.file, os.path.join(TARGETDIR,
+                                                os.path.basename(opts.file)))
     # if input was a file:
     # copy the file to TARGETDIR
     elif os.path.isfile(opts.file):
         src_files = os.listdir(opts.file)
         for file_name in src_files:
             if (os.path.isfile(os.path.join(opts.file, file_name))):
-                shutil.copy(os.path.join(opts.file, file_name), TARGETDIR)
+                shutil.copy(os.path.join(opts.file, file_name),
+                            os.path.join(TARGETDIR, file_name))
     else:
         logger.error(
             "[ERROR] Input file/directory given as argument for " +
@@ -156,18 +197,19 @@ def copy_data(opts, TARGETDIR):
 
 def main(opts):
     # set logging level
+    global logger
     logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
     logger.info('#######################################')
     logger.info('Starting script AddRawDataItem.py')
     logger.info('#######################################')
     # check if all required options are specified
-    check_required_options(opts, logger)
+    check_required_options(opts)
     # check if the required directory structure exists
-    check_directory_structure(opts.data, logger)
+    check_directory_structure(opts.data)
     # define target directory
-    TARGETDIR = define_create_target_dir(opts, logger)
+    TARGETDIR = define_create_target_dir(opts)
     # copy the data to the target directory
-    copy_data(opts, TARGETDIR, logger)
+    copy_data(opts, TARGETDIR)
 
 
 if __name__ == "__main__":
