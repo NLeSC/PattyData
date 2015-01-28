@@ -19,4 +19,4 @@ Modify configuration file in /etc/nginx/nginx.conf
         
 3 - To add authentication see https://www.digitalocean.com/community/tutorials/how-to-set-up-http-authentication-with-nginx-on-ubuntu-12-10
 
- 
+ htpasswd -c /etc/nginx/.htpasswd exampleuser

@@ -10,7 +10,7 @@ import liblas
 DATA_FOLDER = ''
 DB_NAME = ''
 TYPES = 'rop'
-ITEMTYPES = 'pmi'
+DATA_ITEM_TYPES_CHARS = 'pmi'
 USERNAME = ''
 SITE_BACKGROUND_ID = -1
 
@@ -23,15 +23,17 @@ initialTime = utils.getCurrentTime()
 cursor = None
 dataAbsPath = None
 
+def getDataItemTypes(ditypes):
+    dataItemtypes = []
+    if 'p' in ditypes:
+        dataItemtypes.append(PC_FT)
+    if 'm' in ditypes:
+        dataItemtypes.append(MESH_FT)
+    if 'i' in ditypes:
+        dataItemtypes.append(PIC_FT)
+        
 def readLASInfo(absPath):
     """ Gets information of the LAS/LAZ files in the asbPath"""
-    name = os.path.basename(absPath) 
-    color8bit = name.count('_8BC') > 0
-    aligned = name.count('_ALIGNED_') > 0
-    backgroundAligned = None
-    if aligned:
-        backgroundAligned = name[name.index('_ALIGNED_')+len('_ALIGNED_'):].replace('_8BC','').split('.')[0]
-    
     (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz) =  (None, 0, None, None, None, None, None, None, None)
     if os.path.isdir(absPath):
         lasfiles = glob.glob(absPath + '/*las')
@@ -71,8 +73,31 @@ def readLASInfo(absPath):
         [minx, miny, minz] = lasHeader.get_min()
         [maxx, maxy, maxz] = lasHeader.get_max()
         
-    return (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit, aligned, backgroundAligned)
+    return (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz)
 
+def readPictureInfo(absPath):
+    (srid, x, y, z, dx, dy, dz) = (None, None, None, None, None, None, None)
+    return (srid, x, y, z, dx, dy, dz)
+
+def is8BitColor(absPath):
+    name = os.path.basename(absPath) 
+    return name.count('_8BC') > 0
+    
+def isAligned(absPath):
+    name = os.path.basename(absPath) 
+    aligned = name.count('_ALIGNED_') > 0
+    backgroundAligned = None
+    if aligned:
+        backgroundAligned = name[name.index('_ALIGNED_')+len('_ALIGNED_'):].replace('_8BC','').split('.')[0]
+    return (aligned, backgroundAligned)
+
+def isThumbnail(absPath):
+    name = os.path.basename(absPath) 
+    return name.lower().count('_thumb') > 0
+
+def isCurrent(absPath):
+    return (os.path.basename(os.path.abspath(absPath + '/../..')) == CURR_FT)
+    
 def main(opts):
     # Set logging
     logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', datefmt="%Y/%m/%d/%H:%M:%S", level=getattr(logging, opts.log))
@@ -82,65 +107,68 @@ def main(opts):
     connection = psycopg2.connect(utils.postgresConnectString(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport, False))
     cursor = connection.cursor()
     
+    dataItemTypes = getDataItemTypes(opts.ditypes)
+    
     # The data path
     dataAbsPath = os.path.abspath(opts.data)
     
-    if 'r' in opts.types:
-        process(dataAbsPath + '/' + RAW_FT, opts.itemtypes, addRawPointCloud, addRawMesh, addRawPicture)
-    
-    if 'o' in opts.types:
-        processOSG(dataAbsPath + '/' + OSG_FT, opts.itemtypes)
-    
-    if 'p' in opts.types:
-        processPOTree(dataAbsPath + '/' + POT_FT, opts.itemtypes)
-    
-    if 'p' in opts.types:
-        cleanPOTree(dataAbsPath + '/' + POT_FT, opts.itemtypes)
-    
-    if 'o' in opts.types:
-        cleanOSG(dataAbsPath + '/' + OSG_FT, opts.itemtypes)
+    rawDataAbsPath = dataAbsPath + '/' + RAW_FT
+    osgDataAbsPath = dataAbsPath + '/' + OSG_FT
+    potDataAbsPath = dataAbsPath + '/' + POT_FT
     
     if 'r' in opts.types:
-        cleanRaw(dataAbsPath + '/' + RAW_FT, opts.itemtypes)
+        process(rawDataAbsPath, dataItemTypes, addRawDataItem)
+    
+    if 'o' in opts.types:
+        process(osgDataAbsPath, dataItemTypes, addOSGDataItem)
+    
+    if 'p' in opts.types:
+        process(potDataAbsPath, dataItemTypes, addPOTDataItem)
+    
+    if 'p' in opts.types:
+        cleanPOTree(potDataAbsPath, dataItemTypes)
+    
+    if 'o' in opts.types:
+        cleanOSG(osgDataAbsPath, dataItemTypes)
+    
+    if 'r' in opts.types:
+        cleanRaw(rawDataAbsPath, dataItemTypes)
 
     if 'o' in opts.types:
-        os.system('touch ' + dataAbsPath + '/' + OSG_FT + '/LAST_MOD')
+        os.system('touch ' + osgDataAbsPath + '/LAST_MOD')
 
     cursor.close()
     coonection.close()
 
-def process(absPath, itemtypes, addPointCloudMethod, addMeshMethod, addPictureMethod):
-    if 'p' in itemtypes:
-        # Process point clouds
-        pcsAbsPath = absPath + '/' + PC_FT
-        processBackgrounds(pcsAbsPath + '/' + BG_FT, addPointCloudMethod)
-        processSites(pcsAbsPath + '/' + SITE_FT, addPointCloudMethod)
-        
-    if 'm' in itemtypes:
-        # Process meshes
-        meshesAbsPath = absPath + '/' + MESH_FT 
-        processBackgrounds(meshesAbsPath + '/' + BG_FT + '/' + CURR_FT , addMeshMethod)
-        processBackgrounds(meshesAbsPath + '/' + BG_FT + '/' + ARCREC_FT , addMeshMethod)
-        processSites(meshesAbsPath + '/' + SITE_FT + '/' + CURR_FT , addMeshMethod)
-        processSites(meshesAbsPath + '/' + SITE_FT + '/' + ARCREC_FT , addMeshMethod)
-        
-    if 'i' in itemtypes:
-        # Process pictures
-        picturesAbsPath = absPath + '/' + PIC_FT 
-        processBackgrounds(picturesAbsPath + '/' + BG_FT + '/' + CURR_FT, addPictureMethod)
-        processBackgrounds(picturesAbsPath + '/' + BG_FT + '/' + HIST_FT, addPictureMethod)
-        processSites(picturesAbsPath + '/' + SITE_FT + '/' + CURR_FT, addPictureMethod)
-        processSites(picturesAbsPath + '/' + SITE_FT + '/' + HIST_FT, addPictureMethod)
-
-def processBackgrounds(absPath, addMethod):
+def process(absPath, dataItemTypes, addDataItemMethod):
+    for dataItemType in (PC_FT, MESH_FT, PIC_FT):
+        if dataItemType in dataItemTypes:
+            disAbsPath =  absPath + '/' + dataItemType
+            bdisAbsPath = disAbsPath + '/' + BG_FT
+            sdisAbsPath = disAbsPath + '/' + SITE_FT
+    
+            if dataItemType == PC_FT:
+                processBackgrounds(bdisAbsPath, addDataItemMethod, dataItemType)
+                processSites(sdisAbsPath, addDataItemMethod, dataItemType)
+            else:
+                processBackgrounds(bdisAbsPath + '/' + CURR_FT , addDataItemMethod, dataItemType)
+                processSites(sdisAbsPath + '/' + CURR_FT , addDataItemMethod, dataItemType)
+                if dataItemType == MESH_FT:
+                    processBackgrounds(bdisAbsPath + '/' + ARCREC_FT , addDataItemMethod, dataItemType)
+                    processSites(sdisAbsPath + '/' + ARCREC_FT , addDataItemMethod, dataItemType)
+                else:
+                    processBackgrounds(bdisAbsPath + '/' + HIST_FT , addDataItemMethod, dataItemType)
+                    processSites(sdisAbsPath + '/' + HIST_FT , addDataItemMethod, dataItemType)
+                
+def processBackgrounds(absPath, addMethod, dataItemType):
     t0 = time.time()
     logging.info('Processing ' + absPath)
     backgrounds = os.listdir(absPath)
     for background in backgrounds:
-        addMethod(absPath + '/' + background, SITE_BACKGROUND_ID)
+        addMethod(absPath + '/' + background, SITE_BACKGROUND_ID, dataItemType)
     logging.info('Processing ' + absPath + ' finished in %.2f' % (time.time() - t0))
 
-def processSites(absPath, addMethod):
+def processSites(absPath, addMethod, dataItemType):
     t0 = time.time()
     logging.info('Processing ' + absPath)
     sites = os.listdir(absPath)
@@ -149,348 +177,125 @@ def processSites(absPath, addMethod):
         siteAbsPath = absPath + '/' + site
         sitePCs = os.listdir(siteAbsPath)
         for sitePC in sitePCs:
-            addMethod(siteAbsPath + '/' + sitePC, siteId)
+            addMethod(siteAbsPath + '/' + sitePC, siteId, dataItemType)
     logging.info('Processing ' + absPath + ' finished in %.2f' % (time.time() - t0))
 
-def cleanRaw(rawAbsPath, itemtypes):
-    if 'p' in itemtypes:
-        # Clean point clouds
-        logging.info('Cleaning raw point cloud in ' + bgRawPCAbsPath)
-        utils.dbExecute(cursor, 'SELECT site_data_item_id, siteId, abs_path FROM SITE_DATA_ITEM, SITE_PC WHERE site_pc_id = site_data_item_id AND last_check < %s', [initialTime,])
-        for (siteDataItemId, siteId, absPath) in cursor:
+def cleanRaw(rawDataAbsPath, dataItemTypes):
+    logging.info('Cleaning raw data items...') 
+    if PC_FT in dataItemTypes:
+        utils.dbExecute(cursor, 'SELECT A.raw_data_item_id, A.itemId, abs_path FROM RAW_DATA_ITEM A, RAW_DATA_ITEM_PC B WHERE A.raw_data_item_id = B.raw_data_item_id AND A.last_check < %s', [initialTime,])
+        rows = cursor.fetchall()
+        for (rawDataItemId, itemId, absPath) in rows:
             if os.path.isfile(absPath) or os.path.isdir(absPath):
-                logging.error('Data item in ' + absPath + ' has not been checked!')
+                logging.error('Raw data item in ' + absPath + ' has not been checked!')
             else: # There is not any file or folder in that location -> we try to delete all references of this one
-                cursor.execute("""
-                SELECT count(*) FROM 
-                (SELECT site_pc_id FROM ALIGNED_SITE_MESH WHERE site_pc_id = %s
-                    UNION
-                SELECT site_pc_id FROM ALIGNED_SITE_PC WHERE site_pc_id = %s OR site_background_pc_id = %s
-                    UNION
-                SELECT site_pc_id FROM POTREE_SITE_PC_ID WHERE site_pc_id = %s
-                    UNION
-                SELECT site_pc_id FROM OSG_SITE_PC_ID WHERE site_pc_id = %s
-                    UNION
-                SELECT site_pc_id FROM OSG_SITE_BACKGROUND_PC_ID WHERE site_pc_id = %s) A
-                """, [siteDataItemId, siteDataItemId, siteDataItemId, siteDataItemId, siteDataItemId, siteDataItemId])
-                if cursor.fetchone()[0] == 0:
-                    utils.dbExecute(cursor, 'DELETE FROM SITE_PC WHERE site_pc_id = %s', [siteDataItemId,])
-                    utils.dbExecute(cursor, 'DELETE FROM ALIGNED_SITE_MESH WHERE site_pc_id = %s', [siteDataItemId,])
-                    utils.dbExecute(cursor, 'DELETE FROM ALIGNED_SITE_PC WHERE site_pc_id = %s OR site_background_pc_id = %s', [siteDataItemId,siteDataItemId])
-                    utils.dbExecute(cursor, 'DELETE FROM SITE_DATA_ITEM WHERE site_pc_id = %s', [siteDataItemId,])
+                cursor.execute('SELECT count(*) FROM ALIGNED_RAW_DATA_ITEM_MESH WHERE raw_data_item_pc_background_id = %s', [rawDataItemId,])
+                num_dependancies = cursor.fetchone()[0]
+                cursor.execute('SELECT count(*) FROM ALIGNED_RAW_DATA_ITEM_PC WHERE raw_data_item_pc_background_id = %s', [rawDataItemId,])
+                num_dependancies += cursor.fetchone()[0]
+                cursor.execute('SELECT count(*) FROM POTREE_DATA_ITEM_PC WHERE raw_data_item_id = %s', [rawDataItemId,])
+                num_dependancies += cursor.fetchone()[0]
+                cursor.execute('SELECT count(*) FROM OSG_DATA_ITEM_PC_SITE WHERE raw_data_item_id = %s', [rawDataItemId,])
+                num_dependancies += cursor.fetchone()[0]
+                cursor.execute('SELECT count(*) FROM OSG_DATA_ITEM_PC_BACKGROUND WHERE raw_data_item_id = %s', [rawDataItemId,])
+                num_dependancies += cursor.fetchone()[0]
+                
+                if num_dependancies == 0:
+                    utils.dbExecute(cursor, 'DELETE FROM RAW_DATA_ITEM_PC WHERE raw_data_item_id = %s', [rawDataItemId,])
+                    utils.dbExecute(cursor, 'DELETE FROM ALIGNED_RAW_DATA_ITEM_PC WHERE raw_data_item_pc_site_id = %s', [rawDataItemId, ])
+                    utils.dbExecute(cursor, 'DELETE FROM RAW_DATA_ITEM WHERE raw_data_item_id = %s', [rawDataItemId,])
                 else:
                     logging.warning('Can not delete entry for removed ' + absPath + '. Related data items still there!')
-    if 'm' in itemtypes:
-        # Clean meshes
-        rawMeshesAbsPath = rawAbsPath + '/' + MESH_FT 
+    if MESH_FT in dataItemTypes:
+        utils.dbExecute(cursor, 'SELECT A.raw_data_item_id, A.itemId, abs_path FROM RAW_DATA_ITEM A, RAW_DATA_ITEM_MESH B WHERE A.raw_data_item_id = B.raw_data_item_id AND A.last_check < %s', [initialTime,])
+        rows = cursor.fetchall()
+        for (rawDataItemId, itemId, absPath) in rows:
+            if os.path.isfile(absPath) or os.path.isdir(absPath):
+                logging.error('Raw data item in ' + absPath + ' has not been checked!')
+            else: # There is not any file or folder in that location -> we try to delete all references of this one
+                cursor.execute('SELECT count(*) FROM OSG_DATA_ITEM_MESH WHERE raw_data_item_id = %s', [rawDataItemId,])
+                num_dependancies = cursor.fetchone()[0]
+                if num_dependancies == 0:
+                    utils.dbExecute(cursor, 'DELETE FROM RAW_DATA_ITEM_MESH WHERE raw_data_item_id = %s', [rawDataItemId,])
+                    utils.dbExecute(cursor, 'DELETE FROM RAW_DATA_ITEM WHERE raw_data_item_id = %s', [rawDataItemId,])
+                else:
+                    logging.warning('Can not delete entry for removed ' + absPath + '. Related data items still there!')
         
-    if 'i' in itemtypes:
-        # Clean pictures
-        rawPicturesAbsPath = rawAbsPath + '/' + PIC_FT 
+    if PIC_FT in dataItemTypes:
+        utils.dbExecute(cursor, 'SELECT A.raw_data_item_id, A.itemId, abs_path FROM RAW_DATA_ITEM A, RAW_DATA_ITEM_PICTURE B WHERE A.raw_data_item_id = B.raw_data_item_id AND A.last_check < %s', [initialTime,])
+        rows = cursor.fetchall()
+        for (rawDataItemId, itemId, absPath) in rows:
+            if os.path.isfile(absPath) or os.path.isdir(absPath):
+                logging.error('Raw data item in ' + absPath + ' has not been checked!')
+            else: # There is not any file or folder in that location -> we try to delete all references of this one
+                cursor.execute('SELECT count(*) FROM OSG_DATA_ITEM_PICTURE WHERE raw_data_item_id = %s', [rawDataItemId,])
+                num_dependancies = cursor.fetchone()[0]
+                if num_dependancies == 0:
+                    utils.dbExecute(cursor, 'DELETE FROM RAW_DATA_ITEM_PICTURE WHERE raw_data_item_id = %s', [rawDataItemId,])
+                    utils.dbExecute(cursor, 'DELETE FROM RAW_DATA_ITEM WHERE raw_data_item_id = %s', [rawDataItemId,])
+                else:
+                    logging.warning('Can not delete entry for removed ' + absPath + '. Related data items still there!') 
 
-
-def addRawPointCloud(pcAbsPath, siteId):
-    modTime = utils.getCurrentTime(utils.getLastModification(pcAbsPath))
-    utils.dbExecute(cursor, 'SELECT site_data_item_id, last_mod FROM SITE_DATA_ITEM WHERE abs_path = %s', [pcAbsPath,])
+def addRawDataItem(absPath, itemId, dataItemType):
+    modTime = utils.getCurrentTime(utils.getLastModification(absPath))
+    utils.dbExecute(cursor, 'SELECT raw_data_item_id, last_mod FROM RAW_DATA_ITEM WHERE abs_path = %s', [absPath,])
     row = cursor.fetchone()
     if row == None: #This folder has been added recently
-        utils.dbExecute(cursor, "INSERT INTO SITE_DATA_ITEM (site_data_item_id, site_id, abs_path, last_mod, last_check) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING site_data_item_id", 
-                        [siteId, pcAbsPath, modTime, initialTime])
-        siteDataItemId = cursor.fetchone()[0]
-        (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit, aligned, backgroundAligned) = readLASInfo(pcAbsPath)        
-        utils.dbExecute(cursor, "INSERT INTO SITE_PC (site_pc_id, srid, number_points, extension, minx, miny, minz, maxx, maxy, maxz, color_8bit) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
-                        [siteDataItemId, srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit])
-        if aligned:
-            backgroundPath = dataAbsPath + '/' + RAW_FT + '/' + PC_FT + '/' + BG_FT + '/' + backgroundAligned
-            utils.dbExecute(cursor, 'SELECT site_data_item_id FROM SITE_DATA_ITEM WHERE abs_path = %s', [backgroundPath,])
-            row = cursor.fetchone()
-            if row == None:
-                logging.error('Specified background in alignment of ' + pcAbsPath + ' not found!')
-            else:
-                backgroundId = row[0]
-                utils.dbExecute(cursor, "INSERT INTO ALIGNED_SITE_PC (site_pc_id, site_background_pc_id) VALUES (%s,%s)", 
-                        [siteDataItemId, backgroundId])
-    else:
-        (siteDataItemId, lastModDB) = row
-        if modTime > lastModDB: #Data has changed
-            utils.dbExecute(cursor, 'UPDATE SITE_DATA_ITEM SET (last_mod, last_check) = (%s, %s) WHERE site_data_item_id = %s', [modTime, initialTime, siteDataItemId])
-            (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit) = readLASInfo(pcAbsPath)        
-            utils.dbExecute(cursor, "UPDATE SITE_PC SET (srid, number_points, extension, minx, miny, minz, maxx, maxy, maxz, color_8bit) = (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
-                        [srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit])
-        else: # Data has not changed. Just update checkTime
-            utils.dbExecute(cursor, 'UPDATE SITE_DATA_ITEM SET last_check=%s WHERE site_data_item_id = %s', [initialTime, siteDataItemId])
-
-
-
-
-# OLD CODE 
-def processPCBackgrounds(backgroundsAbsPath, osgBackgroundsAbsPath):
-    t0 = time.time()
-    cursor = connection.cursor()
-    logging.info('Processing PC backgrounds in ' + backgroundsAbsPath)
-    backgrounds = os.listdir(backgroundsAbsPath)
-    for background in backgrounds:
-        backgroundAbsPath = os.path.join(backgroundsAbsPath, background)
-        osgBackgroundAbsPath = os.path.join(osgBackgroundsAbsPath, background)
-        extension = checkExtension(backgroundAbsPath)
-        if extension != None:
-            checkedTime = utils.getCurrentTime()
-            modTime = utils.getCurrentTime(utils.getLastModification(backgroundAbsPath))
-            utils.dbExecute(cursor, 'SELECT static_object_id, last_mod FROM backgrounds_pc WHERE pc_folder = %s', [backgroundAbsPath,])
-            row = cursor.fetchone()
-            if row == None: #This folder has been added recently                
-                (mainOSGB, _, offsets) = createOSG(os.path.join(backgroundAbsPath, '*' + extension), osgBackgroundAbsPath, 'bg')
-                if mainOSGB != None:
-                    utils.dbExecute(cursor, 'INSERT INTO static_objects (static_object_id, osg_path) VALUES (DEFAULT,%s) RETURNING static_object_id', [mainOSGB,])
-                    staticObjectId = cursor.fetchone()[0]
-                    utils.dbExecute(cursor, 'INSERT INTO backgrounds_pc (background_pc_id, static_object_id, pc_folder, offset_x, offset_y, offset_z, last_mod) VALUES (DEFAULT, %s,%s,%s,%s,%s,%s)', [staticObjectId, backgroundAbsPath, offsets[0], offsets[1], offsets[2], modTime])
-            else:
-                (staticObjectId, timeStamp) = row
-                if modTime > timeStamp:
-                    # Data has changed, we re-create the OSG data
-                    (mainOSGB, _, offsets) = createOSG(os.path.join(backgroundAbsPath, '*' + extension), osgBackgroundAbsPath, 'bg')
-                    if mainOSGB != None:
-                        utils.dbExecute(cursor, 'UPDATE backgrounds_pc SET (offset_x, offset_y, offset_z, last_mod) = (%s,%s,%s, %s) WHERE static_object_id = %s', [offsets[0], offsets[1], offsets[2], modTime, staticObjectId])           
-                    else:
-                        utils.dbExecute(cursor, 'DELETE FROM static_objects WHERE static_object_id = %s', [staticObjectId,])
-                        utils.dbExecute(cursor, 'DELETE FROM backgrounds_pc WHERE static_object_id = %s', [staticObjectId,])
-            
-            utils.dbExecute(cursor, 'UPDATE backgrounds_pc SET last_check=%s WHERE pc_folder = %s', [checkedTime, backgroundAbsPath,])
-    
-    # Clean removed folders
-    utils.dbExecute(cursor, 'DELETE FROM backgrounds_pc WHERE last_check < %s RETURNING static_object_id', [initialTime,])
-    rows = cursor.fetchall()
-    for (staticObjectId,) in rows:
-        utils.dbExecute(cursor, 'DELETE FROM static_objects WHERE static_object_id = %s RETURNING osg_path', [staticObjectId,])
-        osgPath = cursor.fetchone()[0]
-        shutil.rmtree(os.path.dirname(osgPath))
-      
-    logging.info('PC backgrounds processing finished in %.2f' % (time.time() - t0))
-    cursor.close()
-
-
-def processSites(inType, sitesAbsPath, osgSitesAbsPath, backgroundsAbsPath = None, cleanDB = False):
-    t0 = time.time()
-    if inType == 'pc':
-        (tableName, idCol, pathCol) = ('sites_pc', 'site_pc_id', 'pc_path')
-    elif inType == 'mesh':
-        (tableName, idCol, pathCol) = ('sites_meshes', 'site_mesh_id', 'obj_path')
-    elif inType == 'pic':
-        (tableName, idCol, pathCol) = ('sites_pictures', 'site_picture_id', 'pic_path')
-    else:
-        raise Exception('Unknown type ' + inType)
-
-    cursor = connection.cursor()
-    logging.info('Processing sites ' + inType + ' in ' + sitesAbsPath)
-    sites = os.listdir(sitesAbsPath)
-    for site in sites:
-        siteAbsPath = os.path.join(sitesAbsPath, site)
-        osgSiteAbsPath = os.path.join(osgSitesAbsPath, site)
-        siteId = checkSiteId(siteAbsPath)
-        if siteId != None:
-            for f in os.listdir(siteAbsPath):
-                siteElementAbsPath = os.path.join(siteAbsPath, f)
-                logging.debug('Processing ' + siteElementAbsPath)
-                processElement = True
-                color8Bit = None
-                (aligned, alignedBackgroundId, abOffsetX, abOffsetY, abOffsetZ) = (None,None,None,None,None)
-                if inType == 'pc':
-                    extension = siteElementAbsPath.split('.')[-1]
-                    osgElementAbsPath = os.path.join(osgSiteAbsPath, f).replace('.' + extension,'')
-                    color8Bit = (siteElementAbsPath.lower().count('8bitcolor') > 0)
-                    (aligned, alignedBackgroundId, abOffsetX, abOffsetY, abOffsetZ) = getAlignmentInfo(cursor, siteElementAbsPath, backgroundsAbsPath)
-                    if extension not in PC_EXTENSIONS:
-                        logging.error('Ignoring file ' + siteElementAbsPath + ': not a valid extension (' + ','.join(PC_EXTENSIONS) + ')')
-                        processElement = False
-                elif inType == 'mesh':
-                    objFiles = glob.glob(os.path.join(siteElementAbsPath, '*.obj'))
-                    osgElementAbsPath = os.path.join(osgSiteAbsPath, f)
-                    (aligned, alignedBackgroundId, abOffsetX, abOffsetY, abOffsetZ) = getAlignmentInfo(cursor, siteElementAbsPath, backgroundsAbsPath)
-                    if len(objFiles) > 1:
-                        logging.error('Ignoring mesh folder ' + siteElementAbsPath + ': multiple OBJ files found')
-                        processElement = False
-                    elif len(objFiles) == 1:
-                        siteElementAbsPath = objFiles[0]
-                elif inType == 'pic':
-                    extension = siteElementAbsPath.split('.')[-1]
-                    osgElementAbsPath = os.path.join(osgSiteAbsPath, f).replace('.' + extension,'')
-                    
-                if processElement:
-                    checkedTime = utils.getCurrentTime()
-                    modTime = utils.getCurrentTime(utils.getLastModification(siteElementAbsPath))
-                    utils.dbExecute(cursor, 'SELECT active_object_site_id, last_mod FROM ' + tableName + ' WHERE ' + pathCol + ' = %s', [siteElementAbsPath,])
-                    row = cursor.fetchone()
-                    if row == None: # This element has been added recently
-                        (mainOSGB, xmlPath, offsets) = createOSG(siteElementAbsPath, osgElementAbsPath, inType, abOffsetX, abOffsetY, abOffsetZ, color8Bit)
-                        if xmlPath != None:
-                            if abOffsetX != None and offsets[0] != 0:
-                                (x,y,z) = (offsets[0], offsets[1], offsets[2])
-                            else:
-                                (x,y) = utils.getPositionFromFootprint(cursor, siteId, backgroundsAbsPath)
-                                z = utils.DEFAULT_Z
-                
-                            utils.dbExecute(cursor, 'INSERT INTO active_objects_sites (active_object_site_id, site_id, osg_path, xml_path, x,y,z,cast_shadow) VALUES (DEFAULT,%s,%s,%s,%s,%s,%s,%s) RETURNING active_object_site_id', [siteId, mainOSGB, xmlPath, x, y, z, False])
-                            activeObjectId = cursor.fetchone()[0]
-                            colNames = [idCol, 'active_object_site_id', pathCol, 'last_mod']
-                            colPatts = ['DEFAULT','%s','%s','%s']
-                            colValues = [activeObjectId, siteElementAbsPath, modTime]
-                            if aligned != None:
-                                colNames.append('aligned')
-                                colPatts.append('%s')
-                                colValues.append(aligned)
-                            if color8Bit != None:
-                                colNames.append('color_8_bit')
-                                colPatts.append('%s')
-                                colValues.append(color8Bit)                        
-                            utils.dbExecute(cursor, 'INSERT INTO ' + tableName + ' (' + ','.join(colNames) + ') VALUES (' + ','.join(colPatts) + ') RETURNING ' + idCol, colValues)
-                            elementId = cursor.fetchone()[0]
-                            if aligned:
-                                utils.dbExecute(cursor, 'INSERT INTO aligned_' + tableName + ' (' + idCol + ', background_pc_id) VALUES (%s,%s)', [elementId, alignedBackgroundId])
-                            updateXMLDescription(xmlPath, siteId, inType, activeObjectId, mainOSGB)
-                    else:
-                        (activeObjectId, timeStamp) = row
-                        if modTime > timeStamp:
-                            # Data has changed, we re-create the OSG data
-                            (mainOSGB, xmlPath, offsets) = createOSG(siteElementAbsPath, osgElementAbsPath, inType, abOffsetX, abOffsetY, abOffsetZ, color8Bit)
-                            updateXMLDescription(xmlPath, siteId, inType, activeObjectId, mainOSGB)
-                            if xmlPath != None:
-                                utils.dbExecute(cursor, 'UPDATE ' + tableName + ' SET last_mod = %s WHERE active_object_site_id = %s', [modTime, activeObjectId])
-                                #utils.dbExecute(cursor, 'UPDATE active_objects SET (x,y,z) = (%s,%s,%s) WHERE active_object_id = %s', [offsets[0], offsets[1], offsets[2], activeObjectId])                
-                            else:
-                                utils.dbExecute(cursor, 'DELETE FROM active_objects_sites WHERE active_object_site_id = %s', [activeObjectId,])
-                                utils.dbExecute(cursor, 'DELETE FROM ' + tableName + ' WHERE active_object_site_id = %s', [activeObjectId,])
-                                # Remove possible row in aligned_sites_pc (Done by the ON DELETE CASCADE in Foreign key)
-                    utils.dbExecute(cursor, 'UPDATE ' + tableName + ' SET last_check = %s WHERE ' + pathCol + ' = %s', [checkedTime, siteElementAbsPath,])    
-    if cleanDB:
-        #Clean removed folders
-        utils.dbExecute(cursor, 'DELETE FROM ' + tableName + ' WHERE last_check < %s RETURNING active_object_site_id', [initialTime,])
-        rows = cursor.fetchall()
-        for (activeObjectId,) in rows:
-            utils.dbExecute(cursor, 'DELETE FROM active_objects_sites WHERE active_object_site_id = %s', [activeObjectId,])
-    #Clean old OSG folders that are not linked in the DBs
-    if os.path.isdir(osgSitesAbsPath):
-        osites = os.listdir(osgSitesAbsPath )
-        for osite in osites:
-            osgSiteAbsPath = os.path.join(osgSitesAbsPath, osite)
-            for f in os.listdir(osgSiteAbsPath):
-                osgSiteElementAbsPath = os.path.join(osgSiteAbsPath, f)
-                osgFiles = sorted(glob.glob(os.path.join(osgSiteElementAbsPath,'*' + getOSGFileFormat(inType))))
-                if len(osgFiles) == 0:
-                    logging.info('Folder ' + osgSiteElementAbsPath + ' does not contain OSG data. Deleting it...')
-                    shutil.rmtree(osgSiteElementAbsPath)
-                else:
-                    osgFile = osgFiles[0]
-                    utils.dbExecute(cursor, 'SELECT active_object_site_id FROM active_objects_sites WHERE osg_path = %s', [osgFile,])
-                    row = cursor.fetchone()
-                    if row == None:
-                        logging.info('Folder ' + osgSiteElementAbsPath + ' contains unlinked OSG data. Deleting it...')
-                        shutil.rmtree(osgSiteElementAbsPath)
-    logging.info('Sites ' + inType + ' in ' + sitesAbsPath + ' processing finished in %.2f' % (time.time() - t0))
-    cursor.close()
-
-def getAlignmentInfo(cursor, absPath, backgroundsAbsPath):
-    (aligned, alignedBackgroundId, abOffsetX,abOffsetY,abOffsetZ) = ((absPath.lower().count('_aligned_') > 0), None, None, None, None)
-    if aligned:
-        background =  os.path.basename(absPath)[os.path.basename(absPath).lower().index('_aligned_')+len('_aligned_'):].split('.')[0]
-        backgroundAbsPath = os.path.join(backgroundsAbsPath, background)
-        utils.dbExecute(cursor, 'SELECT background_pc_id, offset_x, offset_y, offset_z FROM backgrounds_pc WHERE pc_folder = %s', [backgroundAbsPath,])
-        row = cursor.fetchone()
-        if row == None:
-            logging.warn('Ignoring alignment information: unknown background ' + backgroundAbsPath)
-            aligned = False
-        else:
-            (alignedBackgroundId, abOffsetX,abOffsetY,abOffsetZ) = row
-    return (aligned, alignedBackgroundId, abOffsetX,abOffsetY,abOffsetZ)
-
-def getOSGFileFormat(inType):
-#    if inType == 'pic':
-#        return 'osgt'
-    return 'osgb'
-
-def updateXMLDescription(xmlPath, siteId, inType, activeObjectId, fileName = None):
-    tempFile = xmlPath + '_TEMP'
-    ofile = open(tempFile,'w')
-    lines = open(xmlPath,'r').readlines()
-    for line in lines:
-        if line.count('<description>'):
-            ofile.write('    <description>' + utils.getOSGDescrition(siteId, inType, activeObjectId, os.path.basename(os.path.dirname(fileName))) + '</description>\n')
-        else:
-            ofile.write(line)
-    os.system('rm ' + xmlPath)
-    os.system('mv ' + tempFile + ' ' + xmlPath)
-
-def createOSG(inFile, outFolder, inType, abOffsetX = None, abOffsetY = None, abOffsetZ = None, color8Bit = False):
-    (mainOsgb, xmlPath, offsets) = (None, None, (0,0,0))
-    
-    if os.path.exists(outFolder):
-        os.system('rm -rf ' + outFolder) 
-    os.makedirs(outFolder)
-    
-    os.chdir(os.path.dirname(inFile))
-    outputPrefix = 'data'
-    aligned = (abOffsetX != None)
-    
-    ofile = getOSGFileFormat(inType)
-    if inType == 'pc':
-        tmode = '--mode lodPoints --reposition'
-#        outputPrefix = 'data' + os.path.basename(inFile)
-    elif inType == 'mesh':
-        tmode = '--mode polyMesh --convert --reposition'
-    elif inType == 'bg':
-        tmode = '--mode quadtree --reposition'
-    elif inType == 'pic':
-        tmode = '--mode picturePlane'
-    
+        utils.dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM (raw_data_item_id, item_id, abs_path, last_mod, last_check) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING raw_data_item_id", 
+                        [itemId, absPath, modTime, initialTime])
+        rawDataItemId = cursor.fetchone()[0]
         
-    command = CONVERTER_COMMAND + ' ' + tmode + ' --outputPrefix ' + outputPrefix + ' --files ' + os.path.basename(inFile)
-    if color8Bit:
-        command += ' --8bitColor '
-    if aligned:
-        command +=  ' --translate ' + str(abOffsetX) + ' ' + str(abOffsetY) + ' ' + str(abOffsetZ)
-    
-    logFile = os.path.join(outFolder,outputPrefix + '.log')
-    command += ' &> ' + logFile
-
-    logging.info(command)
-    #os.system(command)
-    subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True).communicate()
-   
-#     if inType == 'mesh':
-#         rmcommand = 'rm -rf ' + inFile.replace('.obj', '2.obj')
-#         logging.info(rmcommand)
-#         os.system(rmcommand)
- 
-    mvcommand = 'mv ' + outputPrefix + '* ' + outFolder
-    logging.info(mvcommand)
-    os.system(mvcommand)
-    outputPrefix += os.path.basename(inFile)
-
-    ofiles = sorted(glob.glob(os.path.join(outFolder,'*' + ofile)))
-    if len(ofiles) == 0:
-        logging.error('none OSG file was generated (found in ' + outFolder + '). Check log: ' + logFile)
-        mainOsgb = None
-    else:
-        mainOsgb = ofiles[0]
-        if inType != 'bg':
-            xmlfiles = glob.glob(os.path.join(outFolder,'*xml'))
-            if len(xmlfiles) == 0:
-                logging.error('none XML file was generated (found in ' + outFolder + '). Check log: ' + logFile)
-                xmlPath = None
-            else:
-                xmlPath = xmlfiles[0]
-                if len(xmlfiles) > 1:
-                    logging.error('multiple XMLs file were generated (found in ' + outFolder + '). Using ' + xmlPath)
-        txtfiles =  glob.glob(os.path.join(outFolder,'*offset.txt'))
-        if len(txtfiles):
-            txtFile = txtfiles[0]
-            offsets = open(txtFile,'r').read().split('\n')[0].split(':')[1].split()
-            for i in range(len(offsets)):
-                offsets[i] = float(offsets[i]) 
-        elif aligned:
-            logging.warn('No offset file was found and it was expected!')
+        if dataItemType == PC_FT:
+            current = isCurrent(absPath)
+            (aligned, backgroundAligned) = isAligned(absPath)
+            color8bit = is8BitColor(absPath)
+            (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz) = readLASInfo(absPath)  
             
-    return (mainOsgb, xmlPath, offsets)
-
+            utils.dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_PC (raw_data_item_id, srid, number_points, extension, minx, miny, minz, maxx, maxy, maxz, color_8bit) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
+                            [rawDataItemId, srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit])
+        elif dataItemType == MESH_FT:
+            current = isCurrent(absPath)
+            (aligned, backgroundAligned) = isAligned(absPath)
+            utils.dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_MESH (raw_data_item_id, current_mesh) VALUES (%s,%s)", 
+                            [rawDataItemId, current])
+        else:
+            current = isCurrent(absPath)
+            thumbnail = isThumbnail(absPath)
+            (srid, x, y, z, dx, dy, dz) = readPictureInfo(absPath)
+            
+            utils.dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_PICTURE (raw_data_item_id, current_picture, thumbnail, srid, x, y, z, dx, dy, dz) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
+                            [rawDataItemId, current, thumbnail, srid, x, y, z, dx, dy, dz])
+        
+        if dataItemType in (PC_FT, MESH_FT):
+            if aligned:
+                backgroundPath = dataAbsPath + '/' + RAW_FT + '/' + PC_FT + '/' + BG_FT + '/' + backgroundAligned
+                utils.dbExecute(cursor, 'SELECT raw_data_item_id FROM RAW_DATA_ITEM WHERE abs_path = %s', [backgroundPath,])
+                row = cursor.fetchone()
+                if row == None:
+                    logging.error('Specified background in alignment of ' + absPath + ' not found!')
+                else:
+                    backgroundId = row[0]
+                    if dataItemType == PC_FT:
+                        utils.dbExecute(cursor, "INSERT INTO ALIGNED_RAW_DATA_ITEM_PC (raw_data_item_pc_site_id, raw_data_item_pc_background_id) VALUES (%s,%s)", 
+                            [rawDataItemId, backgroundId])
+                    else: #MESH
+                        utils.dbExecute(cursor, "INSERT INTO ALIGNED_RAW_DATA_ITEM_MESH (raw_data_item_mesh_site_id, raw_data_item_pc_background_id) VALUES (%s,%s)", 
+                            [rawDataItemId, backgroundId])
+    else:
+        (rawDataItemId, lastModDB) = row
+        if modTime > lastModDB: #Data has changed
+            utils.dbExecute(cursor, 'UPDATE RAW_DATA_ITEM SET (last_mod, last_check) = (%s, %s) WHERE raw_data_item_id = %s', [modTime, initialTime, rawDataItemId])
+            if dataItemType == PC_FT:
+                (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz) = readLASInfo(pcAbsPath)        
+                utils.dbExecute(cursor, "UPDATE RAW_DATA_ITEM_PC SET (srid, number_points, extension, minx, miny, minz, maxx, maxy, maxz) = (%s,%s,%s,%s,%s,%s,%s,%s,%s) WHERE raw_data_item_id = %s", 
+                        [srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit, rawDataItemId])
+            elif dataItemType == PIC_FT:
+                (srid, x, y, z, dx, dy, dz) = readPictureInfo(absPath)
+                utils.dbExecute(cursor, "UPDATE RAW_DATA_ITEM_PICTURE SET (srid, x, y, z, dx, dy, dz) = (%s,%s,%s,%s,%s,%s,%s) WHERE raw_data_item_id = %s", 
+                        [srid, x, y, z, dx, dy, dz, rawDataItemId])
+            # Note in meshes there is no need to update anything: only current may have changed and in that case it would actually mean that we have a new raw_data_item
+        else: # Data has not changed. Just update checkTime
+            utils.dbExecute(cursor, 'UPDATE RAW_DATA_ITEM SET last_check=%s WHERE raw_data_item_id = %s', [initialTime, rawDataItemId])
 
 if __name__ == "__main__":
     usage = 'Usage: %prog [options]'
@@ -498,7 +303,7 @@ if __name__ == "__main__":
     op = optparse.OptionParser(usage=usage, description=description)
     op.add_option('-i','--data',default=DATA_FOLDER,help='Data folder [default ' + DATA_FOLDER + ']',type='string')
     op.add_option('-t','--types',default=TYPES,help='What types of data is to be updated? r for RAW, o for OSG, p for POTREE [default all is checked, i.e. ' + TYPES + ']',type='string')
-    op.add_option('-e','--itemtypes',default=ITEMTYPES,help='What types of data items are updated (for the types of data selected with option types)? p for point clouds, m for meshes, i for images [default all is checked, i.e. ' + ITEMTYPES + ']',type='string')
+    op.add_option('-e','--ditypes',default=DATA_ITEM_TYPES_CHARS,help='What types of data items are updated (for the types of data selected with option types)? p for point clouds, m for meshes, i for images [default all is checked, i.e. ' + DATA_ITEM_TYPES_CHARS + ']',type='string')
     op.add_option('-d','--dbname',default=DEFAULT_DB,help='Postgres DB name where to store the geometries [default ' + DEFAULT_DB + ']',type='string')
     op.add_option('-u','--dbuser',default=USERNAME,help='DB user [default ' + USERNAME + ']',type='string')
     op.add_option('-p','--dbpass',default='',help='DB pass',type='string')
