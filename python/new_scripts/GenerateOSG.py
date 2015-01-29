@@ -149,7 +149,6 @@ def createOSG(inFile, outFolder, inType, opts, logger, abOffsetX=None,
             logger.warn('No offset file was found and it was expected!')
 
     # upate xml file
-    utils.DEFAULT_RAW_DATA_FOLDER
     updateXMLDescription(xmlPath,
                          os.path.relpath(outFolder,
                                          utils.DEFAULT_RAW_DATA_FOLDER))
