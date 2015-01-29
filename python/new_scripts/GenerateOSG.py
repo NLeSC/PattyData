@@ -118,7 +118,7 @@ def createOSG(inFile, outFolder, inType, opts, logger, abOffsetX=None,
     for filename in outputFiles:
         shutil.move(os.path.abspath(filename),
                     os.path.join(outFolder, filename[len(outputPrefix):]))
-    logger.info(mvcommand)
+    logger.info("Moving files to " + outFolder)
 
     ofiles = sorted(glob.glob(os.path.join(outFolder, '*' + ofile)))
     if len(ofiles) == 0:
