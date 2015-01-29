@@ -3,18 +3,20 @@
 # Description:      Script to update database from OSG config XML changes
 # Authors:          Ronald van Haren, NLeSC, r.vanharen@esciencecenter.nl
 #                   Oscar Martinez, NLeSC, o.rubi@esciencecenter.nl
-# Created:          26.01.2015
-# Last modified:    -
+# Created:          29.01.2015
+# Last modified:
 # Changes:
 # Notes:            Based on updateconfigxml.py from ViaAppia project
 ##############################################################################
 
 import os
-import optparse
+import argparse
 import psycopg2
 import utils
 import viewer_conf_api
 from lxml import etree as ET
+
+logger = None
 
 
 def getDetails(ao):
@@ -39,12 +41,12 @@ def getDetails(ao):
 def deleteSiteObject(cursor, ao, aoType, uniqueName, siteId, activeObjectId,
                      objectNumber):
     if aoType == 'obj':
-        utils.dbExecute(cursor, 'DELETE FROM active_objects_sites_objects ' +
-                        'WHERE site_id = %s AND object_id = %s',
+        utils.dbExecute(cursor, 'DELETE FROM OSG_ITEM_OBJECT ' +
+                        'WHERE osg_location_id = %s AND item_id = %s',
                         [siteId, objectNumber])
     elif aoType == 'lab':
         utils.dbExecute(cursor,
-                        'DELETE FROM active_objects_labels WHERE name = %s',
+                        'DELETE FROM OSG_LABEL WHERE osg_label_name = %s',
                         [uniqueName])
     else:
         raise Exception('Not possible to delete object ' + uniqueName)
@@ -53,15 +55,15 @@ def deleteSiteObject(cursor, ao, aoType, uniqueName, siteId, activeObjectId,
 def checkActiveObject(cursor, ao, aoType, uniqueName, siteId,
                       activeObjectId, objectNumber):
     if aoType == 'obj':
-        utils.dbExecute(cursor, 'SELECT * FROM active_objects_sites_objects ' +
-                        'WHERE site_id = %s AND object_id = %s',
+        utils.dbExecute(cursor, 'SELECT * FROM OSG_ITEM_OBJECT ' +
+                        'WHERE osg_location_id = %s AND item_id = %s',
                         [siteId, objectNumber])
     elif aoType == 'lab':
-        utils.dbExecute(cursor, 'SELECT * FROM active_objects_labels ' +
-                        'WHERE name = %s', [uniqueName])
+        utils.dbExecute(cursor, 'SELECT * FROM OSG_LABEL ' +
+                        'WHERE osg_label_name = %s', [uniqueName])
     else:
-        utils.dbExecute(cursor, 'SELECT * FROM active_objects_sites ' +
-                        'WHERE active_object_site_id = %s', [activeObjectId, ])
+        utils.dbExecute(cursor, 'SELECT * FROM OSG_ITEM_OBJECT ' +
+                        'WHERE item_id = %s', [activeObjectId, ])
     if not cursor.rowcount:
         return False
     return True
@@ -84,16 +86,16 @@ def updateSetting(cursor, ao, aoType, uniqueName, siteId, activeObjectId,
         values.append(False if (s.get('castShadow') == '0') else 1)
 
     if aoType == 'obj':
-        tableName = 'active_objects_sites_objects'
-        whereStatement = 'site_id = %s and object_id = %s'
+        tableName = 'OSG_ITEM_OBJECT'
+        whereStatement = 'osg_location_id = %s and item_id = %s'
         valuesWhere = [siteId, objectNumber]
     elif aoType == 'lab':
-        tableName = 'active_objects_labels'
-        whereStatement = 'name = %s'
+        tableName = 'OSG_LABEL'
+        whereStatement = 'osg_label_name = %s'
         valuesWhere = [uniqueName, ]
     else:
-        tableName = 'active_objects_sites'
-        whereStatement = 'active_object_site_id = %s'
+        tableName = 'OSG_ITEM_OBJECT'
+        whereStatement = 'osg_location_id = %s'
         valuesWhere = [activeObjectId, ]
     utils.dbExecute(cursor, 'UPDATE ' + tableName +
                     ' SET (' + ','.join(names) +
@@ -103,19 +105,24 @@ def updateSetting(cursor, ao, aoType, uniqueName, siteId, activeObjectId,
 
 def main(opts):
     # Define logger and start logging
+    global logger
     logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
     logger.info('#######################################')
     logger.info('Starting script UpdateDBFromOSG.py')
     logger.info('#######################################')
+
+    # Parse xml configuration file
     data = ET.parse(opts.config).getroot()
-    connection = psycopg2.connect(utils.postgresConnectString
-                                  (opts.dbname, opts.dbuser, opts.dbpass,
-                                   opts.dbhost, opts.dbport, False))
-    cursor = connection.cursor()
-    # First we do updates
+
+    # Database connection
+    connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser,
+                                           opts.dbpass, opts.dbhost,
+                                           opts.dbport)
+
+    # Process updates
     updateAOS = data.xpath('//*[@status="updated"]')
     for ao in updateAOS:
-        (aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) =
+        (aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) = \
         getDetails(ao)
         inDB = checkActiveObject(cursor, ao, aoType, uniqueName, siteId,
                                  activeObjectId, objectNumber)
@@ -123,12 +130,13 @@ def main(opts):
             updateSetting(cursor, ao, aoType, uniqueName, siteId,
                           activeObjectId, objectNumber)
         else:
-            logger.error('Update not possible. activeObject ' +
-                          str(uniqueName) + ' not found in DB')
-    # Now the deletes (only possible for site objects)
+            logger.error('Update not possible. OSG_ITEM_OBJECT ' +
+                         str(uniqueName) + ' not found in DB')
+
+    # Process deletes (only possible for site objects)
     deleteAOS = data.xpath('//*[@status="deleted"]')
     for ao in deleteAOS:
-        (aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) =
+        (aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) = \
         getDetails(ao)
         if aoType in ('obj', 'lab'):
             inDB = checkActiveObject(cursor, ao, aoType, uniqueName, siteId,
@@ -137,32 +145,32 @@ def main(opts):
                 deleteSiteObject(cursor, ao, aoType, uniqueName, siteId,
                                  activeObjectId, objectNumber)
             else:
-                logger.warn('Not possible to delete.. activeObject ' +
-                             str(uniqueName) +
-                             ' not found in DB. Maybe already deleted?')
+                logger.warn('Not possible to delete.. OSG_ITEM_OBJECT ' +
+                            str(uniqueName) +
+                            ' not found in DB. Maybe already deleted?')
         else:
             logger.error('Ignoring delete in ' + uniqueName +
-                          ': Meshes, pictures and PCs can not be deleted')
-    # Finally the new objects (only possible for site objects)
+                         ': Meshes, pictures and PCs can not be deleted')
+
+    # Process new objects (only possible for site objects)
     newAOS = data.xpath('//*[@status="new"]')
     for ao in newAOS:
-        (aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) =
+        (aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) = \
         getDetails(ao)
         if aoType in ('obj', 'lab'):
             inDB = checkActiveObject(cursor, ao, aoType, uniqueName, siteId,
                                      activeObjectId, objectNumber)
             if inDB:
-                logger.warning('activeObject ' + str(uniqueName) +
-                             ' already in DB. Ignoring add ' + uniqueName)
+                logger.warning('OSG_ITEM_OBJECT ' + str(uniqueName) +
+                               ' already in DB. Ignoring add ' + uniqueName)
             else:
                 if aoType == 'obj':
                     utils.addSiteObject(cursor, siteId, objectNumber, proto)
                 else:
-                    utils.dbExecute(cursor,
-                                    'INSERT INTO active_objects_labels ' +
-                                    '(name,text,red,green,blue,rotatescreen,' +
-                                    'outline,font) VALUES ' +
-                                    '(%s,%s,%s,%s,%s,%s,%s,%s)',
+                    utils.dbExecute(cursor, 'INSERT INTO OSG_LABEL ' +
+                                    '(osg_label_name, text, red, green, ' +
+                                    'blue, rotatescreen, outline, font) ' +
+                                    'VALUES (%s,%s,%s,%s,%s,%s,%s,%s)',
                                     [uniqueName, ao.get('labelText'),
                                      ao.get('labelColorRed'),
                                      ao.get('labelColorGreen'),
@@ -173,7 +181,7 @@ def main(opts):
                               activeObjectId, objectNumber)
         else:
             logger.error('Ignoring new in ' + uniqueName +
-                          ': Meshes, pictures and PCs can not be added')
+                         ': Meshes, pictures and PCs can not be added')
 
     # Process the cameras (the DEF CAMs are added for all objects
     # and can not be deleted or updated)
@@ -202,21 +210,37 @@ def main(opts):
         utils.dbExecute(cursor, 'INSERT INTO cameras (' + ','.join(names) +
                         ') VALUES (' + ','.join(auxs) + ')', values)
 
+    # close DB connection
+    utils.closeConnectionDB(connection, cursor)
+
 
 if __name__ == "__main__":
-    usage = 'Usage: %prog [options]'
+    # define argument menu
     description = "Updates DB from the changes in the XML configuration file"
-    op = optparse.OptionParser(usage=usage, description=description)
-    op.add_option('-i', '--config', default='', help='XML configuration file',
-                  type='string')
-    op.add_option('-d', '--dbname', default=utils.DEFAULT_DB,
-                  help='Postgres DB name [default ' + utils.DEFAULT_DB + ']',
-                  type='string')
-    op.add_option('-u', '--dbuser', default=utils.USERNAME,
-                  help='DB user [default ' + utils.USERNAME +
-                  ']', type='string')
-    op.add_option('-p', '--dbpass', default='', help='DB pass', type='string')
-    op.add_option('-t', '--dbhost', default='', help='DB host', type='string')
-    op.add_option('-r', '--dbport', default='', help='DB port', type='string')
-    (opts, args) = op.parse_args()
+    parser = argparse.ArgumentParser(description=description)
+
+    # fill argument groups
+    parser.add_argument('-i', '--config', help='XML configuration file',
+                        action='store')
+    parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
+                        help='Postgres DB name [default ' + utils.DEFAULT_DB +
+                        ']', action='store')
+    parser.add_argument('-u', '--dbuser', default=utils.USERNAME,
+                        help='DB user [default ' + utils.USERNAME + ']',
+                        action='store')
+    parser.add_argument('-p', '--dbpass', default='', help='DB pass',
+                        action='store')
+    parser.add_argument('-t', '--dbhost', default='', help='DB host',
+                        action='store')
+    parser.add_argument('-r', '--dbport', default='', help='DB port',
+                        action='store')
+    parser.add_argument('-l', '--log', help='Log level',
+                        choices=['debug', 'info', 'warning', 'error',
+                                 'critical'],
+                        default=utils.DEFAULT_LOG_LEVEL)
+
+    # extract user entered arguments
+    opts = parser.parse_args()
+
+    # run main
     main(opts)
