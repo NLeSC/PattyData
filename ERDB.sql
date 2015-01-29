@@ -5,21 +5,21 @@ DROP TABLE IF EXISTS tbl2_site_relation;
 DROP TABLE IF EXISTS OSG_DATA_ITEM_PICTURE;
 DROP TABLE IF EXISTS OSG_ITEM_CAMERA;
 DROP TABLE IF EXISTS OSG_CAMERA;
-DROP TABLE IF EXISTS tbl2_object_decoration;
 DROP TABLE IF EXISTS tbl2_object_material;
 DROP TABLE IF EXISTS tbl2_object_depression;
+DROP TABLE IF EXISTS tbl2_object_decoration;
 DROP TABLE IF EXISTS tbl1_object;
 DROP TABLE IF EXISTS tbl1_site;
-DROP TABLE IF EXISTS OSG_DATA_ITEM_MESH;
 DROP TABLE IF EXISTS OSG_DATA_ITEM_PC_SITE;
+DROP TABLE IF EXISTS OSG_DATA_ITEM_MESH;
 DROP TABLE IF EXISTS OSG_DATA_ITEM;
 DROP TABLE IF EXISTS RAW_DATA_ITEM_PICTURE;
 DROP TABLE IF EXISTS ALIGNED_RAW_DATA_ITEM_MESH;
-DROP TABLE IF EXISTS ALIGNED_RAW_DATA_ITEM_PC;
+DROP TABLE IF EXISTS RAW_DATA_ITEM_MESH;
 DROP TABLE IF EXISTS OSG_DATA_ITEM_PC_BACKGROUND;
+DROP TABLE IF EXISTS ALIGNED_RAW_DATA_ITEM_PC;
 DROP TABLE IF EXISTS POTREE_DATA_ITEM_PC;
 DROP TABLE IF EXISTS RAW_DATA_ITEM_PC;
-DROP TABLE IF EXISTS RAW_DATA_ITEM_MESH;
 DROP TABLE IF EXISTS RAW_DATA_ITEM;
 DROP TABLE IF EXISTS OSG_ITEM_OBJECT;
 DROP TABLE IF EXISTS ITEM_OBJECT;
@@ -133,12 +133,15 @@ CREATE TABLE RAW_DATA_ITEM_PICTURE
 	current_picture boolean NOT NULL,
 	thumbnail boolean NOT NULL,
 	srid int,
-	x float,
-	y float,
-	z float,
-	dx float,
-	dy float,
-	dz float,
+	x double precision,
+	y double precision,
+	z double precision,
+	dx double precision,
+	dy double precision,
+	dz double precision,
+	ux double precision,
+	uy double precision,
+	uz double precision,
 	PRIMARY KEY (raw_data_item_id)
 ) WITHOUT OIDS;
 
@@ -156,15 +159,15 @@ CREATE TABLE OSG_LOCATION
 (
 	osg_location_id serial NOT NULL,
 	srid int,
-	x float,
-	y float,
-	z float,
-	xs float,
-	ys float,
-	zs float,
-	h float,
-	p float,
-	r float,
+	x double precision,
+	y double precision,
+	z double precision,
+	xs double precision,
+	ys double precision,
+	zs double precision,
+	h double precision,
+	p double precision,
+	r double precision,
 	cast_shadow boolean,
 	PRIMARY KEY (osg_location_id)
 ) WITHOUT OIDS;
@@ -227,6 +230,7 @@ CREATE TABLE RAW_DATA_ITEM
 CREATE TABLE RAW_DATA_ITEM_MESH
 (
 	raw_data_item_id int NOT NULL,
+	mtl_abs_path text,
 	current_mesh boolean NOT NULL,
 	PRIMARY KEY (raw_data_item_id)
 ) WITHOUT OIDS;
@@ -307,9 +311,9 @@ CREATE TABLE OSG_DATA_ITEM_PC_BACKGROUND
 	osg_data_item_pc_background_id serial NOT NULL,
 	raw_data_item_id int NOT NULL,
 	abs_path text NOT NULL,
-	offset_x float,
-	offset_y float,
-	offset_z float,
+	offset_x double precision,
+	offset_y double precision,
+	offset_z double precision,
 	last_mod int,
 	last_check int,
 	PRIMARY KEY (osg_data_item_pc_background_id)
@@ -334,7 +338,7 @@ ALTER TABLE OSG_ITEM_CAMERA
 ;
 
 
-ALTER TABLE tbl1_object
+ALTER TABLE tbl2_site_relation
 	ADD FOREIGN KEY (item_id)
 	REFERENCES tbl1_site (item_id)
 	ON UPDATE RESTRICT
@@ -342,7 +346,7 @@ ALTER TABLE tbl1_object
 ;
 
 
-ALTER TABLE tbl2_site_relation
+ALTER TABLE tbl1_object
 	ADD FOREIGN KEY (item_id)
 	REFERENCES tbl1_site (item_id)
 	ON UPDATE RESTRICT
@@ -353,14 +357,6 @@ ALTER TABLE tbl2_site_relation
 ALTER TABLE tbl2_site_relation
 	ADD FOREIGN KEY (related_site_id)
 	REFERENCES tbl1_site (item_id)
-	ON UPDATE RESTRICT
-	ON DELETE RESTRICT
-;
-
-
-ALTER TABLE OSG_DATA_ITEM_MESH
-	ADD FOREIGN KEY (osg_data_item_id)
-	REFERENCES OSG_DATA_ITEM (osg_data_item_id)
 	ON UPDATE RESTRICT
 	ON DELETE RESTRICT
 ;
@@ -382,9 +378,9 @@ ALTER TABLE OSG_DATA_ITEM_PC_SITE
 ;
 
 
-ALTER TABLE tbl2_object_decoration
-	ADD FOREIGN KEY (item_id, object_id)
-	REFERENCES tbl1_object (item_id, object_id)
+ALTER TABLE OSG_DATA_ITEM_MESH
+	ADD FOREIGN KEY (osg_data_item_id)
+	REFERENCES OSG_DATA_ITEM (osg_data_item_id)
 	ON UPDATE RESTRICT
 	ON DELETE RESTRICT
 ;
@@ -399,6 +395,14 @@ ALTER TABLE tbl2_object_material
 
 
 ALTER TABLE tbl2_object_depression
+	ADD FOREIGN KEY (item_id, object_id)
+	REFERENCES tbl1_object (item_id, object_id)
+	ON UPDATE RESTRICT
+	ON DELETE RESTRICT
+;
+
+
+ALTER TABLE tbl2_object_decoration
 	ADD FOREIGN KEY (item_id, object_id)
 	REFERENCES tbl1_object (item_id, object_id)
 	ON UPDATE RESTRICT
@@ -430,14 +434,6 @@ ALTER TABLE OSG_ITEM_CAMERA
 ;
 
 
-ALTER TABLE ITEM_OBJECT
-	ADD FOREIGN KEY (item_id)
-	REFERENCES ITEM (item_id)
-	ON UPDATE RESTRICT
-	ON DELETE RESTRICT
-;
-
-
 ALTER TABLE tbl1_site
 	ADD FOREIGN KEY (item_id)
 	REFERENCES ITEM (item_id)
@@ -446,9 +442,9 @@ ALTER TABLE tbl1_site
 ;
 
 
-ALTER TABLE OSG_DATA_ITEM
-	ADD FOREIGN KEY (osg_location_id)
-	REFERENCES OSG_LOCATION (osg_location_id)
+ALTER TABLE ITEM_OBJECT
+	ADD FOREIGN KEY (item_id)
+	REFERENCES ITEM (item_id)
 	ON UPDATE RESTRICT
 	ON DELETE RESTRICT
 ;
@@ -470,6 +466,14 @@ ALTER TABLE OSG_CAMERA
 ;
 
 
+ALTER TABLE OSG_DATA_ITEM
+	ADD FOREIGN KEY (osg_location_id)
+	REFERENCES OSG_LOCATION (osg_location_id)
+	ON UPDATE RESTRICT
+	ON DELETE RESTRICT
+;
+
+
 ALTER TABLE OSG_LABEL
 	ADD FOREIGN KEY (osg_location_id)
 	REFERENCES OSG_LOCATION (osg_location_id)
@@ -478,7 +482,7 @@ ALTER TABLE OSG_LABEL
 ;
 
 
-ALTER TABLE RAW_DATA_ITEM_PC
+ALTER TABLE RAW_DATA_ITEM_MESH
 	ADD FOREIGN KEY (raw_data_item_id)
 	REFERENCES RAW_DATA_ITEM (raw_data_item_id)
 	ON UPDATE RESTRICT
@@ -494,7 +498,7 @@ ALTER TABLE RAW_DATA_ITEM_PICTURE
 ;
 
 
-ALTER TABLE RAW_DATA_ITEM_MESH
+ALTER TABLE RAW_DATA_ITEM_PC
 	ADD FOREIGN KEY (raw_data_item_id)
 	REFERENCES RAW_DATA_ITEM (raw_data_item_id)
 	ON UPDATE RESTRICT
@@ -502,16 +506,16 @@ ALTER TABLE RAW_DATA_ITEM_MESH
 ;
 
 
-ALTER TABLE OSG_DATA_ITEM_MESH
-	ADD FOREIGN KEY (raw_data_item_id)
+ALTER TABLE ALIGNED_RAW_DATA_ITEM_MESH
+	ADD FOREIGN KEY (raw_data_item_mesh_site_id)
 	REFERENCES RAW_DATA_ITEM_MESH (raw_data_item_id)
 	ON UPDATE RESTRICT
 	ON DELETE RESTRICT
 ;
 
 
-ALTER TABLE ALIGNED_RAW_DATA_ITEM_MESH
-	ADD FOREIGN KEY (raw_data_item_mesh_site_id)
+ALTER TABLE OSG_DATA_ITEM_MESH
+	ADD FOREIGN KEY (raw_data_item_id)
 	REFERENCES RAW_DATA_ITEM_MESH (raw_data_item_id)
 	ON UPDATE RESTRICT
 	ON DELETE RESTRICT
@@ -534,7 +538,7 @@ ALTER TABLE OSG_ITEM_OBJECT
 ;
 
 
-ALTER TABLE OSG_DATA_ITEM_PC_SITE
+ALTER TABLE OSG_DATA_ITEM_PC_BACKGROUND
 	ADD FOREIGN KEY (raw_data_item_id)
 	REFERENCES RAW_DATA_ITEM_PC (raw_data_item_id)
 	ON UPDATE RESTRICT
@@ -551,15 +555,7 @@ ALTER TABLE ALIGNED_RAW_DATA_ITEM_MESH
 
 
 ALTER TABLE ALIGNED_RAW_DATA_ITEM_PC
-	ADD FOREIGN KEY (raw_data_item_pc_site_id)
-	REFERENCES RAW_DATA_ITEM_PC (raw_data_item_id)
-	ON UPDATE RESTRICT
-	ON DELETE RESTRICT
-;
-
-
-ALTER TABLE OSG_DATA_ITEM_PC_BACKGROUND
-	ADD FOREIGN KEY (raw_data_item_id)
+	ADD FOREIGN KEY (raw_data_item_pc_background_id)
 	REFERENCES RAW_DATA_ITEM_PC (raw_data_item_id)
 	ON UPDATE RESTRICT
 	ON DELETE RESTRICT
@@ -575,7 +571,15 @@ ALTER TABLE POTREE_DATA_ITEM_PC
 
 
 ALTER TABLE ALIGNED_RAW_DATA_ITEM_PC
-	ADD FOREIGN KEY (raw_data_item_pc_background_id)
+	ADD FOREIGN KEY (raw_data_item_pc_site_id)
+	REFERENCES RAW_DATA_ITEM_PC (raw_data_item_id)
+	ON UPDATE RESTRICT
+	ON DELETE RESTRICT
+;
+
+
+ALTER TABLE OSG_DATA_ITEM_PC_SITE
+	ADD FOREIGN KEY (raw_data_item_id)
 	REFERENCES RAW_DATA_ITEM_PC (raw_data_item_id)
 	ON UPDATE RESTRICT
 	ON DELETE RESTRICT

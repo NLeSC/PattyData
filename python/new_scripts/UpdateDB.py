@@ -97,7 +97,12 @@ def isThumbnail(absPath):
     return name.lower().count('_thumb') > 0
 
 def isCurrent(absPath):
+    
     return (os.path.basename(os.path.abspath(absPath + '/../..')) == CURR_FT)
+
+def isBackground(absPath):
+    # TODO: check name in addrawitem has no BACK
+    return absPath.count(BACK_FT)
     
 def main(opts):
     # Set logging
@@ -307,6 +312,9 @@ def addRawDataItem(absPath, itemId, dataItemType):
 def addOSGDataItem(absPath, itemId, dataItemType):
     modTime = utils.getCurrentTime(utils.getLastModification(absPath))
     
+    #TODO: Add checking in AddRawDataItem that there is not file with OGT in its name
+    rawAbsPath = absPath.replace(OSG_FT, RAW_FT)
+    
     isBackground = False
     
     if isBackground and dataItemType == PC_FT:
@@ -316,8 +324,13 @@ def addOSGDataItem(absPath, itemId, dataItemType):
     
     row = cursor.fetchone()
     if row == None: #This folder has been added recently
-        utils.dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM (raw_data_item_id, item_id, abs_path, last_mod, last_check) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING raw_data_item_id", 
+        if isBackground and dataItemType == PC_FT:
+            utils.dbExecute(cursor, "INSERT INTO OSG_DATA_ITEM_PC_BACKGROUND (raw_data_item_id, item_id, abs_path, last_mod, last_check) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING raw_data_item_id", 
                         [itemId, absPath, modTime, initialTime])
+        else:
+            utils.dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM (raw_data_item_id, item_id, abs_path, last_mod, last_check) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING raw_data_item_id", 
+                        [itemId, absPath, modTime, initialTime])
+            
         rawDataItemId = cursor.fetchone()[0]
         
         if dataItemType == PC_FT:

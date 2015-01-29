@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>RAW_DATA_ITEM_MESH</title>
+		<title>RAW_DATA_ITEM_PC</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="RAW_DATA_ITEM_MESH";
+	parent.document.title="RAW_DATA_ITEM_PC";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   RAW_DATA_ITEM_MESH</h2>
+		<h2>Table   RAW_DATA_ITEM_PC</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>RAW_DATA_ITEM_MESH<br><br></dd>
+		<dd>RAW_DATA_ITEM_PC<br><br></dd>
 </dl>
 
 <dl>
@@ -103,7 +103,7 @@ function asd() {
 	<tr>
 	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
 	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#157">raw_data_item_id</a>&nbsp;</td>
+	<td><a href="#255">raw_data_item_id</a>&nbsp;</td>
 	<td>raw_data_item_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -112,8 +112,89 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#266">current_mesh</a>&nbsp;</td>
-	<td>current_mesh&nbsp;</td>
+	<td><a href="#276">srid</a>&nbsp;</td>
+	<td>srid&nbsp;</td>
+	<td>int&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#277">number_points</a>&nbsp;</td>
+	<td>number_points&nbsp;</td>
+	<td>int&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#278">extension</a>&nbsp;</td>
+	<td>extension&nbsp;</td>
+	<td>varchar(3)&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#279">minx</a>&nbsp;</td>
+	<td>minx&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#280">miny</a>&nbsp;</td>
+	<td>miny&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#281">minz</a>&nbsp;</td>
+	<td>minz&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#282">maxx</a>&nbsp;</td>
+	<td>maxx&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#283">maxy</a>&nbsp;</td>
+	<td>maxy&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#284">maxz</a>&nbsp;</td>
+	<td>maxz&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#285">color_8bit</a>&nbsp;</td>
+	<td>color_8bit&nbsp;</td>
 	<td>boolean&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
@@ -141,9 +222,9 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#157">raw_data_item_id&nbsp;</a></td>
-	<td><a href="../table/19.html">RAW_DATA_ITEM&nbsp;</a></td>
-	<td><a href="../table/19.html#218">raw_data_item_id&nbsp;</a></td>
+	<td><a href="#255">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/15.html">RAW_DATA_ITEM&nbsp;</a></td>
+	<td><a href="../table/15.html#218">raw_data_item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
@@ -171,22 +252,58 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#157">raw_data_item_id&nbsp;</a></td>
-	<td><a href="../table/17.html">OSG_DATA_ITEM_MESH&nbsp;</a></td>
-	<td><a href="../table/17.html#257">raw_data_item_id&nbsp;</a></td>
+	<td><a href="#255">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/23.html">OSG_DATA_ITEM_PC_BACKGROUND&nbsp;</a></td>
+	<td><a href="../table/23.html#286">raw_data_item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 </tr>
 <tr>
-	<td><a href="#157">raw_data_item_id&nbsp;</a></td>
-	<td><a href="../table/3.html">ALIGNED_RAW_DATA_ITEM_MESH&nbsp;</a></td>
-	<td><a href="../table/3.html#155">raw_data_item_mesh_site_id&nbsp;</a></td>
+	<td><a href="#255">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/22.html">ALIGNED_RAW_DATA_ITEM_MESH&nbsp;</a></td>
+	<td><a href="../table/22.html#287">raw_data_item_pc_background_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#255">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/21.html">ALIGNED_RAW_DATA_ITEM_PC&nbsp;</a></td>
+	<td><a href="../table/21.html#288">raw_data_item_pc_background_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#255">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/17.html">POTREE_DATA_ITEM_PC&nbsp;</a></td>
+	<td><a href="../table/17.html#260">raw_data_item_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#255">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/21.html">ALIGNED_RAW_DATA_ITEM_PC&nbsp;</a></td>
+	<td><a href="../table/21.html#289">raw_data_item_pc_site_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#255">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/24.html">OSG_DATA_ITEM_PC_SITE&nbsp;</a></td>
+	<td><a href="../table/24.html#290">raw_data_item_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1&nbsp;</td>
 </tr>
 
 </table>
@@ -243,7 +360,7 @@ function asd() {
 	</tr>
 </table>
 
-<a name="157"></a>
+<a name="255"></a>
 <h3><img src="../image/icons/pkey.gif"> <img src="../image/icons/foreign_key.gif"> raw_data_item_id</h3>
 
 <dl>
@@ -264,11 +381,200 @@ function asd() {
 <p>
 
 <hr>
-<a name="266"></a>
-<h3>  current_mesh</h3>
+<a name="276"></a>
+<h3>  srid</h3>
 
 <dl>
-	<dd>current_mesh
+	<dd>srid
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>int<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="277"></a>
+<h3>  number_points</h3>
+
+<dl>
+	<dd>number_points
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>int<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="278"></a>
+<h3>  extension</h3>
+
+<dl>
+	<dd>extension
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>varchar(3)<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="279"></a>
+<h3>  minx</h3>
+
+<dl>
+	<dd>minx
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="280"></a>
+<h3>  miny</h3>
+
+<dl>
+	<dd>miny
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="281"></a>
+<h3>  minz</h3>
+
+<dl>
+	<dd>minz
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="282"></a>
+<h3>  maxx</h3>
+
+<dl>
+	<dd>maxx
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="283"></a>
+<h3>  maxy</h3>
+
+<dl>
+	<dd>maxy
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="284"></a>
+<h3>  maxz</h3>
+
+<dl>
+	<dd>maxz
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="285"></a>
+<h3>  color_8bit</h3>
+
+<dl>
+	<dd>color_8bit
 	<p>
 	<dd><pre></pre>
 	<p>
