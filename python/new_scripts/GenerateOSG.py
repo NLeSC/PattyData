@@ -28,17 +28,15 @@ def getOSGFileFormat(inType):
     return 'osgb'
 
 
-def updateXMLDescription(xmlPath, siteId, inType, activeObjectId,
-                         fileName=None):
+def updateXMLDescription(xmlPath, relPath):
+    # update description in xml file using unique identifier -> relative path
     tempFile = xmlPath + '_TEMP'
     ofile = open(tempFile, 'w')
     lines = open(xmlPath, 'r').readlines()
     for line in lines:
         if line.count('<description>'):
             ofile.write('    <description>' +
-                        utils.getOSGDescrition
-                        (siteId, inType, activeObjectId, os.path.basename
-                         (os.path.dirname(fileName))) + '</description>\n')
+                        relPath + '</description>\n')
         else:
             ofile.write(line)
     os.remove(xmlPath)
@@ -149,8 +147,12 @@ def createOSG(inFile, outFolder, inType, opts, logger, abOffsetX=None,
                 offsets[i] = float(offsets[i])
         elif aligned:
             logger.warn('No offset file was found and it was expected!')
-    # doesn't work yet, what are the input variables?
-    updateXMLDescription(xmlPath, itemID, inType, activeObjectId)
+
+    # upate xml file
+    utils.DEFAULT_RAW_DATA_FOLDER
+    updateXMLDescription(xmlPath,
+                         os.path.relpath(outFolder,
+                                         utils.DEFAULT_RAW_DATA_FOLDER))
 
 
 def main(opts):
