@@ -31,6 +31,7 @@ def getDataItemTypes(ditypes):
         dataItemtypes.append(MESH_FT)
     if 'i' in ditypes:
         dataItemtypes.append(PIC_FT)
+    return dataItemtypes
         
 def readLASInfo(absPath):
     """ Gets information of the LAS/LAZ files in the asbPath"""
@@ -126,13 +127,13 @@ def main(opts):
         process(potDataAbsPath, dataItemTypes, addPOTDataItem)
     
     if 'p' in opts.types:
-        cleanPOTree(potDataAbsPath, dataItemTypes)
+        cleanPOTree(dataItemTypes)
     
     if 'o' in opts.types:
-        cleanOSG(osgDataAbsPath, dataItemTypes)
+        cleanOSG(dataItemTypes)
     
     if 'r' in opts.types:
-        cleanRaw(rawDataAbsPath, dataItemTypes)
+        cleanRaw(dataItemTypes)
 
     if 'o' in opts.types:
         os.system('touch ' + osgDataAbsPath + '/LAST_MOD')
@@ -180,7 +181,7 @@ def processSites(absPath, addMethod, dataItemType):
             addMethod(siteAbsPath + '/' + sitePC, siteId, dataItemType)
     logging.info('Processing ' + absPath + ' finished in %.2f' % (time.time() - t0))
 
-def cleanRaw(rawDataAbsPath, dataItemTypes):
+def cleanRaw(dataItemTypes):
     logging.info('Cleaning raw data items...') 
     if PC_FT in dataItemTypes:
         utils.dbExecute(cursor, 'SELECT A.raw_data_item_id, A.itemId, abs_path FROM RAW_DATA_ITEM A, RAW_DATA_ITEM_PC B WHERE A.raw_data_item_id = B.raw_data_item_id AND A.last_check < %s', [initialTime,])
@@ -235,6 +236,12 @@ def cleanRaw(rawDataAbsPath, dataItemTypes):
                     utils.dbExecute(cursor, 'DELETE FROM RAW_DATA_ITEM WHERE raw_data_item_id = %s', [rawDataItemId,])
                 else:
                     logging.warning('Can not delete entry for removed ' + absPath + '. Related data items still there!') 
+
+def cleanOSG(dataItemTypes):
+    return
+
+def cleanPOT(dataItemTypes):
+    return
 
 def addRawDataItem(absPath, itemId, dataItemType):
     modTime = utils.getCurrentTime(utils.getLastModification(absPath))
@@ -296,6 +303,77 @@ def addRawDataItem(absPath, itemId, dataItemType):
             # Note in meshes there is no need to update anything: only current may have changed and in that case it would actually mean that we have a new raw_data_item
         else: # Data has not changed. Just update checkTime
             utils.dbExecute(cursor, 'UPDATE RAW_DATA_ITEM SET last_check=%s WHERE raw_data_item_id = %s', [initialTime, rawDataItemId])
+
+def addOSGDataItem(absPath, itemId, dataItemType):
+    modTime = utils.getCurrentTime(utils.getLastModification(absPath))
+    
+    isBackground = False
+    
+    if isBackground and dataItemType == PC_FT:
+        utils.dbExecute(cursor, 'SELECT osg_data_item_pc_background_id, last_mod FROM OSG_DATA_ITEM_PC_BACKGROUND WHERE abs_path = %s', [absPath,])
+    else:
+        utils.dbExecute(cursor, 'SELECT osg_data_item_id, last_mod FROM OSG_DATA_ITEM WHERE abs_path = %s', [absPath,])
+    
+    row = cursor.fetchone()
+    if row == None: #This folder has been added recently
+        utils.dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM (raw_data_item_id, item_id, abs_path, last_mod, last_check) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING raw_data_item_id", 
+                        [itemId, absPath, modTime, initialTime])
+        rawDataItemId = cursor.fetchone()[0]
+        
+        if dataItemType == PC_FT:
+            current = isCurrent(absPath)
+            (aligned, backgroundAligned) = isAligned(absPath)
+            color8bit = is8BitColor(absPath)
+            (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz) = readLASInfo(absPath)  
+            
+            utils.dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_PC (raw_data_item_id, srid, number_points, extension, minx, miny, minz, maxx, maxy, maxz, color_8bit) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
+                            [rawDataItemId, srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit])
+        elif dataItemType == MESH_FT:
+            current = isCurrent(absPath)
+            (aligned, backgroundAligned) = isAligned(absPath)
+            utils.dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_MESH (raw_data_item_id, current_mesh) VALUES (%s,%s)", 
+                            [rawDataItemId, current])
+        else:
+            current = isCurrent(absPath)
+            thumbnail = isThumbnail(absPath)
+            (srid, x, y, z, dx, dy, dz) = readPictureInfo(absPath)
+            
+            utils.dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_PICTURE (raw_data_item_id, current_picture, thumbnail, srid, x, y, z, dx, dy, dz) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
+                            [rawDataItemId, current, thumbnail, srid, x, y, z, dx, dy, dz])
+        
+        if dataItemType in (PC_FT, MESH_FT):
+            if aligned:
+                backgroundPath = dataAbsPath + '/' + RAW_FT + '/' + PC_FT + '/' + BG_FT + '/' + backgroundAligned
+                utils.dbExecute(cursor, 'SELECT raw_data_item_id FROM RAW_DATA_ITEM WHERE abs_path = %s', [backgroundPath,])
+                row = cursor.fetchone()
+                if row == None:
+                    logging.error('Specified background in alignment of ' + absPath + ' not found!')
+                else:
+                    backgroundId = row[0]
+                    if dataItemType == PC_FT:
+                        utils.dbExecute(cursor, "INSERT INTO ALIGNED_RAW_DATA_ITEM_PC (raw_data_item_pc_site_id, raw_data_item_pc_background_id) VALUES (%s,%s)", 
+                            [rawDataItemId, backgroundId])
+                    else: #MESH
+                        utils.dbExecute(cursor, "INSERT INTO ALIGNED_RAW_DATA_ITEM_MESH (raw_data_item_mesh_site_id, raw_data_item_pc_background_id) VALUES (%s,%s)", 
+                            [rawDataItemId, backgroundId])
+    else:
+        (rawDataItemId, lastModDB) = row
+        if modTime > lastModDB: #Data has changed
+            utils.dbExecute(cursor, 'UPDATE RAW_DATA_ITEM SET (last_mod, last_check) = (%s, %s) WHERE raw_data_item_id = %s', [modTime, initialTime, rawDataItemId])
+            if dataItemType == PC_FT:
+                (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz) = readLASInfo(pcAbsPath)        
+                utils.dbExecute(cursor, "UPDATE RAW_DATA_ITEM_PC SET (srid, number_points, extension, minx, miny, minz, maxx, maxy, maxz) = (%s,%s,%s,%s,%s,%s,%s,%s,%s) WHERE raw_data_item_id = %s", 
+                        [srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit, rawDataItemId])
+            elif dataItemType == PIC_FT:
+                (srid, x, y, z, dx, dy, dz) = readPictureInfo(absPath)
+                utils.dbExecute(cursor, "UPDATE RAW_DATA_ITEM_PICTURE SET (srid, x, y, z, dx, dy, dz) = (%s,%s,%s,%s,%s,%s,%s) WHERE raw_data_item_id = %s", 
+                        [srid, x, y, z, dx, dy, dz, rawDataItemId])
+            # Note in meshes there is no need to update anything: only current may have changed and in that case it would actually mean that we have a new raw_data_item
+        else: # Data has not changed. Just update checkTime
+            utils.dbExecute(cursor, 'UPDATE RAW_DATA_ITEM SET last_check=%s WHERE raw_data_item_id = %s', [initialTime, rawDataItemId])
+
+def addPOTDataItem(absPath, itemId, dataItemType):
+    return
 
 if __name__ == "__main__":
     usage = 'Usage: %prog [options]'
