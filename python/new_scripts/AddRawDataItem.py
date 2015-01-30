@@ -111,10 +111,20 @@ def define_create_target_dir(opts):
     target_basedir = os.path.join(opts.data, opts.type, opts.kind)
     # name of input data, only basename, extensions removed
     inputname = os.path.splitext(os.path.basename(opts.file))[0]
+    # 8bit / alignment options
+    if (opts.eight and opts.aligned):
+        al8bit = "_ALIGNED_"+opts.aligned+"_8BC"
+    elif (opts.eight and not opts.aligned):
+        al8bit = "_8BC"
+    elif (opts.aligned and not opts.eight):
+        al8bit = "_ALIGNED_"+opts.aligned
+    else:
+        al8bit = ""
+
     # TARGETDIR for PC
     if (opts.type == utils.PC_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(
-            target_basedir, inputname+'V'+str(opts.verrecno))
+            target_basedir, inputname+'_V'+str(opts.verrecno))
     if (opts.type == utils.PC_FT and opts.kind == utils.SITE_FT):
         if (opts.aligned):
             # check if background used for the alignment exists
@@ -130,24 +140,16 @@ def define_create_target_dir(opts):
                 raise IOError('Alignment background does not exist: ' +
                               os.path.splitext(os.path.basename(
                                   opts.aligned))[0])
-        if (opts.eight and opts.aligned):
-            al8bit = "_ALIGNED_"+opts.aligned+"_8BC"
-        elif (opts.eight and not opts.aligned):
-            al8bit = "_8BC"
-        elif (opts.aligned and not opts.eight):
-            al8bit = "_ALIGNED_"+opts.aligned
-        else:
-            al8bit = ""
         TARGETDIR = os.path.join(target_basedir, 'S'+str(opts.siteno),
-                                 inputname+'V'+str(opts.verrecno)+al8bit)
+                                 inputname+'_V'+str(opts.verrecno)+al8bit)
     # TARGETDIR for MESH
     if (opts.type == utils.MESH_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(target_basedir,
-                                 opts.period, inputname+'V'+str(opts.verrecno))
+                                 opts.period, inputname+'_V'+str(opts.verrecno))
     if (opts.type == utils.MESH_FT and opts.kind == utils.SITE_FT):
         TARGETDIR = os.path.join(target_basedir, opts.period,
                                  'S'+str(opts.siteno),
-                                 inputname+'V'+str(opts.verrecno))
+                                 inputname+'_V'+str(opts.verrecno)+al8bit)
     # TARGETDIR for PICT
     if (opts.type == utils.PIC_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(target_basedir, opts.period)
@@ -158,10 +160,12 @@ def define_create_target_dir(opts):
     if not os.path.isdir(TARGETDIR):
         os.makedirs(TARGETDIR)  # create directories recursively
     else:
-        # Raise error if TARGETDIR exists
-        # REMOVE/RECREATE to overwrite in future?
-        logger.error(TARGETDIR + ' already exists, exiting.')
-        raise IOError(TARGETDIR + ' already exists, exiting.')
+        if not (opts.type == utils.PIC_FT):
+            # Raise error if TARGETDIR exists
+            # REMOVE/RECREATE to overwrite in future?
+            logger.error(TARGETDIR + ' already exists, exiting.')
+            raise IOError(TARGETDIR + ' already exists, exiting.')
+        pass
     logger.info('Finished creating target directory '+TARGETDIR)
     return TARGETDIR
 
@@ -187,6 +191,7 @@ def copy_data(opts, TARGETDIR):
                 shutil.copy(os.path.join(opts.file, file_name),
                             os.path.join(TARGETDIR, file_name))
     else:
+        os.rmdir(TARGETDIR)  # remove TARGETDIR if input file does not exist
         logger.error(
             "[ERROR] Input file/directory given as argument for " +
             "--file does not exist: " + opts.file)
