@@ -28,15 +28,30 @@ PROPERTIES_ORDER = ['administrator', 'site_context', 'site_interpretation', 'con
 
 DEFAULT_DB = 'vadb'
 USERNAME = os.popen('whoami').read().replace('\n','')
-DEFAULT_RAW_DATA_FOLDER = '/home/vadata/DATA/RAW/' #It should be DIR instead of FOLDER
-DEFAULT_OSG_DATA_DIR = '/home/vadata/DATA/OSG/'
-DEFAULT_POTREE_DATA_DIR = '/home/vadata/DATA/POTREE/'
-BOUNDINGS_XML_RELATIVE = 'BOUNDINGS/volumes.prototype.xml'
-SITE_OBJECT_NUMBER = -1
+# Folder tags for the file structure
+RAW_FT = 'RAW'
+OSG_FT = 'OSG'
+POT_FT = 'POTREE'
+PC_FT = 'PC'
+MESH_FT = 'MESH'
+PIC_FT = 'PICT'
+BG_FT = 'BACK'
+SITE_FT = 'SITE'
+CURR_FT = 'CURR'
+ARCREC_FT = 'ARCH_REC'
+HIST_FT = 'HIST'
+# Default data directories
+DEFAULT_DATA_DIR = '/home/pattydat/DATA'
+DEFAULT_RAW_DATA_DIR = DEFAULT_DATA_DIR + '/RAW' 
+DEFAULT_OSG_DATA_DIR = DEFAULT_DATA_DIR + '/OSG'
+DEFAULT_POTREE_DATA_DIR = DEFAULT_DATA_DIR + '/POTREE'
+BOUNDINGS_XML_RELATIVE = 'BOUND/volumes.prototype.xml'
+ITEM_ID_BACKGROUND = -1
+ITEM_OBJECT_NUMBER_ITEM = -1
 DEFAULT_PROTO = 'Bounding Box'
 DEFAULT_Z = -140
 DEFAULT_BACKGROUND = 'DRIVE_1_V3'
-DEFAULT_BACKGROUND_FOLDER = DEFAULT_RAW_DATA_FOLDER + 'PC/BACKGROUND/' + DEFAULT_BACKGROUND
+DEFAULT_BACKGROUND_FOLDER = DEFAULT_RAW_DATA_DIR + '/' + PC_FT + '/' + BG_FT + '/' + DEFAULT_BACKGROUND
 SRID = 32633
 DEFAULT_CAMERA_PREFIX = 'DEF_CAM_'
 USER_CAMERA = 'SITE_'
@@ -50,19 +65,6 @@ LOG_LEVELS = {'debug': logging.DEBUG,
               'critical': logging.CRITICAL}
 LOG_FORMAT = '%(asctime)-15s %(message)s'
 LOG_FILENAME = '/tmp/patty.log'
-
-# Folder tags for the file structure
-RAW_FT = 'RAW'
-OSG_FT = 'OSG'
-POT_FT = 'POTREE'
-PC_FT = 'PC'
-MESH_FT = 'MESH'
-PIC_FT = 'PICT'
-BG_FT = 'BACK'
-SITE_FT = 'SITE'
-CURR_FT = 'CURR'
-ARCREC_FT = 'ARCH_REC'
-HIST_FT = 'HIST'
 
 #Ouput Formats
 LAS = 'LAS'
@@ -199,20 +201,6 @@ def dbExecute(cursor, query, queryArgs = None, mogrify = True):
             logging.debug(cursor.mogrify(query, queryArgs))
         cursor.execute(query, queryArgs)
     cursor.connection.commit()
-
-def getPositionFromFootprint(cursor, siteId, rawDataPath):
-    bgFolder = os.path.abspath(os.path.join(rawDataPath, DEFAULT_BACKGROUND))
-    cursor.execute('select offset_x, offset_y from backgrounds_pc where pc_folder = %s', [bgFolder])
-    if cursor.rowcount:
-        (offx,offy) = cursor.fetchone()
-        cursor.execute('with a as (select st_centroid(geometry(geom)) AS g from sites_geoms where site_id = %s LIMIT 1) select st_x(g) - %s, st_y(g) - %s from a', [siteId,offx,offy])
-        if cursor.rowcount:
-            return cursor.fetchone()
-        else:
-            logging.warn('Not possible to get position from footprint: footprint not found')
-    else:
-        logging.error('Not possible to get position from footprint: background ' + DEFAULT_BACKGROUND + ' not found')
-    return (0,0)
 
 def start_logging(filename=LOG_FILENAME, level=DEFAULT_LOG_LEVEL):
     "Start logging with given filename and level."
