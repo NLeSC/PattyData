@@ -6,6 +6,7 @@
 import os, optparse, psycopg2, time, logging, glob
 import utils
 import liblas
+import osgeo.osr
 
 DATA_FOLDER = ''
 DB_NAME = ''
@@ -44,9 +45,15 @@ def readLASInfo(absPath):
             extension = 'las'
         else:
             extension = 'laz'
-       
+
         for lfile in lasfiles + lazfiles:
             lasHeader = liblas.file.File(lfile, mode='r').header
+            lsrid = readSRID(lasHeader)
+            if srid == None:
+                srid = lsrid
+            elif srid != lsrid:
+                srid = -1
+            
             numberPoints += lasHeader.get_pointrecordscount()
             [lminx, lminy, lminz] = lasHeader.get_min()
             if minx == None or lminx < minx:
@@ -70,11 +77,18 @@ def readLASInfo(absPath):
         elif asbPath.lower.endswith('laz'):
             extension = 'laz'
         lasHeader = liblas.file.File(absPath, mode='r').header
+        srid = readSRID(lasHeader)
         numberPoints = lasHeader.get_pointrecordscount()
         [minx, miny, minz] = lasHeader.get_min()
         [maxx, maxy, maxz] = lasHeader.get_max()
         
     return (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz)
+
+def readSRID(lasHeader):
+    osrs = osgeo.osr.SpatialReference()
+    osrs.SetFromUserInput(lasHeader.get_srs().get_wkt())
+    #osrs.AutoIdentifyEPSG()
+    return osrs.GetAttrValue( 'AUTHORITY', 1 )
 
 def readPictureInfo(absPath):
     (srid, x, y, z, dx, dy, dz) = (None, None, None, None, None, None, None)
