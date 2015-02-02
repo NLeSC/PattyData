@@ -181,7 +181,7 @@ def getXMLAbsPath(absPath):
 
 def main(opts):
     # Set logging
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', datefmt="%Y/%m/%d/%H:%M:%S", level=getattr(logging, opts.log))
+    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', datefmt="%Y/%m/%d/%H:%M:%S", level=getattr(logging, opts.log.upper()))
     # Establish connection with DB
     global cursor
     global dataAbsPath
@@ -192,11 +192,14 @@ def main(opts):
     
     # The data path
     dataAbsPath = os.path.abspath(opts.data)
-    
+     
     rawDataAbsPath = dataAbsPath + '/' + RAW_FT
     osgDataAbsPath = dataAbsPath + '/' + OSG_FT
     potDataAbsPath = dataAbsPath + '/' + POT_FT
-    
+
+    t0 = time.time()
+    logging.info('Starting UpdateDB')
+
     if 'r' in opts.types:
         process(rawDataAbsPath, dataItemTypes, addRawDataItem)
     
@@ -207,7 +210,7 @@ def main(opts):
         process(potDataAbsPath, dataItemTypes, addPOTDataItem)
     
     if 'p' in opts.types:
-        cleanPOTree(dataItemTypes)
+        cleanPOT(dataItemTypes)
     
     if 'o' in opts.types:
         cleanOSG(dataItemTypes)
@@ -219,7 +222,8 @@ def main(opts):
         os.system('touch ' + osgDataAbsPath + '/LAST_MOD')
 
     cursor.close()
-    coonection.close()
+    connection.close()
+    logging.info('Finished UpdateDB in ' + ('%.02f' % (time.time() - t0)))
 
 def process(absPath, dataItemTypes, addDataItemMethod):
     for dataItemType in (PC_FT, MESH_FT, PIC_FT):
@@ -246,7 +250,7 @@ def processBackgrounds(absPath, addMethod, dataItemType):
     logging.info('Processing ' + absPath)
     backgrounds = os.listdir(absPath)
     for background in backgrounds:
-        addMethod(absPath + '/' + background, SITE_BACKGROUND_ID, dataItemType)
+        addMethod(absPath + '/' + background, ITEM_ID_BACKGROUND, dataItemType)
     logging.info('Processing ' + absPath + ' finished in %.2f' % (time.time() - t0))
 
 def processSites(absPath, addMethod, dataItemType):
@@ -545,19 +549,18 @@ def addPOTDataItem(absPath, itemId, dataItemType):
             logging.warn('POTREE data item in ' + absPath + ' may have been updated and it may not be reflected in the DB.')
         dbExecute(cursor, 'UPDATE POTREE_DATA_ITEM_PC SET last_check=%s WHERE potree_data_item_id = %s', [initialTime, potreeDataItemId])
 
-
 if __name__ == "__main__":
     usage = 'Usage: %prog [options]'
     description = "Updates the DB from the content of the data folder"
     op = optparse.OptionParser(usage=usage, description=description)
-    op.add_option('-i','--data',default=DATA_FOLDER,help='Data folder [default ' + DATA_FOLDER + ']',type='string')
+    op.add_option('-i','--data',default=DEFAULT_DATA_DIR,help='Data folder [default ' + DEFAULT_DATA_DIR + ']',type='string')
     op.add_option('-t','--types',default=TYPES,help='What types of data is to be updated? r for RAW, o for OSG, p for POTREE [default all is checked, i.e. ' + TYPES + ']',type='string')
     op.add_option('-e','--ditypes',default=DATA_ITEM_TYPES_CHARS,help='What types of data items are updated (for the types of data selected with option types)? p for point clouds, m for meshes, i for images [default all is checked, i.e. ' + DATA_ITEM_TYPES_CHARS + ']',type='string')
-    op.add_option('-d','--dbname',default=DEFAULT_DB,help='Postgres DB name where to store the geometries [default ' + DEFAULT_DB + ']',type='string')
+    op.add_option('-d','--dbname',default=DEFAULT_DB,help='Postgres DB name [default ' + DEFAULT_DB + ']',type='string')
     op.add_option('-u','--dbuser',default=USERNAME,help='DB user [default ' + USERNAME + ']',type='string')
     op.add_option('-p','--dbpass',default='',help='DB pass',type='string')
-    op.add_option('-t','--dbhost',default='',help='DB host',type='string')
+    op.add_option('-b','--dbhost',default='',help='DB host',type='string')
     op.add_option('-r','--dbport',default='',help='DB port',type='string')
-    op.add_option('-l','--log',help='Logging level (choose from ' + ','.join(LOG_LEVELS) + ' ; default ' + DEFAULT_LOG_LEVEL + ')',type='choice', choices=LOG_LEVELS, default=DEFAULT_LOG_LEVEL)
+    op.add_option('-l','--log',help='Logging level (choose from ' + ','.join(LOG_LEVELS) + ' ; default ' + DEFAULT_LOG_LEVEL + ')',type='choice', choices=['debug', 'info', 'warning', 'error','critical'], default=DEFAULT_LOG_LEVEL)
     (opts, args) = op.parse_args()
     main(opts)
