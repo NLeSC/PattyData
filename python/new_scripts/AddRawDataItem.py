@@ -156,7 +156,7 @@ def check_json_file(jsonfile):
         pass
     else:
         logger.error("[ERROR] json file should contain at least (x,y,z,srid)")
-        raise Exception(json file should contain at least (x,y,z,srid)")
+        raise Exception("json file should contain at least (x,y,z,srid)")
 
 def define_create_target_dir(opts):
     logger.info('Creating target directory.')
