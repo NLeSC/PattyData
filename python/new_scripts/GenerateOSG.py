@@ -151,7 +151,7 @@ def createOSG(inFile, outFolder, inType, opts, logger, abOffsetX=None,
     # upate xml file
     updateXMLDescription(xmlPath,
                          os.path.relpath(outFolder,
-                                         utils.DEFAULT_RAW_DATA_FOLDER))
+                                         utils.DEFAULT_RAW_DATA_DIR))
 
 
 def main(opts):
