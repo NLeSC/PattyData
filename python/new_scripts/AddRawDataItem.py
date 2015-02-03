@@ -50,6 +50,7 @@ import os
 import shutil
 import argparse
 import utils
+import json
 
 logger = None
 
@@ -150,8 +151,12 @@ def check_input_data(opts):
 
 def check_json_file(jsonfile):
     # check the content of the JSON file
-    pass
-
+    JSON = json.load(open(jsonfile))
+    if all(substring in JSON.keys() for substring in ['x','y','z','srid']):
+        pass
+    else:
+        logger.error("[ERROR] json file should contain at least (x,y,z,srid)")
+        raise Exception(json file should contain at least (x,y,z,srid)")
 
 def define_create_target_dir(opts):
     logger.info('Creating target directory.')
