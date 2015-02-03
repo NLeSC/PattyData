@@ -106,6 +106,53 @@ def check_directory_structure(RAW_BASEDIR):
             raise IOError("Required directory does not exist: " + directory)
 
 
+def check_input_data(opts):
+    logger.info('Checking input data.')
+    # name of Raw Data item may not contain (CURR, BACK, OSG)
+    if any(substring in opts.file for substring in ['CURR', 'BACK', 'OSG']):
+        logger.error("[ERROR] Input data may not contain (CURR, BACK, OSG)")
+        raise IOError("Input data may not contain (CURR, BACK, OSG)")
+    # All pictures must have JSON file with same name (.png.json)
+    # with at least srid, x, y, z
+    if (opts.type == PIC_FT):
+        # if input is a directory
+        if os.path.isdir(opts.file):
+            src_files = os.listdir(opts.file)
+            for file_name in src_files:
+                # check for figures in directory
+                if (os.path.splitext(testname)[1][1:].lower() in ['png',
+                                                                  'jpg',
+                                                                  'jpeg']):
+                    if (os.path.isfile(os.path.join(opts.file,
+                                                    file_name) + '.json')):
+                        check_json_file(os.path.join(opts.file,
+                                                     file_name) + '.json')
+                    else:
+                        logger.error["No accompanying JSON file found for " +
+                                     "input: " + file_name)
+                        raise IOError("No accompanying JSON file found for " +
+                                      "input: " + file_name)
+        # if input is a file and is indeed a figure:
+        elif (os.path.isfile(opts.file) and os.path.splitext(
+              testname)[1][1:].lower() in ['png', 'jpg', 'jpeg']):
+            # check for json file ${filename}.json
+            if (opts.file + '.json'):
+                check_json_file(opts.file + '.json')
+            else:
+                logger.error["No accompanying JSON file found for input: " +
+                             opts.file)
+                raise IOError("No accompanying JSON file found for input: " +
+                              opts.file)
+    # SRID for PCs must not be null
+    if (opts.type == PC_FT):
+        pass
+
+
+def check_json_file(jsonfile):
+    # check the content of the JSON file
+    pass
+
+
 def define_create_target_dir(opts):
     logger.info('Creating target directory.')
     target_basedir = os.path.join(opts.data, opts.type, opts.kind)
@@ -145,7 +192,8 @@ def define_create_target_dir(opts):
     # TARGETDIR for MESH
     if (opts.type == utils.MESH_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(target_basedir,
-                                 opts.period, inputname+'_V'+str(opts.verrecno))
+                                 opts.period,
+                                 inputname+'_V'+str(opts.verrecno))
     if (opts.type == utils.MESH_FT and opts.kind == utils.SITE_FT):
         TARGETDIR = os.path.join(target_basedir, opts.period,
                                  'S'+str(opts.siteno),
@@ -179,17 +227,11 @@ def copy_data(opts, TARGETDIR):
         for file_name in src_files:
             if (os.path.isfile(os.path.join(opts.file, file_name))):
                 shutil.copy(os.path.join(opts.file, file_name), TARGETDIR)
-    elif os.path.isfile(opts.file):
-        shutil.copyfile(opts.file, os.path.join(TARGETDIR,
-                                                os.path.basename(opts.file)))
     # if input was a file:
     # copy the file to TARGETDIR
     elif os.path.isfile(opts.file):
-        src_files = os.listdir(opts.file)
-        for file_name in src_files:
-            if (os.path.isfile(os.path.join(opts.file, file_name))):
-                shutil.copy(os.path.join(opts.file, file_name),
-                            os.path.join(TARGETDIR, file_name))
+        shutil.copyfile(opts.file, os.path.join(TARGETDIR,
+                                                os.path.basename(opts.file)))
     else:
         os.rmdir(TARGETDIR)  # remove TARGETDIR if input file does not exist
         logger.error(
@@ -211,6 +253,8 @@ def main(opts):
     check_required_options(opts)
     # check if the required directory structure exists
     check_directory_structure(opts.data)
+    # check input data
+    check_input_data(opts.file)
     # define target directory
     TARGETDIR = define_create_target_dir(opts)
     # copy the data to the target directory
