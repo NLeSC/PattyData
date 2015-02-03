@@ -11,7 +11,6 @@
 ##############################################################################
 
 import os
-import optparse
 import psycopg2
 import time
 import re
@@ -98,11 +97,15 @@ def main(opts):
     #                'IS NOT null) AND object_id = %s ORDER BY site_id',
     #               [utils.SITE_OBJECT_NUMBER])
     # need OSG_ITEM_CAMERA.item_id instead of OSG_CAMERA.osg_location_id ??
-    # ??? object_id -> srid ???
-    cursor.execute('SELECT DISTINCT osg_location_id, x, y, z, h, p, r FROM ' +
-                   'OSG_LOCATION WHERE osg_location_id NOT IN (SELECT ' +
+    cursor.execute('SELECT DISTINCT site_id, x, y, z, h, p, r FROM ' +
+                   'OSG_LOCATION INNER JOIN OSG_SITE_OBJECT ON ' +
+                   'OSG_LOCATION.osg_location_id=' +
+                   'OSG_SITE_OBJECT.osg_location_id INNER JOIN ' +
+                   'tbl1_object ON OSG_SITE_OBJECT.site_id=' +
+                   'tbl1_object.site_id WHERE ' +
+                   'osg_location_id NOT IN (SELECT ' +
                    'DISTINCT osg_location_id FROM OSG_CAMERA WHERE ' +
-                   'osg_location_id IS NOT null) AND srid = %s ORDER ' +
+                   'osg_location_id IS NOT null) AND object_id = %s ORDER ' +
                    'BY osg_location_id', [utils.SITE_OBJECT_NUMBER])
     for (siteId, x, y, z, h, p, r) in cursor:
         cameras.add_camera(viewer_conf_api.camera
@@ -167,13 +170,15 @@ def main(opts):
         #               'active_objects_sites WHERE active_object_site_id ' +
         #               'IN (SELECT active_object_site_id FROM ' +
         #               tableName + ') ORDER BY site_id')
-        cursor.execute('SELECT osg_location_id, osg_data_item_id, abs_path, ' +
+        cursor.execute('SELECT site_id, osg_data_item_id, abs_path, ' +
                        'x, y, z, xs, ys, zs, h, p, r, cast_shadow FROM ' +
-                       'OSG_DATA_ITEM INNER JOIN OSG_LOCATION ON ' +
-                       'OSG_DATA_ITEM.osg_location_id=' +
+                       'OSG_DATA_ITEM INNER JOIN OSG_SITE_OBJECT ON ' +
+                       'OSG_LOCATION.osg_location_id=' +
+                       'OSG_SITE_OBJECT.osg_location_id INNER JOIN ' +
+                       'OSG_LOCATION ON OSG_DATA_ITEM.osg_location_id=' +
                        'OSG_LOCATION.osg_location_id WHERE osg_data_item_id ' +
                        'IN (SELECT osg_data_item_id FROM ' +
-                       tableName + ') ORDER BY osg_location_id')
+                       tableName + ') ORDER BY site_id')
 
         rows = cursor.fetchall()
         for (siteId, activeObjectId, osgPath, x, y, z, xs, ys, zs, h, p, r,
@@ -198,14 +203,18 @@ def main(opts):
     #              ' = boundings.bounding_id ORDER BY site_id')
     # ??? name -> OSG_CAMERA.osg_camera_name ???
     # ??? bounding_id ???
-    cursor.execute('SELECT osg_location_id, osg_data_item_id, ' +
+    cursor.execute('SELECT site_id, object_id, ' +
                    'osg_camera_name, x, y, z, xs, ys, zs, h, p, r, ' +
                    'cast_shadow FROM OSG_DATA_ITEM INNER JOIN ' +
                    'OSG_LOCATION ON OSG_DATA_ITEM.osg_location_id=' +
                    'OSG_LOCATION.osg_location_id INNER JOIN OSG_LABEL ON ' +
                    'OSG_LOCATION.osg_location_id=OSG_LABEL.osg_location_id ' +
                    'INNER JOIN OSG_CAMERA ON OSG_CAMERA.osg_location=' +
-                   'OSG_LOCATION.osg_location_id ' +
+                   'OSG_LOCATION.osg_location_id INNER JOIN OSG_SITE_CAMERA ' +
+                   'ON OSG_CAMERA.osg_camera_name=' +
+                   'OSG_SITE_CAMERA.osg_camera_name INNER JOIN ' +
+                   'tbl1_object ON OSG_SITE_CAMERA.site_id=' +
+                   'tbl1_object.site_id ' +
                    'WHERE active_objects_sites_objects.bounding_id' +
                    ' = boundings.bounding_id ORDER BY site_id')
 
