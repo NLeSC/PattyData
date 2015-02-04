@@ -295,9 +295,9 @@ if __name__ == "__main__":
     requiredNamedSITE = parser.add_argument_group(
         'required arguments for ' + utils.SITE_FT)
     # fill argument groups
-    parser.add_argument('-i', '--data', default=utils.DEFAULT_RAW_DATA_FOLDER,
+    parser.add_argument('-i', '--data', default=utils.DEFAULT_RAW_DATA_DIR,
                         help='RAW data folder [default ' +
-                        utils.DEFAULT_RAW_DATA_FOLDER + ']')
+                        utils.DEFAULT_RAW_DATA_DIR + ']')
     requiredNamed.add_argument('-k', '--kind', action='store',
                                help='Type of item',
                                choices=[utils.BG_FT, utils.SITE_FT],
@@ -317,9 +317,10 @@ if __name__ == "__main__":
                                       ',' + utils.HIST_FT + ')',
                                       choices=[utils.CURR_FT, utils.HIST_FT,
                                                utils.ARCREC_FT])
-    requiredNamedPC.add_argument('-a', '--aligned', action='store',
-                                 help='Aligned to a specific background')
-    parser.add_argument('--eight', help='8 bit color [only for PC SITE]',
+    parser.add_argument('-a', '--aligned', action='store',
+                                 help='Aligned to a specific background [' +
+                                 'only for PC,MESH SITE]')
+    parser.add_argument('--eight', help='8 bit color [only for PC SITE or MESH]',
                         action="store_true")
     parser.add_argument('-l', '--log', help='Log level',
                         choices=['debug', 'info', 'warning', 'error',
