@@ -122,7 +122,7 @@ def check_input_data(opts):
                         check_json_file(os.path.join(opts.file,
                                                      file_name) + '.json')
                     else:
-                        logger.error["No accompanying JSON file found for " +
+                        logger.error("No accompanying JSON file found for " +
                                      "input: " + file_name)
                         raise IOError("No accompanying JSON file found for " +
                                       "input: " + file_name)
@@ -133,7 +133,7 @@ def check_input_data(opts):
             if (opts.file + '.json'):
                 check_json_file(opts.file + '.json')
             else:
-                logger.error["No accompanying JSON file found for input: " +
+                logger.error("No accompanying JSON file found for input: " +
                              opts.file)
                 raise IOError("No accompanying JSON file found for input: " +
                               opts.file)
@@ -143,15 +143,15 @@ def check_input_data(opts):
         srid = utils.readSRID(lasheader)
 
 
-
 def check_json_file(jsonfile):
     # check the content of the JSON file
     JSON = json.load(open(jsonfile))
-    if all(substring in JSON.keys() for substring in ['x','y','z','srid']):
+    if all(substring in JSON.keys() for substring in ['x', 'y', 'z', 'srid']):
         pass
     else:
         logger.error("[ERROR] json file should contain at least (x,y,z,srid)")
         raise Exception("json file should contain at least (x,y,z,srid)")
+
 
 def define_create_target_dir(opts):
     logger.info('Creating target directory.')
@@ -159,19 +159,21 @@ def define_create_target_dir(opts):
     # name of input data, only basename, extensions removed
     inputname = os.path.splitext(os.path.basename(opts.file))[0]
     # 8bit / alignment options
-    if (opts.eight and opts.aligned):
-        al8bit = "_ALIGNED_"+opts.aligned+"_8BC"
-    elif (opts.eight and not opts.aligned):
-        al8bit = "_8BC"
-    elif (opts.aligned and not opts.eight):
-        al8bit = "_ALIGNED_"+opts.aligned
-    else:
-        al8bit = ""
+    eightbitinfo, alignmentinfo = "", ""  # define empty string
+    if (opts.eight and (opts.type == utils.MESH_FT or
+                        (opts.type == utils.PC_FT and opts.kind ==
+                         utils.SITE_FT))):
+        eightbitinfo = "_8BC"
+    if (opts.aligned and opts.kind == utils.SITE_FT and (utils.type == PC_FT
+                                                         or utils.type ==
+                                                         MESH_FT)):
+        alignmentinfo = "_ALIGNED_"+opts.aligned
+    al8bit = alignmentinfo+eightbitinfo
 
     # TARGETDIR for PC
     if (opts.type == utils.PC_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(
-            target_basedir, inputname+)
+            target_basedir, inputname)
     if (opts.type == utils.PC_FT and opts.kind == utils.SITE_FT):
         if (opts.aligned):
             # check if background used for the alignment exists
@@ -187,13 +189,25 @@ def define_create_target_dir(opts):
                 raise IOError('Alignment background does not exist: ' +
                               os.path.splitext(os.path.basename(
                                   opts.aligned))[0])
+            # check if inputname already contains alignment information
+            if any(substring in inputname for substring in ['ALIGNED',
+                                                            'aligned']):
+                # check if alignment info in inputname is correct
+                if opts.aligned not in inputname:
+                    logger.error('[ERROR] alignment info in filename does ' +
+                                 'not match specified alignment argument.')
+                    raise Exception('[ERROR] alignment info in filename ' +
+                                    'does not match specified alignment ' +
+                                    'argument.')
+                else:
+                    alignment = ""
         TARGETDIR = os.path.join(target_basedir, 'S'+str(opts.siteno),
                                  inputname+al8bit)
     # TARGETDIR for MESH
     if (opts.type == utils.MESH_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(target_basedir,
                                  opts.period,
-                                 inputname)
+                                 inputname+al8bit)
     if (opts.type == utils.MESH_FT and opts.kind == utils.SITE_FT):
         TARGETDIR = os.path.join(target_basedir, opts.period,
                                  'S'+str(opts.siteno),
