@@ -208,3 +208,9 @@ def start_logging(filename=LOG_FILENAME, level=DEFAULT_LOG_LEVEL):
                         format=LOG_FORMAT)
     logger = logging.getLogger(__name__)
     return logger
+
+def readSRID(lasHeader):
+    osrs = osgeo.osr.SpatialReference()
+    osrs.SetFromUserInput(lasHeader.get_srs().get_wkt())
+    #osrs.AutoIdentifyEPSG()
+    return osrs.GetAttrValue( 'AUTHORITY', 1 )
