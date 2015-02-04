@@ -5,6 +5,7 @@
 ################################################################################
 import os, subprocess, time, calendar, logging
 import psycopg2
+from osgeo import osr
 
 # Python Module containing methods used in other scripts
 PROPERTIES = {'administrator':('initials', 'list_participants'),
@@ -210,7 +211,7 @@ def start_logging(filename=LOG_FILENAME, level=DEFAULT_LOG_LEVEL):
     return logger
 
 def readSRID(lasHeader):
-    osrs = osgeo.osr.SpatialReference()
+    osrs = osr.SpatialReference()
     osrs.SetFromUserInput(lasHeader.get_srs().get_wkt())
     #osrs.AutoIdentifyEPSG()
     return osrs.GetAttrValue( 'AUTHORITY', 1 )
