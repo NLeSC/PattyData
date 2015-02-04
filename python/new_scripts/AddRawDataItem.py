@@ -159,15 +159,32 @@ def define_create_target_dir(opts):
     # name of input data, only basename, extensions removed
     inputname = os.path.splitext(os.path.basename(opts.file))[0]
     # 8bit / alignment options
-    eightbitinfo, alignmentinfo = "", ""  # define empty string
     if (opts.eight and (opts.type == utils.MESH_FT or
                         (opts.type == utils.PC_FT and opts.kind ==
                          utils.SITE_FT))):
-        eightbitinfo = "_8BC"
+        # check if inputname already contains alignment information
+        if any(substring in inputname.lower() for substring in ['8bit',
+                                                                '8bc']):
+            # 8bitcolor info already in folder name
+            eightbitinfo = ""
+        else:
+            eightbitinfo = "_8BC"
     if (opts.aligned and opts.kind == utils.SITE_FT and (utils.type == PC_FT
                                                          or utils.type ==
                                                          MESH_FT)):
-        alignmentinfo = "_ALIGNED_"+opts.aligned
+        # check if inputname already contains alignment information
+        if any(substring in inputname.lower() for substring in ['aligned']):
+            # check if alignment info in inputname is correct
+            if opts.aligned not in inputname:
+                logger.error('[ERROR] alignment info in filename does ' +
+                             'not match specified alignment argument.')
+                raise Exception('[ERROR] alignment info in filename ' +
+                                'does not match specified alignment ' +
+                                'argument.')
+            else:
+                alignmentinfo = ""
+        else:
+            alignmentinfo = "_ALIGNED_"+opts.aligned
     al8bit = alignmentinfo+eightbitinfo
 
     # TARGETDIR for PC
@@ -189,18 +206,6 @@ def define_create_target_dir(opts):
                 raise IOError('Alignment background does not exist: ' +
                               os.path.splitext(os.path.basename(
                                   opts.aligned))[0])
-            # check if inputname already contains alignment information
-            if any(substring in inputname for substring in ['ALIGNED',
-                                                            'aligned']):
-                # check if alignment info in inputname is correct
-                if opts.aligned not in inputname:
-                    logger.error('[ERROR] alignment info in filename does ' +
-                                 'not match specified alignment argument.')
-                    raise Exception('[ERROR] alignment info in filename ' +
-                                    'does not match specified alignment ' +
-                                    'argument.')
-                else:
-                    alignment = ""
         TARGETDIR = os.path.join(target_basedir, 'S'+str(opts.siteno),
                                  inputname+al8bit)
     # TARGETDIR for MESH
