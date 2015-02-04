@@ -80,13 +80,6 @@ def check_required_options(opts):
                 " (--siteno)")
             parser.error("Site number should be defined for " + utils.SITE_FT +
                          " (--siteno)")
-    # PC/MESHES should have a version/reconstruction number defined
-    if (opts.type == utils.PC_FT or opts.type == utils.MESH_FT):
-        if not (opts.verrecno):
-            logger.error("[ERROR] Version/reconstruction " +
-                         "number should be defined (--verrecno)")
-            parser.error(
-                "Version/reconstruction number should be defined (--verrecno)")
 
 
 def check_directory_structure(RAW_BASEDIR):
@@ -146,7 +139,9 @@ def check_input_data(opts):
                               opts.file)
     # SRID for PCs must not be null
     if (opts.type == PC_FT):
-        pass
+        # lasheader
+        srid = utils.readSRID(lasheader)
+
 
 
 def check_json_file(jsonfile):
@@ -176,7 +171,7 @@ def define_create_target_dir(opts):
     # TARGETDIR for PC
     if (opts.type == utils.PC_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(
-            target_basedir, inputname+'_V'+str(opts.verrecno))
+            target_basedir, inputname+)
     if (opts.type == utils.PC_FT and opts.kind == utils.SITE_FT):
         if (opts.aligned):
             # check if background used for the alignment exists
@@ -193,16 +188,16 @@ def define_create_target_dir(opts):
                               os.path.splitext(os.path.basename(
                                   opts.aligned))[0])
         TARGETDIR = os.path.join(target_basedir, 'S'+str(opts.siteno),
-                                 inputname+'_V'+str(opts.verrecno)+al8bit)
+                                 inputname+al8bit)
     # TARGETDIR for MESH
     if (opts.type == utils.MESH_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(target_basedir,
                                  opts.period,
-                                 inputname+'_V'+str(opts.verrecno))
+                                 inputname)
     if (opts.type == utils.MESH_FT and opts.kind == utils.SITE_FT):
         TARGETDIR = os.path.join(target_basedir, opts.period,
                                  'S'+str(opts.siteno),
-                                 inputname+'_V'+str(opts.verrecno)+al8bit)
+                                 inputname+al8bit)
     # TARGETDIR for PICT
     if (opts.type == utils.PIC_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(target_basedir, opts.period)
@@ -295,8 +290,6 @@ if __name__ == "__main__":
     requiredNamed.add_argument('-f', '--file', action='store',
                                help='Input file/directory name to copy',
                                required=True)
-    requiredNamedPCMESH.add_argument('--verrecno', action='store', type=int,
-                                     help='Version or reconstruction number')
     requiredNamedMESHPIC.add_argument('-p', '--period', action='store',
                                       help='Period (choose from ' +
                                       utils.MESH_FT + ':' + utils.CURR_FT +
