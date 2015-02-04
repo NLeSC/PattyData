@@ -6,7 +6,7 @@
 import os, optparse, psycopg2, time, logging, glob, json
 from utils import *
 import liblas
-import osgeo.osr
+from osgeo import osr
 
 # TODO: Checking for addRawDataItem:
 # SRID for PCs must not be null
@@ -90,25 +90,22 @@ def readLASInfo(absPath):
         srid = None
     return (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz)
 
-def readSRID(lasHeader):
-    osrs = osgeo.osr.SpatialReference()
-    osrs.SetFromUserInput(lasHeader.get_srs().get_wkt())
-    #osrs.AutoIdentifyEPSG()
-    return osrs.GetAttrValue( 'AUTHORITY', 1 )
-
 def readPictureInfo(absPath):
-    piDict = json.loads(open(absPath + '.json','r'))
-    srid = piDict.get('srid')
-    x = piDict.get('x')
-    y = piDict.get('y')
-    z = piDict.get('z')
-    dx = piDict.get('dx')
-    dy = piDict.get('dy')
-    dz = piDict.get('dz')
-    ux = piDict.get('ux')
-    uy = piDict.get('uy')
-    uz = piDict.get('uz')    
-    return (srid, x, y, z, dx, dy, dz, ux, uy, uz)
+    if os.path.isfile(absPath + '.json'):
+        piDict = json.loads(open(absPath + '.json','r'))
+        srid = piDict.get('srid')
+        x = piDict.get('x')
+        y = piDict.get('y')
+        z = piDict.get('z')
+        dx = piDict.get('dx')
+        dy = piDict.get('dy')
+        dz = piDict.get('dz')
+        ux = piDict.get('ux')
+        uy = piDict.get('uy')
+        uz = piDict.get('uz')    
+        return (srid, x, y, z, dx, dy, dz, ux, uy, uz)
+    else:
+        return (None, None,None,None,None,None,None,None,None,None)
 
 def readOffsets(absPath):
     txtfiles =  glob.glob(absPath + '/*offset.txt')
@@ -129,8 +126,24 @@ def isAligned(absPath):
     aligned = name.count('_ALIGNED_') > 0
     backgroundAligned = None
     if aligned:
-        backgroundAligned = name[name.index('_ALIGNED_')+len('_ALIGNED_'):].replace('_8BC','').split('.')[0]
+        backgrounds = getBackgrounds()
+        for background in backgrounds:
+            if name.count(background):
+                if backgroundAligned == None:
+                    backgroundAligned = background
+                else:
+                    logging.warn('Confusing alignment information in ' + absPath + '. Assuming alignment with ' + backgroundAligned)
+    if aligned and backgroundAligned == None:
+        logging.error('Alignment information could not be retrieved for ' + absPath)
+        aligned = False
     return (aligned, backgroundAligned)
+
+def getBackgrounds():
+    cursor.execute('SELECT A.abs_path FROM RAW_DATA_ITEM A, ITEM B WHERE A.item_id = B.item_id and B.background = %s', [True,])
+    backgrounds = []
+    for (absPath, ) in cursor:
+        backgrounds.append(os.path.basename(absPath))
+    return backgrounds
 
 def isThumbnail(absPath):
     name = os.path.basename(absPath) 
@@ -168,9 +181,18 @@ def getPOTParams(absPath):
         spacing = int(a[a.index('spacing') + len('spacing'):].split('_')[0])
     return (numLevels, spacing)
 
-        
+def getMTLAbsPath(absPath):
+    mtlfiles = glob.glob(absPath + '/*mtl')
+    if len(mtlfiles) == 0:
+        return None
+    else:
+        mtlPath = mtlfiles[0]
+        if len(mtlfiles) > 1:
+            logging.warn('multiple MTLs file were found in ' + outFolder + '. Using ' + mtlPath)
+        return mtlPath       
+ 
 def getXMLAbsPath(absPath):
-    xmlfiles = glob.glob(os.path.join(absPath,'*xml'))
+    xmlfiles = glob.glob(absPath + '/*xml')
     if len(xmlfiles) == 0:
         return None
     else:
@@ -268,7 +290,7 @@ def processSites(absPath, addMethod, dataItemType):
 def cleanRaw(dataItemTypes):
     logging.info('Cleaning raw data items...') 
     if PC_FT in dataItemTypes:
-        dbExecute(cursor, 'SELECT A.raw_data_item_id, A.itemId, abs_path FROM RAW_DATA_ITEM A, RAW_DATA_ITEM_PC B WHERE A.raw_data_item_id = B.raw_data_item_id AND A.last_check < %s', [initialTime,])
+        dbExecute(cursor, 'SELECT A.raw_data_item_id, A.item_id, abs_path FROM RAW_DATA_ITEM A, RAW_DATA_ITEM_PC B WHERE A.raw_data_item_id = B.raw_data_item_id AND A.last_check < %s', [initialTime,])
         rows = cursor.fetchall()
         for (rawDataItemId, itemId, absPath) in rows:
             if os.path.isfile(absPath) or os.path.isdir(absPath):
@@ -292,7 +314,7 @@ def cleanRaw(dataItemTypes):
                 else:
                     logging.warning('Can not delete entry for removed ' + absPath + '. Related data items still there!')
     if MESH_FT in dataItemTypes:
-        dbExecute(cursor, 'SELECT A.raw_data_item_id, A.itemId, abs_path FROM RAW_DATA_ITEM A, RAW_DATA_ITEM_MESH B WHERE A.raw_data_item_id = B.raw_data_item_id AND A.last_check < %s', [initialTime,])
+        dbExecute(cursor, 'SELECT A.raw_data_item_id, A.item_id, abs_path FROM RAW_DATA_ITEM A, RAW_DATA_ITEM_MESH B WHERE A.raw_data_item_id = B.raw_data_item_id AND A.last_check < %s', [initialTime,])
         rows = cursor.fetchall()
         for (rawDataItemId, itemId, absPath) in rows:
             if os.path.isfile(absPath) or os.path.isdir(absPath):
@@ -307,7 +329,7 @@ def cleanRaw(dataItemTypes):
                     logging.warning('Can not delete entry for removed ' + absPath + '. Related data items still there!')
         
     if PIC_FT in dataItemTypes:
-        dbExecute(cursor, 'SELECT A.raw_data_item_id, A.itemId, abs_path FROM RAW_DATA_ITEM A, RAW_DATA_ITEM_PICTURE B WHERE A.raw_data_item_id = B.raw_data_item_id AND A.last_check < %s', [initialTime,])
+        dbExecute(cursor, 'SELECT A.raw_data_item_id, A.item_id, abs_path FROM RAW_DATA_ITEM A, RAW_DATA_ITEM_PICTURE B WHERE A.raw_data_item_id = B.raw_data_item_id AND A.last_check < %s', [initialTime,])
         rows = cursor.fetchall()
         for (rawDataItemId, itemId, absPath) in rows:
             if os.path.isfile(absPath) or os.path.isdir(absPath):
@@ -377,10 +399,17 @@ def cleanPOT(dataItemTypes):
     #    pass
 
 def addRawDataItem(absPath, itemId, dataItemType):
+    if os.path.isdir(absPath) and len(os.listdir(absPath)) == 0:
+        logging.warn('Skipping ' + absPath + '. Empty directory')
+        return
     modTime = getCurrentTime(getLastModification(absPath))
     dbExecute(cursor, 'SELECT raw_data_item_id, last_mod FROM RAW_DATA_ITEM WHERE abs_path = %s', [absPath,])
     row = cursor.fetchone()
     if row == None: #This folder has been added recently
+        dbExecute(cursor, 'SELECT item_id FROM ITEM WHERE item_id = %s', [itemId,])
+        row = cursor.fetchone()
+        if row == None:
+             dbExecute(cursor, "INSERT INTO ITEM (item_id, background) VALUES (%s,%s)", [itemId, (itemId < 0)])
         dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM (raw_data_item_id, item_id, abs_path, last_mod, last_check) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING raw_data_item_id", 
                         [itemId, absPath, modTime, initialTime])
         rawDataItemId = cursor.fetchone()[0]
@@ -396,15 +425,16 @@ def addRawDataItem(absPath, itemId, dataItemType):
         elif dataItemType == MESH_FT:
             current = isCurrent(absPath)
             (aligned, backgroundAligned) = isAligned(absPath)
-            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_MESH (raw_data_item_id, current_mesh) VALUES (%s,%s)", 
-                            [rawDataItemId, current])
+            mtlAbsPath = getMTLAbsPath(absPath)
+            color8bit = is8BitColor(absPath)
+            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_MESH (raw_data_item_id, current_mesh, mtl_abs_path, color_8bit) VALUES (%s,%s,%s,%s)", 
+                            [rawDataItemId, current, mtlAbsPath, color8bit])
         else:
             current = isCurrent(absPath)
             thumbnail = isThumbnail(absPath)
-            (srid, x, y, z, dx, dy, dz) = readPictureInfo(absPath)
-            
-            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_PICTURE (raw_data_item_id, current_picture, thumbnail, srid, x, y, z, dx, dy, dz) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
-                            [rawDataItemId, current, thumbnail, srid, x, y, z, dx, dy, dz])
+            (srid, x, y, z, dx, dy, dz, ux, uy, uz) = readPictureInfo(absPath)
+            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_PICTURE (raw_data_item_id, current_picture, thumbnail, srid, x, y, z, dx, dy, dz, ux, uy, uz) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
+                            [rawDataItemId, current, thumbnail, srid, x, y, z, dx, dy, dz, ux, uy, uz])
         
         if dataItemType in (PC_FT, MESH_FT):
             if aligned:
