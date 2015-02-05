@@ -44,7 +44,6 @@
 #                       |- Sn
 ###############################################################################
 
-import optparse
 import re
 import os
 import shutil
@@ -122,10 +121,8 @@ def check_input_data(opts):
                         check_json_file(os.path.join(opts.file,
                                                      file_name) + '.json')
                     else:
-                        logger.error("No accompanying JSON file found for " +
-                                     "input: " + file_name)
-                        raise IOError("No accompanying JSON file found for " +
-                                      "input: " + file_name)
+                        logger.warning("No accompanying JSON file found for " +
+                                       "input: " + file_name)
         # if input is a file and is indeed a figure:
         elif (os.path.isfile(opts.file) and os.path.splitext(
               testname)[1][1:].lower() in ['png', 'jpg', 'jpeg']):
@@ -133,10 +130,8 @@ def check_input_data(opts):
             if (opts.file + '.json'):
                 check_json_file(opts.file + '.json')
             else:
-                logger.error("No accompanying JSON file found for input: " +
-                             opts.file)
-                raise IOError("No accompanying JSON file found for input: " +
-                              opts.file)
+                logger.warning("No accompanying JSON file found for input: " +
+                               opts.file)
     # SRID for PCs must not be null
     if (opts.type == PC_FT):
         # lasheader
@@ -249,10 +244,25 @@ def copy_data(opts, TARGETDIR):
     # if input was a file:
     # copy the file to TARGETDIR
     elif os.path.isfile(opts.file):
-        shutil.copyfile(opts.file, os.path.join(TARGETDIR,
+        # create a directory name from the filename
+        basedir = os.path.splitext(filename)[0]
+        # copy the data
+        shutil.copyfile(opts.file, os.path.join(TARGETDIR, basedir,
                                                 os.path.basename(opts.file)))
+        # check if there is an accompanying json file
+        if os.path.isfile(opts.file + '.json'):
+            shutil.copyfile(opts.file + '.json',
+                            os.path.join(TARGETDIR, basedir,
+                                         os.path.basename
+                                         (opts.file + '.json')))
     else:
-        os.rmdir(TARGETDIR)  # remove TARGETDIR if input file does not exist
+        try:
+            # remove TARGETDIR if input file does not exist
+            # and TARGETDIR is empty
+            os.rmdir(TARGETDIR)
+        except OSError:
+            # TARGETDIR is not empty
+            pass
         logger.error(
             "[ERROR] Input file/directory given as argument for " +
             "--file does not exist: " + opts.file)
@@ -318,10 +328,10 @@ if __name__ == "__main__":
                                       choices=[utils.CURR_FT, utils.HIST_FT,
                                                utils.ARCREC_FT])
     parser.add_argument('-a', '--aligned', action='store',
-                                 help='Aligned to a specific background [' +
-                                 'only for PC,MESH SITE]')
-    parser.add_argument('--eight', help='8 bit color [only for PC SITE or MESH]',
-                        action="store_true")
+                        help='Aligned to a specific background [' +
+                        'only for PC,MESH SITE]')
+    parser.add_argument('--eight', help='8 bit color [only for PC SITE or ' +
+                        'MESH]', action="store_true")
     parser.add_argument('-l', '--log', help='Log level',
                         choices=['debug', 'info', 'warning', 'error',
                                  'critical'],
