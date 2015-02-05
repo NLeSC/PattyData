@@ -107,7 +107,7 @@ def check_input_data(opts):
         raise IOError("Input data may not contain (CURR, BACK, OSG)")
     # All pictures must have JSON file with same name (.png.json)
     # with at least srid, x, y, z
-    if (opts.type == PIC_FT):
+    if (opts.type == 'PIC_FT'):
         # if input is a directory
         if os.path.isdir(opts.file):
             src_files = os.listdir(opts.file)
@@ -133,7 +133,7 @@ def check_input_data(opts):
                 logger.warning("No accompanying JSON file found for input: " +
                                opts.file)
     # SRID for PCs must not be null
-    if (opts.type == PC_FT):
+    if (opts.type == 'PC_FT'):
         # lasheader
         srid = utils.readSRID(lasheader)
 
@@ -154,6 +154,7 @@ def define_create_target_dir(opts):
     # name of input data, only basename, extensions removed
     inputname = os.path.splitext(os.path.basename(opts.file))[0]
     # 8bit / alignment options
+    eightbitinfo, alignmentinfo = "", ""  # default
     if (opts.eight and (opts.type == utils.MESH_FT or
                         (opts.type == utils.PC_FT and opts.kind ==
                          utils.SITE_FT))):
@@ -161,7 +162,7 @@ def define_create_target_dir(opts):
         if any(substring in inputname.lower() for substring in ['8bit',
                                                                 '8bc']):
             # 8bitcolor info already in folder name
-            eightbitinfo = ""
+            pass
         else:
             eightbitinfo = "_8BC"
     if (opts.aligned and opts.kind == utils.SITE_FT and (utils.type == PC_FT
@@ -177,7 +178,7 @@ def define_create_target_dir(opts):
                                 'does not match specified alignment ' +
                                 'argument.')
             else:
-                alignmentinfo = ""
+                pass
         else:
             alignmentinfo = "_ALIGNED_"+opts.aligned
     al8bit = alignmentinfo+eightbitinfo
@@ -245,7 +246,8 @@ def copy_data(opts, TARGETDIR):
     # copy the file to TARGETDIR
     elif os.path.isfile(opts.file):
         # create a directory name from the filename
-        basedir = os.path.splitext(filename)[0]
+        basedir = os.path.splitext(opts.file)[0]
+        os.makedirs(os.path.join(TARGETDIR, basedir))
         # copy the data
         shutil.copyfile(opts.file, os.path.join(TARGETDIR, basedir,
                                                 os.path.basename(opts.file)))
@@ -283,7 +285,7 @@ def main(opts):
     # check if the required directory structure exists
     check_directory_structure(opts.data)
     # check input data
-    check_input_data(opts.file)
+    check_input_data(opts)
     # define target directory
     TARGETDIR = define_create_target_dir(opts)
     # copy the data to the target directory
