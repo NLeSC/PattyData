@@ -50,6 +50,8 @@ import shutil
 import argparse
 import utils
 import json
+import liblas
+import glob
 
 logger = None
 
@@ -59,7 +61,7 @@ def check_required_options(opts):
     if (opts.type == utils.MESH_FT):  # MESHES should have a period defined
         if not (opts.period == utils.CURR_FT or opts.period ==
                 utils.ARCREC_FT):
-            logger.error("[ERROR] Period should be '" + utils.CURR_FT +
+            logger.error("Period should be '" + utils.CURR_FT +
                          "' or '" + utils.ARCREC_FT + "'")
             parser.error("Period should be '" + utils.CURR_FT + "' or '" +
                          utils.ARCREC_FT + "'")
@@ -67,7 +69,7 @@ def check_required_options(opts):
         if not (opts.period == utils.CURR_FT or
                 opts.period == utils.HIST_FT):
             logger.error(
-                "[ERROR] Period should be '" + utils.CURR_FT + "' or '" +
+                "Period should be '" + utils.CURR_FT + "' or '" +
                 utils.HIST_FT + "' (--period)")
             parser.error("Period should be '" + utils.CURR_FT + "' or '" +
                          utils.HIST_FT + "' (--period)")
@@ -75,7 +77,7 @@ def check_required_options(opts):
     if (opts.kind == utils.SITE_FT):
         if not (opts.siteno):
             logger.error(
-                "[ERROR] Site number should be defined for " + utils.SITE_FT +
+                "Site number should be defined for " + utils.SITE_FT +
                 " (--siteno)")
             parser.error("Site number should be defined for " + utils.SITE_FT +
                          " (--siteno)")
@@ -95,7 +97,7 @@ def check_directory_structure(RAW_BASEDIR):
         if not os.path.isdir(directory):
             # os.makedirs(directory) # create directories recursively
             logger.error(
-                "[ERROR] Required directory does not exist: " + directory)
+                "Required directory does not exist: " + directory)
             raise IOError("Required directory does not exist: " + directory)
 
 
@@ -103,11 +105,11 @@ def check_input_data(opts):
     logger.info('Checking input data.')
     # name of Raw Data item may not contain (CURR, BACK, OSG)
     if any(substring in opts.file for substring in ['CURR', 'BACK', 'OSG']):
-        logger.error("[ERROR] Input data may not contain (CURR, BACK, OSG)")
+        logger.error("Input data may not contain (CURR, BACK, OSG)")
         raise IOError("Input data may not contain (CURR, BACK, OSG)")
     # All pictures must have JSON file with same name (.png.json)
     # with at least srid, x, y, z
-    if (opts.type == 'PIC_FT'):
+    if (opts.type == utils.PIC_FT):
         # if input is a directory
         if os.path.isdir(opts.file):
             src_files = os.listdir(opts.file)
@@ -128,14 +130,27 @@ def check_input_data(opts):
               testname)[1][1:].lower() in ['png', 'jpg', 'jpeg']):
             # check for json file ${filename}.json
             if (opts.file + '.json'):
-                check_json_file(opts.file + '.json')
+                check_json_file(opts.filee + '.json')
             else:
                 logger.warning("No accompanying JSON file found for input: " +
                                opts.file)
     # SRID for PCs must not be null
-    if (opts.type == 'PC_FT'):
-        # lasheader
-        srid = utils.readSRID(lasheader)
+    if (opts.type == utils.PC_FT and opts.kind == utils.SITE_FT):
+        if os.path.isfile(opts.file):  # input is file
+            lasHeader = liblas.file.File(opts.file, mode='r').header
+            srid = utils.readSRID(lasHeader)
+            if srid is None:
+                logger.warning("srid is not defined in lasheader " + opts.file)
+        else:  # input is directory
+            files = glob.glob(opts.file + '/*.las') + glob.glob(
+                opts.file + '/*.laz')
+            for filename in files:
+                # check all *.las en *.laz files in directory
+                lasHeader = liblas.file.File(filename, mode='r').header
+                srid = utils.readSRID(lasHeader)
+                if srid is None:
+                    logger.warning("srid is not defined in lasheader " +
+                                   filename)
 
 
 def check_json_file(jsonfile):
@@ -144,16 +159,12 @@ def check_json_file(jsonfile):
     if all(substring in JSON.keys() for substring in ['x', 'y', 'z', 'srid']):
         pass
     else:
-        logger.error("[ERROR] json file should contain at least (x,y,z,srid)")
+        logger.error("json file should contain at least (x,y,z,srid)")
         raise Exception("json file should contain at least (x,y,z,srid)")
 
 
-def define_create_target_dir(opts):
-    logger.info('Creating target directory.')
-    target_basedir = os.path.join(opts.data, opts.type, opts.kind)
-    # name of input data, only basename, extensions removed
-    inputname = os.path.splitext(os.path.basename(opts.file))[0]
-    # 8bit / alignment options
+def alignment_8bitcolor_info(inputname, opts):
+    # define 8bit / alignment options
     eightbitinfo, alignmentinfo = "", ""  # default
     if (opts.eight and (opts.type == utils.MESH_FT or
                         (opts.type == utils.PC_FT and opts.kind ==
@@ -172,9 +183,9 @@ def define_create_target_dir(opts):
         if any(substring in inputname.lower() for substring in ['aligned']):
             # check if alignment info in inputname is correct
             if opts.aligned not in inputname:
-                logger.error('[ERROR] alignment info in filename does ' +
+                logger.error('Alignment info in filename does ' +
                              'not match specified alignment argument.')
-                raise Exception('[ERROR] alignment info in filename ' +
+                raise Exception('Alignment info in filename ' +
                                 'does not match specified alignment ' +
                                 'argument.')
             else:
@@ -182,6 +193,15 @@ def define_create_target_dir(opts):
         else:
             alignmentinfo = "_ALIGNED_"+opts.aligned
     al8bit = alignmentinfo+eightbitinfo
+    return al8bit
+
+
+def define_create_target_dir(opts):
+    logger.info('Creating target directory.')
+    target_basedir = os.path.join(opts.data, opts.type, opts.kind)
+    # name of input data, only basename, extensions removed
+    inputname = os.path.splitext(os.path.basename(opts.file))[0]
+    al8bit = alignment_8bitcolor_info(inputname, opts)
 
     # TARGETDIR for PC
     if (opts.type == utils.PC_FT and opts.kind == utils.BG_FT):
@@ -202,8 +222,8 @@ def define_create_target_dir(opts):
                 raise IOError('Alignment background does not exist: ' +
                               os.path.splitext(os.path.basename(
                                   opts.aligned))[0])
-        TARGETDIR = os.path.join(target_basedir, 'S'+str(opts.siteno),
-                                 inputname+al8bit)
+        TARGETDIR = os.path.join(target_basedir, 'S'+str(opts.siteno))
+
     # TARGETDIR for MESH
     if (opts.type == utils.MESH_FT and opts.kind == utils.BG_FT):
         TARGETDIR = os.path.join(target_basedir,
@@ -223,7 +243,8 @@ def define_create_target_dir(opts):
     if not os.path.isdir(TARGETDIR):
         os.makedirs(TARGETDIR)  # create directories recursively
     else:
-        if not (opts.type == utils.PIC_FT):
+        if not (opts.type == utils.PIC_FT or
+                (opts.type == utils.PC_FT and opts.kind == utils.SITE_FT)):
             # Raise error if TARGETDIR exists
             # REMOVE/RECREATE to overwrite in future?
             logger.error(TARGETDIR + ' already exists, exiting.')
@@ -239,12 +260,33 @@ def copy_data(opts, TARGETDIR):
     # copy everything inside the directory to TARGETDIR
     if os.path.isdir(opts.file):
         src_files = os.listdir(opts.file)
-        for file_name in src_files:
-            if (os.path.isfile(os.path.join(opts.file, file_name))):
-                shutil.copy(os.path.join(opts.file, file_name), TARGETDIR)
-    # if input was a file:
-    # copy the file to TARGETDIR
+        if opts.type == utils.PC_FT and opts.kind == utils.SITE_FT:
+            for file_name in src_files:
+                basedir = os.path.splitext(file_name)[0]
+                if (os.path.isfile(os.path.join(opts.file, file_name))):
+                    # check 8bit/alignment info already in filename
+                    # so we don't duplicate it in the folder name
+                    al8bit = alignment_8bitcolor_info(file_name, opts)
+                    if not os.path.isdir(os.path.join
+                                         (TARGETDIR, basedir + al8bit)):
+                        os.mkdir(os.path.join(TARGETDIR, basedir + al8bit))
+                        shutil.copyfile(os.path.join(opts.file, file_name),
+                                        os.path.join(TARGETDIR, basedir +
+                                                     al8bit, file_name))
+                    else:
+                        logger.error(os.path.join
+                                     (TARGETDIR, basedir + al8bit) +
+                                     'already exists, exiting.')
+                        raise IOERROR(os.path.join
+                                      (TARGETDIR, basedir + al8bit) +
+                                      'already exists, exiting.')
+        else:
+            for file_name in src_files:
+                if (os.path.isfile(os.path.join(opts.file, file_name))):
+                    shutil.copy(os.path.join(opts.file, file_name), TARGETDIR)
     elif os.path.isfile(opts.file):
+        # if input was a file:
+        # copy the file to TARGETDIR
         # create a directory name from the filename
         basedir = os.path.splitext(opts.file)[0]
         os.makedirs(os.path.join(TARGETDIR, basedir))
@@ -266,7 +308,7 @@ def copy_data(opts, TARGETDIR):
             # TARGETDIR is not empty
             pass
         logger.error(
-            "[ERROR] Input file/directory given as argument for " +
+            "Input file/directory given as argument for " +
             "--file does not exist: " + opts.file)
         raise IOError("Input file/directory given as argument for " +
                       "--file does not exist: " + opts.file)
