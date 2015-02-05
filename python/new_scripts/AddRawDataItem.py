@@ -57,6 +57,9 @@ logger = None
 
 
 def check_required_options(opts):
+    """
+    Check if all required arguments are specified
+    """
     logger.info('Checking if all required arguments are specified.')
     if (opts.type == utils.MESH_FT):  # MESHES should have a period defined
         if not (opts.period == utils.CURR_FT or opts.period ==
@@ -84,6 +87,9 @@ def check_required_options(opts):
 
 
 def check_directory_structure(RAW_BASEDIR):
+    """
+    Checks if the required directory structure exists
+    """
     logger.info('Checking if required directory structure exists.')
     # directory structure
     DIRS = [os.path.join(RAW_BASEDIR, utils.PC_FT, utils.BG_FT),
@@ -102,6 +108,9 @@ def check_directory_structure(RAW_BASEDIR):
 
 
 def check_input_data(opts):
+    """
+    Checks if the input data has the required format
+    """
     logger.info('Checking input data.')
     # name of Raw Data item may not contain (CURR, BACK, OSG)
     if any(substring in opts.file for substring in ['CURR', 'BACK', 'OSG']):
@@ -154,7 +163,9 @@ def check_input_data(opts):
 
 
 def check_json_file(jsonfile):
-    # check the content of the JSON file
+    """
+    Checks the content of a JSON file
+    """
     JSON = json.load(open(jsonfile))
     if all(substring in JSON.keys() for substring in ['x', 'y', 'z', 'srid']):
         pass
@@ -164,7 +175,9 @@ def check_json_file(jsonfile):
 
 
 def alignment_8bitcolor_info(inputname, opts):
-    # define 8bit / alignment options
+    """
+    Defines 8bit / alignment options
+    """
     eightbitinfo, alignmentinfo = "", ""  # default
     if (opts.eight and (opts.type == utils.MESH_FT or
                         (opts.type == utils.PC_FT and opts.kind ==
@@ -176,9 +189,10 @@ def alignment_8bitcolor_info(inputname, opts):
             pass
         else:
             eightbitinfo = "_8BC"
-    if (opts.aligned and opts.kind == utils.SITE_FT and (utils.type == PC_FT
-                                                         or utils.type ==
-                                                         MESH_FT)):
+    if (opts.aligned and opts.kind == utils.SITE_FT and (opts.type ==
+                                                         utils.PC_FT or
+                                                         opts.type ==
+                                                         utils.MESH_FT)):
         # check if inputname already contains alignment information
         if any(substring in inputname.lower() for substring in ['aligned']):
             # check if alignment info in inputname is correct
@@ -197,6 +211,9 @@ def alignment_8bitcolor_info(inputname, opts):
 
 
 def define_create_target_dir(opts):
+    """
+    Defines and creates the target base directory TARGETDIR
+    """
     logger.info('Creating target directory.')
     target_basedir = os.path.join(opts.data, opts.type, opts.kind)
     # name of input data, only basename, extensions removed
@@ -255,6 +272,9 @@ def define_create_target_dir(opts):
 
 
 def copy_data(opts, TARGETDIR):
+    """
+    Copies the data into the file structure.
+    """
     logger.info('Copying data.')
     # if input was a directory:
     # copy everything inside the directory to TARGETDIR
@@ -384,6 +404,7 @@ if __name__ == "__main__":
                                    type=int, help='Site number')
     # extract user entered arguments
     opts = parser.parse_args()
+    opts.file = opts.file.rstrip('/')  # remove trailing /
 
     # run main
     main(opts)
