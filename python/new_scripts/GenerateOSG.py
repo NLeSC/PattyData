@@ -16,6 +16,8 @@ import glob
 import subprocess
 import argparse
 
+logger = None
+
 CONVERTER_COMMAND = 'ViaAppia'
 
 # user gives a id from raw data item
@@ -43,13 +45,9 @@ def updateXMLDescription(xmlPath, relPath):
     shutil.move(tempFile, xmlPath)
 
 
-def createOSG(outFolder, opts, logger, abOffsetX=None,
+def createOSG(opts, abOffsetX=None,
               abOffsetY=None, abOffsetZ=None, color8Bit=False):
     (mainOsgb, xmlPath, offsets) = (None, None, (0, 0, 0))
-
-    if os.path.exists(outFolder):
-        shutil.rmtree(outFolder)
-    os.makedirs(outFolder)
 
     # database connection
     connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser,
@@ -60,10 +58,10 @@ def createOSG(outFolder, opts, logger, abOffsetX=None,
         cursor, "SELECT abs_path FROM RAW_DATA_ITEM WHERE ' +
         'raw_data_item_id = '%s'" % (opts.itemid))
     abspath = data_items[0][0]
-    
-    # extract inType from abspath
-    inType = extract_inType(abspath)
-    
+
+    # extract inType & outFolder, create outFolder in non-existent
+    inType, outFolder = extract_inType(abspath, opts.osgDir)
+
     inFile = abspath  # CORRECT ?
 
     # Get 8bitcolor information from DB
@@ -94,7 +92,7 @@ def createOSG(outFolder, opts, logger, abOffsetX=None,
     aligned = (abOffsetX is not None)
 
     ofile = getOSGFileFormat(inType)
-    if inType == utils.PC_FT:  # A PC SITE
+    if inType == utils.SITE_FT:  # A PC SITE
         tmode = '--mode lodPoints --reposition'
     elif inType == utils.MESH_FT:
         tmode = '--mode polyMesh --convert --reposition'
@@ -167,23 +165,36 @@ def extract_inType(abspath):
     elif '/PICT/' in abspath:
         inType = utils.PIC_FT
     elif '/PC/SITE/' in abspath:
-        inType = utils.PC_FT
+        inType = utils.SITE_FT
     elif '/PC/BACK/' in abspath:
         inType = utils.BG_FT
     else:
         logger.error('could not determine type from abspath')
         raise Exception('Could not determine type from abspath')
-    return inType
+    # define outFolder from osgDir and inType
+    if inType in [utils.SITE_FT, utils.BG_FT]:
+        outFolder = os.path.join(os.path.abspath(opts.osgDir), utils.PC_FT,
+                                 inType)
+    else:
+        outFolder = os.path.join(os.path.abspath(opts.osgDir), inType)
+
+    # create outFolder if it does not exist yet
+    if not os.path.isdir(outFolder):
+        os.makedirs(outFolder)
+    # DON'T REMOVE IT IF ALREADY EXISTS ??? (it did in existing code)
+    # else:
+        # shutil.rmtree(outFolder)
+    return inType, outFolder
 
 
 def main(opts):
     # Define logger and start logging
+    global logger
     logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
     logger.info('#######################################')
     logger.info('Starting script GenerateOSG.py')
     logger.info('#######################################')
-    outFolder = ''
-    createOSG(outFolder, opts, logger)
+    createOSG(opts)
 
 if __name__ == "__main__":
     # define argument menu
@@ -202,6 +213,9 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--dbpass', help='DB pass', action='store')
     parser.add_argument('-t', '--dbhost', help='DB host', action='store')
     parser.add_argument('-r', '--dbport', help='DB port', action='store')
+    parser.add_argument('-o', '--osgDir', default=utils.DEFAULT_OSG_DATA_DIR,
+                        help='OSG data directory [default ' +
+                        utils.DEFAULT_POTREE_DATA_DIR + ']',action='store')
     parser.add_argument('-l', '--log', help='Log level',
                         choices=['debug', 'info', 'warning', 'error',
                                  'critical'],
