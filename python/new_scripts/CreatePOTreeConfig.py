@@ -95,13 +95,15 @@ def create_features_json(cursor, pc_ids, args):
         properties["condition"]=""
         
         # fetch the BBox from the DB
-        cursor.execute('select minx, miny, minz, maxx, maxy, maxz from site_pc where site_pc_id = %s', [siteId,])
+        sql_statement ='select minx, miny, minz, maxx, maxy, maxz from raw_data_item_pc where raw_data_item_id = %s', [siteId,]        
+        cursor.execute(sql_statement)
         if (cursor.rowcount >0):
             (minx, miny, minz, maxx, maxy, maxz) = cursor.fetchone()
         siteFeaturesDict["bbox"] = [minx, miny, minz, maxx, maxy, maxz]
         
         # fetch the geometry of the site from the DB
-        cursor.execute('select st_asgeojson(geom::geometry,15,4) from site_pc where site_pc_id = %s', [siteId,])  
+        sql_statement = 'select st_asgeojson(geom::geometry,15,4) from raw_data_item_pc natural join raw_data_item natural join item where raw_data_item_id = %s', [siteId,]
+        cursor.execute(sql_statement)  
         if (cursor.rowcount >0):
             data = cursor.fetchone()[0]
             json_data = json.loads(data)
@@ -114,21 +116,23 @@ def create_features_json(cursor, pc_ids, args):
             siteFeaturesDict["crs"] = json_data_crs
         
         # fetch the properties of the site from the DB 
-        cursor.execute('select abs_path from site_data_item, site_pc where (site_data_item.site_id= site_pc.site_pc_id) and (site_id = %s)', [siteId,])
+        sql_statement = 'select abs_path from raw_data_item natural join raw_data_item_pc where (raw_data_item_id = %s',[siteId,]
+        cursor.execute(sql_statement)
         if (cursor.rowcount >0):
              abs_path =  cursor.fetchone()[0]
              rel_path = abs_path.replace(relative_to_path,'')
              properties["pointcloud"] = rel_path
         
-        cursor.execute('select description_site, site_context, site_interpretation from tbl1_site where site_id = %s', [siteId,])
+        sql_statement = 'select description_site, site_context, site_interpretation from tbl1_site natural join raw_data_item where raw_data_item_id = %s', [siteId,]
+        cursor.execute(sql_statement)
         if (cursor.rowcount >0):
             (description, context, interpretation) = cursor.fetchone()
             properties["description"] = description
             properties["site_context"] = context
             properties["site_interpretation"] = interpretation
         
-        
-        cursor.execute('select abs_path from site_picture, site_data_item where (site_data_item.site_id= site_picture.site_picture_id)  and site_id = %s and thumbnail=True', [siteId,])
+        sql_statement = 'select abs_path from raw_data_item natural join raw_data_item_picture where (thumbnail=True) and (raw_data_item_id = %s)', [siteId,]
+        cursor.execute(sql_statement)
         if (cursor.rowcount >0):
              abs_path =  cursor.fetchone()[0]
              rel_path = abs_path.replace(relative_to_path,'')
@@ -181,10 +185,10 @@ def run(args):
     t0 = utils.getCurrentTime()
        
     # connect to DB and get a cursor   
-    connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbhost)
+    connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost)
         
     # get all sites for which we have converted Point Clouds (PCs)        
-    sql_statement = 'select distinct site_pc_id from potree_site_pc'        
+    sql_statement = 'select distinct raw_data_item_id from potree_data_item_pc'        
     pc_ids, num_pc_ids = utils.fetchDataFromDB(cursor, sql_statement)
     
     # generate the generic JSON file parts
