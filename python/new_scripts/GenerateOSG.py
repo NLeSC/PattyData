@@ -43,7 +43,7 @@ def updateXMLDescription(xmlPath, relPath):
     shutil.move(tempFile, xmlPath)
 
 
-def createOSG(inFile, outFolder, inType, opts, logger, abOffsetX=None,
+def createOSG(outFolder, opts, logger, abOffsetX=None,
               abOffsetY=None, abOffsetZ=None, color8Bit=False):
     (mainOsgb, xmlPath, offsets) = (None, None, (0, 0, 0))
 
@@ -55,19 +55,23 @@ def createOSG(inFile, outFolder, inType, opts, logger, abOffsetX=None,
     connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser,
                                            opts.dbpass, opts.dbhost,
                                            opts.dbport)
-
-    abspath = inFile  # is this correct?
+    # extract abspath using raw_data_item_id
     data_items, num_items = utils.fetchDataFromDB(
-        cursor, "SELECT item_id FROM RAW_DATA_ITEM WHERE abs_path = '%s'"
-        % (abspath))
-    itemID = data_items[0][0]
+        cursor, "SELECT abs_path FROM RAW_DATA_ITEM WHERE ' +
+        'raw_data_item_id = '%s'" % (opts.itemid))
+    abspath = data_items[0][0]
+    
+    # extract inType from abspath
+    inType = extract_inType(abspath)
+    
+    inFile = abspath  # CORRECT ?
 
     # Get 8bitcolor information from DB
     data_items, num_items = utils.fetchDataFromDB(
         cursor, 'SELECT color_8bit FROM RAW_DATA_ITEM_PC INNER JOIN ' +
         'RAW_DATA_ITEM ON RAW_DATA_ITEM_PC.raw_data_item_id=' +
-        'RAW_DATA_ITEM.raw_data_item_id INNER JOIN ITEM ON ' +
-        'RAW_DATA_ITEM.item_id = %s' % (itemID))
+        'RAW_DATA_ITEM.raw_data_item_id WHERE' +
+        'RAW_DATA_ITEM.raw_data_item_id = %s' % (opts.itemid))
     color8Bit = data_items[0][0]  # boolean if 8BC
 
     # Get alignment info from DB
@@ -75,8 +79,9 @@ def createOSG(inFile, outFolder, inType, opts, logger, abOffsetX=None,
         cursor, 'SELECT offset_x, offset_y, offset_z FROM ' +
         'OSG_DATA_ITEM_PC_BACKGROUND INNER JOIN RAW_DATA_ITEM ON ' +
         'OSG_DATA_ITEM_PC_BACKGROUND.raw_data_item_id=' +
-        'RAW_DATA_ITEM.raw_data_item_id INNER JOIN ITEM ON ' +
-        'RAW_DATA_ITEM.item_id = %s' % (itemID))
+        'RAW_DATA_ITEM.raw_data_item_id WHERE ' +
+        'RAW_DATA_ITEM.raw_data_item_id = %s' % (opts.itemid))
+
     # Set offset if item is aligned
     if len(data_items) > 0:
         (abOffsetX, abOffsetY, abOffsetZ) = data_items[0]
@@ -153,6 +158,23 @@ def createOSG(inFile, outFolder, inType, opts, logger, abOffsetX=None,
                          os.path.relpath(outFolder,
                                          utils.DEFAULT_RAW_DATA_DIR))
 
+def extract_inType(abspath):
+    '''
+    Checks the type of the input file using the file location
+    '''
+    if '/MESH/' in abspath:
+        inType = utils.MESH_FT
+    elif '/PICT/' in abspath:
+        inType = utils.PIC_FT
+    elif '/PC/SITE/' in abspath:
+        inType = utils.PC_FT
+    elif '/PC/BACK/' in abspath:
+        inType = utils.BG_FT
+    else:
+        logger.error('could not determine type from abspath')
+        raise Exception('Could not determine type from abspath')
+    return inType
+
 
 def main(opts):
     # Define logger and start logging
@@ -160,8 +182,8 @@ def main(opts):
     logger.info('#######################################')
     logger.info('Starting script GenerateOSG.py')
     logger.info('#######################################')
-    createOSG('/home/ronald/pattytest', '/home/ronald/pattytest/outdir', 'PC',
-              opts, logger)
+    outFolder = ''
+    createOSG(outFolder, opts, logger)
 
 if __name__ == "__main__":
     # define argument menu
@@ -169,8 +191,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=description)
 
     # fill argument groups
-    parser.add_argument('-i', '--config', help='XML configuration file',
-                        action='store')  # required? ID?
+    parser.add_argument('-i', '--itemid', help='Raw data item id',
+                        action='store')
     parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
                         help='Postgres DB name [default ' + utils.DEFAULT_DB +
                         ']', action='store')
