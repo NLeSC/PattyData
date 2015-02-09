@@ -145,7 +145,7 @@ def createOSG(opts, abOffsetX=None,
 
         logger.info(command)
         subprocess.Popen(command, stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE, shell=True).communicate()
+                         stderr=subprocess.PIPE).communicate()
 
     # move files to outFolder; drop outputPrefix from filename
     outputFiles = glob.glob(outputPrefix + '*')
