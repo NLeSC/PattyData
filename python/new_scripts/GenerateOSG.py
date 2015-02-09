@@ -55,24 +55,24 @@ def createOSG(opts, abOffsetX=None,
                                            opts.dbport)
     # extract abspath using raw_data_item_id
     data_items, num_items = utils.fetchDataFromDB(
-        cursor, "SELECT abs_path FROM RAW_DATA_ITEM WHERE ' +
-        'raw_data_item_id = '%s'" % (opts.itemid))
+        cursor, "SELECT abs_path FROM RAW_DATA_ITEM WHERE " +
+        "raw_data_item_id = '%s'" % (opts.itemid))
     abspath = data_items[0][0]
 
     # extract inType & outFolder, create outFolder in non-existent
     inType, outFolder = extract_inType(abspath, opts.osgDir)
-
     inFile = abspath  # CORRECT ?
 
     # Get 8bitcolor information from DB
     data_items, num_items = utils.fetchDataFromDB(
         cursor, 'SELECT color_8bit FROM RAW_DATA_ITEM_PC INNER JOIN ' +
         'RAW_DATA_ITEM ON RAW_DATA_ITEM_PC.raw_data_item_id=' +
-        'RAW_DATA_ITEM.raw_data_item_id WHERE' +
+        'RAW_DATA_ITEM.raw_data_item_id WHERE ' +
         'RAW_DATA_ITEM.raw_data_item_id = %s' % (opts.itemid))
     color8Bit = data_items[0][0]  # boolean if 8BC
 
     # Get alignment info from DB
+    # TODO: TEST, no values in DB yet
     data_items, num_items = utils.fetchDataFromDB(
         cursor, 'SELECT offset_x, offset_y, offset_z FROM ' +
         'OSG_DATA_ITEM_PC_BACKGROUND INNER JOIN RAW_DATA_ITEM ON ' +
@@ -87,10 +87,16 @@ def createOSG(opts, abOffsetX=None,
     # close DB connection
     utils.closeConnectionDB(connection, cursor)
 
-    os.chdir(os.path.dirname(inFile))
+    if os.path.isfile(inFile):
+        # input was a file -> change to directory
+        os.chdir(os.path.dirname(inFile))
+    else:
+        # input is already a directory
+        os.chdir(inFile)
+        #  os.chdir('/home/ronaldvh/test')  # REMOVE, FOR TESTING ONLY
+
     outputPrefix = 'data'
     aligned = (abOffsetX is not None)
-
     ofile = getOSGFileFormat(inType)
     if inType == utils.SITE_FT:  # A PC SITE
         tmode = '--mode lodPoints --reposition'
@@ -101,8 +107,6 @@ def createOSG(opts, abOffsetX=None,
     elif inType == utils.PIC_FT:
         tmode = '--mode picturePlane'
 
-    command = CONVERTER_COMMAND + ' ' + tmode + ' --outputPrefix ' + \
-        outputPrefix + ' --files ' + os.path.basename(inFile)
     if color8Bit:
         command += ' --8bitColor '
     if aligned:
@@ -110,36 +114,47 @@ def createOSG(opts, abOffsetX=None,
             ' ' + str(abOffsetZ)
 
     logFile = os.path.join(outFolder, outputPrefix + '.log')
-    command += ' &> ' + logFile
+    inputFiles = glob.glob(inFile + '/*.las') + glob.glob(
+                      inFile + '/*.laz')
+    for filename in inputFiles:
+        command = CONVERTER_COMMAND + ' ' + tmode + ' --outputPrefix ' + \
+            outputPrefix + ' --files ' + os.path.join(os.path.basename(inFile),
+                                                      filename)
+        command += ' &> ' + logFile
 
-    logger.info(command)
-    subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                     shell=True).communicate()
+        logger.info(command)
+        subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        shell=True).communicate()
 
     # move files to outFolder; drop outputPrefix from filename
     outputFiles = glob.glob(outputPrefix + '*')
     for filename in outputFiles:
         shutil.move(os.path.abspath(filename),
-                    os.path.join(outFolder, filename[len(outputPrefix):]))
+                    os.path.join(outFolder, filename[len(outputPrefix)+1:]))
     logger.info("Moving files to " + outFolder)
 
     ofiles = sorted(glob.glob(os.path.join(outFolder, '*' + ofile)))
     if len(ofiles) == 0:
         logger.error('none OSG file was generated (found in ' + outFolder +
                      '). Check log: ' + logFile)
-        mainOsgb = None
+        raise Exception('none OSG file was generated (found in ' + outFolder +
+                     '). Check log: ' + logFile)
     else:
         mainOsgb = ofiles[0]
-        if inType != 'bg':
+        if inType != utils.BG_FT:
             xmlfiles = glob.glob(os.path.join(outFolder, '*xml'))
             if len(xmlfiles) == 0:
                 logger.error('none XML file was generated (found in ' +
+                             outFolder + '). Check log: ' + logFile)
+                raise Exception('none XML file was generated (found in ' +
                              outFolder + '). Check log: ' + logFile)
                 xmlPath = None
             else:
                 xmlPath = xmlfiles[0]
                 if len(xmlfiles) > 1:
                     logger.error('multiple XMLs file were generated (found in '
+                                 + outFolder + '). Using ' + xmlPath)
+                    raise Exception('multiple XMLs file were generated (found in '
                                  + outFolder + '). Using ' + xmlPath)
         txtfiles = glob.glob(os.path.join(outFolder, '*offset.txt'))
         if len(txtfiles):
@@ -150,13 +165,12 @@ def createOSG(opts, abOffsetX=None,
                 offsets[i] = float(offsets[i])
         elif aligned:
             logger.warn('No offset file was found and it was expected!')
-
     # upate xml file
     updateXMLDescription(xmlPath,
                          os.path.relpath(outFolder,
                                          utils.DEFAULT_RAW_DATA_DIR))
 
-def extract_inType(abspath):
+def extract_inType(abspath,osgDir):
     '''
     Checks the type of the input file using the file location
     '''
@@ -173,17 +187,20 @@ def extract_inType(abspath):
         raise Exception('Could not determine type from abspath')
     # define outFolder from osgDir and inType
     if inType in [utils.SITE_FT, utils.BG_FT]:
-        outFolder = os.path.join(os.path.abspath(opts.osgDir), utils.PC_FT,
-                                 inType)
+        outFolder = os.path.join(os.path.abspath(osgDir), utils.PC_FT,
+                                 inType, 
+                                 os.path.basename(os.path.normpath(abspath)))
     else:
-        outFolder = os.path.join(os.path.abspath(opts.osgDir), inType)
+        outFolder = os.path.join(os.path.abspath(osgDir), inType,
+                                 os.path.basename(os.path.normpath(abspath)))
 
     # create outFolder if it does not exist yet
     if not os.path.isdir(outFolder):
         os.makedirs(outFolder)
-    # DON'T REMOVE IT IF ALREADY EXISTS ??? (it did in existing code)
-    # else:
-        # shutil.rmtree(outFolder)
+    else:
+        raise IOError('Output folder ' + outFolder + ' already exists, ' +
+                      'please remove manually')
+        # shutil.rmtree(outFolder)  # if we won't to force remove it
     return inType, outFolder
 
 
@@ -203,7 +220,7 @@ if __name__ == "__main__":
 
     # fill argument groups
     parser.add_argument('-i', '--itemid', help='Raw data item id',
-                        action='store')
+                        action='store', required=True)
     parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
                         help='Postgres DB name [default ' + utils.DEFAULT_DB +
                         ']', action='store')
