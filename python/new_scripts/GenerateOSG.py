@@ -1,12 +1,21 @@
 #!/usr/bin/env python
 ##############################################################################
-# Description:
+# Description:      Script to convert raw data item using CONVERTER_COMMAND
+#
 # Authors:          Ronald van Haren, NLeSC, r.vanharen@esciencecenter.nl
 #                   Oscar Martinez, NLeSC, o.rubi@esciencecenter.nl
-# Created:          26.01.2015
-# Last modified:    28.01.2015
+#
+# Created:          09.02.2015
+# Last modified:    09.02.2015
+#
 # Changes:
-# Notes:
+#
+# Notes:            * User gives an ID from raw_data_item_id
+#                   * From DB abspath is imported
+#                   * Outfolder is defined
+#                   * 8bitcolor and alignment info is queried from DB
+#                   * Data is converted using CONVERTER_COMMAND
+#                   * Unique identifier is created in xml config file
 ##############################################################################
 
 import shutil
@@ -19,11 +28,6 @@ import argparse
 logger = None
 
 CONVERTER_COMMAND = 'ViaAppia'
-
-# user gives a id from raw data item
-# from abspath import from related db entry you get what you deal with
-# define out path
-# query aligment info and 8bit from db (if necessary)
 
 
 def getOSGFileFormat(inType):
@@ -55,21 +59,30 @@ def createOSG(opts, abOffsetX=None,
                                            opts.dbport)
     # extract abspath using raw_data_item_id
     data_items, num_items = utils.fetchDataFromDB(
-        cursor, "SELECT abs_path FROM RAW_DATA_ITEM WHERE " +
+        cursor, "SELECT abs_path, item_id FROM RAW_DATA_ITEM WHERE " +
         "raw_data_item_id = '%s'" % (opts.itemid))
-    abspath = data_items[0][0]
+    abspath, site_id = data_items[0]
 
     # extract inType & outFolder, create outFolder in non-existent
-    inType, outFolder = extract_inType(abspath, opts.osgDir)
+    inType, inKind, outFolder = extract_inType(abspath, site_id, opts.osgDir)
     inFile = abspath  # CORRECT ?
 
     # Get 8bitcolor information from DB
     data_items, num_items = utils.fetchDataFromDB(
-        cursor, 'SELECT color_8bit FROM RAW_DATA_ITEM_PC INNER JOIN ' +
-        'RAW_DATA_ITEM ON RAW_DATA_ITEM_PC.raw_data_item_id=' +
-        'RAW_DATA_ITEM.raw_data_item_id WHERE ' +
+        cursor, 'SELECT RAW_DATA_ITEM_PC.color_8bit, ' +
+        'RAW_DATA_ITEM_MESH.color_8bit FROM RAW_DATA_ITEM LEFT JOIN ' +
+        'RAW_DATA_ITEM_PC ON RAW_DATA_ITEM.raw_data_item_id=' +
+        'RAW_DATA_ITEM_PC.raw_data_item_id LEFT JOIN RAW_DATA_ITEM_MESH ON ' +
+        'RAW_DATA_ITEM.raw_data_item_id=RAW_DATA_ITEM_MESH.raw_data_item_id ' +
+        'WHERE ' +
         'RAW_DATA_ITEM.raw_data_item_id = %s' % (opts.itemid))
-    color8Bit = data_items[0][0]  # boolean if 8BC
+    try:
+        if (True in data_items[0]):
+            color8Bit = True
+        else:
+            color8Bit = False
+    except IndexError:
+        color8Bit = False  # no 8BC color in database, set to false
 
     # Get alignment info from DB
     # TODO: TEST, no values in DB yet
@@ -88,22 +101,29 @@ def createOSG(opts, abOffsetX=None,
     utils.closeConnectionDB(connection, cursor)
 
     if os.path.isfile(inFile):
-        # input was a file -> change to directory
-        os.chdir(os.path.dirname(inFile))
+        # input was a file -> raise IOError
+        raise IOERROR('Database key abspath should define a directory, ' +
+                      'file detected: ' + inFile)
+        # os.chdir(os.path.dirname(inFile))
     else:
         # input is already a directory
         os.chdir(inFile)
-        #  os.chdir('/home/ronaldvh/test')  # REMOVE, FOR TESTING ONLY
+        # os.chdir('/home/ronaldvh/test')  # REMOVE, FOR TESTING ONLY
 
     outputPrefix = 'data'
     aligned = (abOffsetX is not None)
     ofile = getOSGFileFormat(inType)
-    if inType == utils.SITE_FT:  # A PC SITE
+
+    # A PC SITE
+    if (inType == utils.PC_FT and inKind == utils.SITE_FT):
         tmode = '--mode lodPoints --reposition'
+    # A PC BACKGROUND
+    elif (inType == utils.PC_FT and inKind == utils.BG_FT):  # A PC BG
+        tmode = '--mode quadtree --reposition'
+    # A MESH
     elif inType == utils.MESH_FT:
         tmode = '--mode polyMesh --convert --reposition'
-    elif inType == utils.BG_FT:  # A PC BG
-        tmode = '--mode quadtree --reposition'
+    # A PICTURE
     elif inType == utils.PIC_FT:
         tmode = '--mode picturePlane'
 
@@ -114,8 +134,9 @@ def createOSG(opts, abOffsetX=None,
             ' ' + str(abOffsetZ)
 
     logFile = os.path.join(outFolder, outputPrefix + '.log')
-    inputFiles = glob.glob(inFile + '/*.las') + glob.glob(
-                      inFile + '/*.laz')
+    # inputFiles = glob.glob(inFile + '/*.las') + glob.glob(
+    #                   inFile + '/*.laz')
+    inputFiles = glob.glob(inFile + '/*')
     for filename in inputFiles:
         command = CONVERTER_COMMAND + ' ' + tmode + ' --outputPrefix ' + \
             outputPrefix + ' --files ' + os.path.join(os.path.basename(inFile),
@@ -123,8 +144,8 @@ def createOSG(opts, abOffsetX=None,
         command += ' &> ' + logFile
 
         logger.info(command)
-        subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                        shell=True).communicate()
+        subprocess.Popen(command, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE, shell=True).communicate()
 
     # move files to outFolder; drop outputPrefix from filename
     outputFiles = glob.glob(outputPrefix + '*')
@@ -138,7 +159,7 @@ def createOSG(opts, abOffsetX=None,
         logger.error('none OSG file was generated (found in ' + outFolder +
                      '). Check log: ' + logFile)
         raise Exception('none OSG file was generated (found in ' + outFolder +
-                     '). Check log: ' + logFile)
+                        '). Check log: ' + logFile)
     else:
         mainOsgb = ofiles[0]
         if inType != utils.BG_FT:
@@ -147,15 +168,21 @@ def createOSG(opts, abOffsetX=None,
                 logger.error('none XML file was generated (found in ' +
                              outFolder + '). Check log: ' + logFile)
                 raise Exception('none XML file was generated (found in ' +
-                             outFolder + '). Check log: ' + logFile)
+                                outFolder + '). Check log: ' + logFile)
                 xmlPath = None
             else:
                 xmlPath = xmlfiles[0]
                 if len(xmlfiles) > 1:
                     logger.error('multiple XMLs file were generated (found in '
                                  + outFolder + '). Using ' + xmlPath)
-                    raise Exception('multiple XMLs file were generated (found in '
-                                 + outFolder + '). Using ' + xmlPath)
+                    raise Exception('multiple XMLs file were generated (' +
+                                    'found in ' + outFolder + '). Using ' +
+                                    xmlPath)
+            # upate xml file
+            updateXMLDescription(xmlPath,
+                                 os.path.relpath(outFolder,
+                                                 utils.DEFAULT_RAW_DATA_DIR))
+
         txtfiles = glob.glob(os.path.join(outFolder, '*offset.txt'))
         if len(txtfiles):
             txtFile = txtfiles[0]
@@ -165,12 +192,9 @@ def createOSG(opts, abOffsetX=None,
                 offsets[i] = float(offsets[i])
         elif aligned:
             logger.warn('No offset file was found and it was expected!')
-    # upate xml file
-    updateXMLDescription(xmlPath,
-                         os.path.relpath(outFolder,
-                                         utils.DEFAULT_RAW_DATA_DIR))
 
-def extract_inType(abspath,osgDir):
+
+def extract_inType(abspath, site_id, osgDir):
     '''
     Checks the type of the input file using the file location
     '''
@@ -178,22 +202,46 @@ def extract_inType(abspath,osgDir):
         inType = utils.MESH_FT
     elif '/PICT/' in abspath:
         inType = utils.PIC_FT
-    elif '/PC/SITE/' in abspath:
-        inType = utils.SITE_FT
-    elif '/PC/BACK/' in abspath:
-        inType = utils.BG_FT
+    elif '/PC/' in abspath:
+        inType = utils.PC_FT
     else:
         logger.error('could not determine type from abspath')
         raise Exception('Could not determine type from abspath')
-    # define outFolder from osgDir and inType
-    if inType in [utils.SITE_FT, utils.BG_FT]:
-        outFolder = os.path.join(os.path.abspath(osgDir), utils.PC_FT,
-                                 inType, 
-                                 os.path.basename(os.path.normpath(abspath)))
+    if '/SITE/' in abspath:
+        inKind = utils.SITE_FT
+    elif '/BACK/' in abspath:
+        inKind = utils.BG_FT
     else:
-        outFolder = os.path.join(os.path.abspath(osgDir), inType,
+        logger.error('could not determine kind from abspath')
+        raise Exception('Could not determine kind from abspath')
+    # Determine period CURR/ARCH_REC/HIST of MESH/PICT
+    if any(substring in abspath for substring in ['/MESH/', 'PICT']):
+        if '/CURR/' in abspath:
+            period = 'CURR'
+        elif '/ARCH_REC/' in abspath:
+            period = 'ARCH_REC'
+        elif '/HIST/' in abspath:
+            period = 'HIST'
+        else:
+            raise Exception('Could not determine period CURR/ARCH_REC/HIST')
+    # define outFolder from osgDir and inType
+    if (inType == utils.PC_FT and inKind == utils.SITE_FT):
+        outFolder = os.path.join(os.path.abspath(osgDir), utils.PC_FT,
+                                 inKind, 'S'+str(site_id),
                                  os.path.basename(os.path.normpath(abspath)))
-
+    elif (inType == utils.PC_FT and inKind == utils.BG_FT):
+        outFolder = os.path.join(os.path.abspath(osgDir), utils.PC_FT,
+                                 inKind,
+                                 os.path.basename(os.path.normpath(abspath)))
+    elif ((inType == utils.MESH_FT or inType == utils.PIC_FT)
+          and (inKind == utils.BG_FT)):
+        outFolder = os.path.join(os.path.abspath(osgDir), inType, inKind,
+                                 period, os.path.basename
+                                 (os.path.normpath(abspath)))
+    else:
+        outFolder = os.path.join(os.path.abspath(osgDir), inType, inKind,
+                                 period, 'S'+str(site_id),
+                                 os.path.basename(os.path.normpath(abspath)))
     # create outFolder if it does not exist yet
     if not os.path.isdir(outFolder):
         os.makedirs(outFolder)
@@ -201,7 +249,7 @@ def extract_inType(abspath,osgDir):
         raise IOError('Output folder ' + outFolder + ' already exists, ' +
                       'please remove manually')
         # shutil.rmtree(outFolder)  # if we won't to force remove it
-    return inType, outFolder
+    return inType, inKind, outFolder
 
 
 def main(opts):
@@ -232,7 +280,7 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--dbport', help='DB port', action='store')
     parser.add_argument('-o', '--osgDir', default=utils.DEFAULT_OSG_DATA_DIR,
                         help='OSG data directory [default ' +
-                        utils.DEFAULT_POTREE_DATA_DIR + ']',action='store')
+                        utils.DEFAULT_POTREE_DATA_DIR + ']', action='store')
     parser.add_argument('-l', '--log', help='Log level',
                         choices=['debug', 'info', 'warning', 'error',
                                  'critical'],
