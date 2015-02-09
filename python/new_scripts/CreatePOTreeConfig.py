@@ -4,15 +4,14 @@
 #                   PointClouds in the format outputed by the POTRee converter
 # Author:           Elena Ranguelova, NLeSc, E.Ranguelova@nlesc.nl                                       
 # Creation date:    21.01.2015      
-# Modification date:
+# Modification date: 09.02.2015
 # Modifications:   
 # Notes:            Based on createjson.py from the Patty FFWD, October 2014
 ################################################################################
 import argparse
 import json
 import utils
-import logging
-
+logger = None
 # CONSTANTS
 LOG_FILENAME = 'CreatePOTreeConfig.log'
 
@@ -61,10 +60,10 @@ def create_fixed_json_fields():
     
     msg = 'Created fixed JSON file parts.'
     print(msg)
-    logging.debug(msg)
+    logger.debug(msg)
 #    pretty_json = json.dumps(jsonData, indent=4, separators=(',', ': '))
 #    print(pretty_json)
-#    logging.debug(pretty_json)
+#    logger.debug(pretty_json)
 
 def create_features_json(cursor, pc_ids, args):
     global jsonData
@@ -147,20 +146,12 @@ def create_features_json(cursor, pc_ids, args):
     jsonData["features"] = featuresList 
 
 
-    # coordinate system
-#    coord_system = {}
-#    coord_system["type"] = "name"
-#    crs_props={}
-#    crs_props["name"] = "urn:ogc:def:crs:EPSG::" # get this from the geometry above!     
-#    coord_system["properties"]=crs_props 
-#    jsonData["crs"] = coord_system
-     
     msg = 'Created the features in JSON format.'
     print(msg)
-    logging.debug(msg)
+    logger.debug(msg)
     pretty_json = json.dumps(jsonData, indent=4, separators=(',', ': '))
     print(pretty_json)
-    logging.debug(pretty_json)    
+    logger.debug(pretty_json)    
     
 def save2JSON(args):
     global jsonData
@@ -170,18 +161,17 @@ def save2JSON(args):
         outfile.write(pretty_json)
     msg = 'JSON data written to the output file.'
     print(msg)
-    logging.debug(msg)
+    logger.debug(msg)
 #------------------------------------------------------------------------------        
 def run(args):    
-    
+    global logger
+    logger = utils.start_logging(filename=LOG_FILENAME, level=utils.DEFAULT_LOG_LEVEL)
+
     # start logging    
-    logging.basicConfig(filename=LOG_FILENAME, level=logging.DEBUG)  
     localtime = utils.getCurrentTimeAsAscii()
     msg = 'CreatePOTreeConfig scipt logging start at %s'% localtime
     print msg
-    logging.info(msg)
-
-    #t0 = time.time()          
+    logger.info(msg)
     t0 = utils.getCurrentTime()
        
     # connect to DB and get a cursor   
@@ -206,13 +196,13 @@ def run(args):
     elapsed_time = utils.getCurrentTime() - t0    
     msg = 'Finished. Total elapsed time: %s s.' %elapsed_time
     print(msg)
-    logging.info(msg)
+    logger.info(msg)
 
     # end logging
     localtime = utils.getCurrentTimeAsAscii()  
     msg = 'CreatePOTreeConfig script logging end at %s'% localtime
     print(msg)
-    logging.info(msg)
+    logger.info(msg)
     
     return    
 
