@@ -121,22 +121,17 @@ def is8BitColor(absPath):
     name = os.path.basename(absPath) 
     return name.count('_8BC') > 0
     
-def isAligned(absPath):
+def getMeshSRID(absPath):
     name = os.path.basename(absPath) 
-    aligned = name.count('_ALIGNED_') > 0
-    backgroundAligned = None
-    if aligned:
-        backgrounds = getBackgrounds()
-        for background in backgrounds:
-            if name.count(background):
-                if backgroundAligned == None:
-                    backgroundAligned = background
-                else:
-                    logging.warn('Confusing alignment information in ' + absPath + '. Assuming alignment with ' + backgroundAligned)
-    if aligned and backgroundAligned == None:
-        logging.error('Alignment information could not be retrieved for ' + absPath)
-        aligned = False
-    return (aligned, backgroundAligned)
+    
+    srid = None
+    if name.count('_SRID_') > 0:
+        try:
+            srid = int(name[name.index('_SRID_') + len('_SRID_'):].split('_')[0])
+        except:
+            logging.error('SRID not recognized from ' + absPath)
+            srid = None
+    return srid
 
 def getBackgrounds():
     cursor.execute('SELECT A.abs_path FROM RAW_DATA_ITEM A, ITEM B WHERE A.item_id = B.item_id and B.background = %s', [True,])
@@ -416,7 +411,6 @@ def addRawDataItem(absPath, itemId, dataItemType):
         
         if dataItemType == PC_FT:
             current = isCurrent(absPath)
-            (aligned, backgroundAligned) = isAligned(absPath)
             color8bit = is8BitColor(absPath)
             (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz) = readLASInfo(absPath)  
             
@@ -424,33 +418,17 @@ def addRawDataItem(absPath, itemId, dataItemType):
                             [rawDataItemId, srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit])
         elif dataItemType == MESH_FT:
             current = isCurrent(absPath)
-            (aligned, backgroundAligned) = isAligned(absPath)
+            srid = getMeshSRID(absPath)
             mtlAbsPath = getMTLAbsPath(absPath)
             color8bit = is8BitColor(absPath)
-            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_MESH (raw_data_item_id, current_mesh, mtl_abs_path, color_8bit) VALUES (%s,%s,%s,%s)", 
-                            [rawDataItemId, current, mtlAbsPath, color8bit])
+            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_MESH (raw_data_item_id, srid, current_mesh, mtl_abs_path, color_8bit) VALUES (%s,%s,%s,%s,%s)", 
+                            [rawDataItemId, srid, current, mtlAbsPath, color8bit])
         else:
             current = isCurrent(absPath)
             thumbnail = isThumbnail(absPath)
             (srid, x, y, z, dx, dy, dz, ux, uy, uz) = readPictureInfo(absPath)
             dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_PICTURE (raw_data_item_id, current_picture, thumbnail, srid, x, y, z, dx, dy, dz, ux, uy, uz) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
                             [rawDataItemId, current, thumbnail, srid, x, y, z, dx, dy, dz, ux, uy, uz])
-        
-        if dataItemType in (PC_FT, MESH_FT):
-            if aligned:
-                backgroundPath = dataAbsPath + '/' + RAW_FT + '/' + PC_FT + '/' + BG_FT + '/' + backgroundAligned
-                dbExecute(cursor, 'SELECT raw_data_item_id FROM RAW_DATA_ITEM WHERE abs_path = %s', [backgroundPath,])
-                row = cursor.fetchone()
-                if row == None:
-                    logging.error('Specified background in alignment of ' + absPath + ' not found!')
-                else:
-                    backgroundId = row[0]
-                    if dataItemType == PC_FT:
-                        dbExecute(cursor, "INSERT INTO ALIGNED_RAW_DATA_ITEM_PC (raw_data_item_pc_site_id, raw_data_item_pc_background_id) VALUES (%s,%s)", 
-                            [rawDataItemId, backgroundId])
-                    else: #MESH
-                        dbExecute(cursor, "INSERT INTO ALIGNED_RAW_DATA_ITEM_MESH (raw_data_item_mesh_site_id, raw_data_item_pc_background_id) VALUES (%s,%s)", 
-                            [rawDataItemId, backgroundId])
     else:
         (rawDataItemId, lastModDB) = row
         if modTime > lastModDB: #Data has changed

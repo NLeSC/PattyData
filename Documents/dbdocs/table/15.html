@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>RAW_DATA_ITEM_MESH</title>
+		<title>POTREE_DATA_ITEM_PC</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="RAW_DATA_ITEM_MESH";
+	parent.document.title="POTREE_DATA_ITEM_PC";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   RAW_DATA_ITEM_MESH</h2>
+		<h2>Table   POTREE_DATA_ITEM_PC</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>RAW_DATA_ITEM_MESH<br><br></dd>
+		<dd>POTREE_DATA_ITEM_PC<br><br></dd>
 </dl>
 
 <dl>
@@ -102,8 +102,17 @@ function asd() {
 	<tr>
 	<tr>
 	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#243">potree_data_item_pc_id</a>&nbsp;</td>
+	<td>potree_data_item_pc_id&nbsp;</td>
+	<td>serial&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
 	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#234">raw_data_item_id</a>&nbsp;</td>
+	<td><a href="#244">raw_data_item_id</a>&nbsp;</td>
 	<td>raw_data_item_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -112,8 +121,8 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#245">mtl_abs_path</a>&nbsp;</td>
-	<td>mtl_abs_path&nbsp;</td>
+	<td><a href="#245">asb_path</a>&nbsp;</td>
+	<td>asb_path&nbsp;</td>
 	<td>text&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -121,20 +130,38 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#246">current_mesh</a>&nbsp;</td>
-	<td>current_mesh&nbsp;</td>
-	<td>boolean&nbsp;</td>
+	<td><a href="#246">last_mod</a>&nbsp;</td>
+	<td>last_mod&nbsp;</td>
+	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
+	<td align="center">&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#247">color_8bit</a>&nbsp;</td>
-	<td>color_8bit&nbsp;</td>
-	<td>boolean&nbsp;</td>
+	<td><a href="#247">last_check</a>&nbsp;</td>
+	<td>last_check&nbsp;</td>
+	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#248">number_levels</a>&nbsp;</td>
+	<td>number_levels&nbsp;</td>
+	<td>int&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#249">spacing</a>&nbsp;</td>
+	<td>spacing&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
 </tr>
 
 	</tr>
@@ -159,13 +186,13 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#234">raw_data_item_id&nbsp;</a></td>
-	<td><a href="../table/14.html">RAW_DATA_ITEM&nbsp;</a></td>
-	<td><a href="../table/14.html#240">raw_data_item_id&nbsp;</a></td>
+	<td><a href="#244">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/18.html">RAW_DATA_ITEM_PC&nbsp;</a></td>
+	<td><a href="../table/18.html#242">raw_data_item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
-	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
 </tr>
 
 </table>
@@ -188,25 +215,7 @@ function asd() {
 		<th width="12%">Cardinality of parent</th>
 		<th width="12%">Cardinality of child</th>
 	</tr>
-	<tr>
-	<td><a href="#234">raw_data_item_id&nbsp;</a></td>
-	<td><a href="../table/12.html">OSG_DATA_ITEM_MESH&nbsp;</a></td>
-	<td><a href="../table/12.html#233">raw_data_item_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#234">raw_data_item_id&nbsp;</a></td>
-	<td><a href="../table/21.html">ALIGNED_RAW_DATA_ITEM_MESH&nbsp;</a></td>
-	<td><a href="../table/21.html#248">raw_data_item_mesh_site_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
-</tr>
-
+	
 </table>
 
 <p>
@@ -261,8 +270,29 @@ function asd() {
 	</tr>
 </table>
 
-<a name="234"></a>
-<h3><img src="../image/icons/pkey.gif"> <img src="../image/icons/foreign_key.gif"> raw_data_item_id</h3>
+<a name="243"></a>
+<h3><img src="../image/icons/pkey.gif">  potree_data_item_pc_id</h3>
+
+<dl>
+	<dd>potree_data_item_pc_id
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>serial<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="244"></a>
+<h3> <img src="../image/icons/foreign_key.gif"> raw_data_item_id</h3>
 
 <dl>
 	<dd>raw_data_item_id
@@ -283,10 +313,10 @@ function asd() {
 
 <hr>
 <a name="245"></a>
-<h3>  mtl_abs_path</h3>
+<h3>  asb_path</h3>
 
 <dl>
-	<dd>mtl_abs_path
+	<dd>asb_path
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -304,17 +334,17 @@ function asd() {
 
 <hr>
 <a name="246"></a>
-<h3>  current_mesh</h3>
+<h3>  last_mod</h3>
 
 <dl>
-	<dd>current_mesh
+	<dd>last_mod
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>boolean<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>int<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>
@@ -325,17 +355,59 @@ function asd() {
 
 <hr>
 <a name="247"></a>
-<h3>  color_8bit</h3>
+<h3>  last_check</h3>
 
 <dl>
-	<dd>color_8bit
+	<dd>last_check
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>boolean<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>int<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="248"></a>
+<h3>  number_levels</h3>
+
+<dl>
+	<dd>number_levels
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>int<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="249"></a>
+<h3>  spacing</h3>
+
+<dl>
+	<dd>spacing
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>
