@@ -41,9 +41,11 @@ def apply_argument_parser(options=None):
             
     return args
 
-def clean_temp_table():
-    cursor.execute("DROP TABLE IF EXISTS sites_geoms_temp")
-    connection.commit()
+def clean_temp_table(args):
+    
+    drop_table_sql = "DROP TABLE IF EXISTS sites_geoms_temp" 
+    utils.dbExecute(cursor, drop_table_sql)
+    
     msg = 'Removed table sites_geoms_temp (if existed).'
     print msg
     logger.info(msg)
@@ -52,13 +54,14 @@ def load_sql_file(args):
     success = False
     
     # set the level temporarily to autocommit
-    old_isolation_level = connection.isolation_level
+ #   old_isolation_level = connection.isolation_level
     connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     
-    local_cursor = connection.cursor()
+    #local_cursor = connection.cursor()
     # execute the SQL statement from the external DBdump of site object geometries
     try:    
-        local_cursor.execute(open(args.input,"r").read())
+    #    local_cursor.execute(open(args.input,"r").read())
+        cursor.execute(open(args.input,"r").read())
     except Exception, E:
         err_msg = 'Cannot execute the commands in %s.'%args.input
         print(err_msg)
@@ -71,11 +74,12 @@ def load_sql_file(args):
     print msg
     logger.debug(msg)
         
-    local_cursor.close()  
+    #local_cursor.close()  
     
     # retun back the old level
-    connection.set_isolation_level(old_isolation_level)
-    
+#    connection.set_isolation_level(old_isolation_level)
+
+
     return success
 #------------------------------------------------------------------------------        
 def run(args): 
@@ -97,23 +101,21 @@ def run(args):
     if os.popen('head -500 ' + args.input + ' | grep "CREATE TABLE sites_geoms_temp"').read().count("CREATE TABLE sites_geoms_temp") == 0:
         logger.error("The table in the SQL file must be named sites_geom_temp. Replace the table name to sites_geoms_temp!")
         return  
-        
+     
     # connect to the DB
-    connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport)  
-    
+    connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport) 
+        
     # clean the temp table if exsisted
-    clean_temp_table()
+    clean_temp_table(args)
 
     # load the table sites_geoms_temp from the SQL file ot the DB
     success_loading = load_sql_file(args)
         
-#    if success_loading:
-#        
-#        # get the union geometry inside the SQL file
-#        select_geom_sql = "SELECT site_id as site_id, ST_Multi(ST_Transform( ST_Union( geom ), " + str(utils.SRID) + " )) AS geom FROM sites_geoms_temp GROUP BY site_id"
-#        values, num_geoms = utils.dbExecute(cursor, select_geom_sql)
-#        print "Number of geometries, %s", num_geoms
-#        print "Values: ", values
+    if success_loading:
+
+        # get the union geometry inside the SQL file
+        select_geom_sql = "SELECT site_id as site_id, ST_Multi(ST_Transform( ST_Union( geom ), " + str(utils.SRID) + " )) AS geom FROM sites_geoms_temp GROUP BY site_id"
+        values, num_geoms = utils.fetchDataFromDB(cursor, select_geom_sql)
 #        
 #        # check if the SITES table is empty, then change the type of the geom field
 #        check_query = "SELECT COUNT(*) FROM site"
