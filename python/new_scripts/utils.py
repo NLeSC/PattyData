@@ -168,6 +168,36 @@ def closeConnectionDB(connection, cursor):
     logging.debug(msg)
     
     return    
+
+def countElementsTable(cursor, table):
+    """ Checks and returns the number of elements in a table"""    
+    num_elements= 0
+    
+    count_query = "SELECT COUNT(*) FROM " + table
+    dbExecute(cursor, count_query)
+    
+    num_elements = cursor.fetchone()
+    
+    return num_elements
+    
+def typeColumnTable(cursor, column, table):
+    """ Returns the PG type of a given column froma given table"""
+    col_type = ''
+    
+    # select the column of interest from the given table
+    select_column_sql = "SELECT {0} FROM {1}".format(column,table)
+    
+    dbExecute(cursor, select_column_sql)
+    
+    # get the internal PG type code
+    type_code = cursor.description[0].type_code
+    
+    select_type_sql = "SELECT typname FROM pg_type WHERE OID=%s"%type_code
+    values, nums = fetchDataFromDB(cursor, select_type_sql)
+    
+    col_type = values[0][0]
+    
+    return col_type
     
 def fetchDataFromDB(cursor, fetch_query):
     """ Fetches data from a DB, given the sursor object and the fetch query
