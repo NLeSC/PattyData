@@ -152,12 +152,11 @@ def isCurrent(absPath):
 def isBackground(absPath):
     return (absPath.count(BACK_FT) > 0)
     
-def getBackgroundOffset(absPath, background):
-    backgroundPath = dataAbsPath + '/' + OSG_FT + '/' + PC_FT + '/' + BG_FT + '/' + background
-    dbExecute(cursor, 'SELECT A.offset_x, A.offset_y, A.offset_z, B.srid FROM OSG_DATA_ITEM_PC_BACKGROUND A, RAW_DATA_ITEM_PC B WHERE A.raw_data_item_id = B.raw_data_item_id AND abs_path = %s', [backgroundPath,])
+def getBackgroundOffset(srid):
+    dbExecute(cursor, 'SELECT A.offset_x, A.offset_y, A.offset_z FROM OSG_DATA_ITEM_PC_BACKGROUND A, RAW_DATA_ITEM_PC B, RAW_DATA_ITEM C WHERE A.raw_data_item_id = B.raw_data_item_id AND A.raw_data_item_id = C.raw_data_item_id AND C.srid = %s', [srid,])
     row = cursor.fetchone()
     if row == None:
-        return (None, None, None, None)
+        return (None, None, None)
     else:
         return row
 
@@ -291,10 +290,7 @@ def cleanRaw(dataItemTypes):
             if os.path.isfile(absPath) or os.path.isdir(absPath):
                 logging.error('Raw data item in ' + absPath + ' has not been checked!')
             else: # There is not any file or folder in that location -> we try to delete all references of this one
-                cursor.execute('SELECT count(*) FROM ALIGNED_RAW_DATA_ITEM_MESH WHERE raw_data_item_pc_background_id = %s', [rawDataItemId,])
-                num_dependancies = cursor.fetchone()[0]
-                cursor.execute('SELECT count(*) FROM ALIGNED_RAW_DATA_ITEM_PC WHERE raw_data_item_pc_background_id = %s', [rawDataItemId,])
-                num_dependancies += cursor.fetchone()[0]
+                num_dependancies = 0
                 cursor.execute('SELECT count(*) FROM POTREE_DATA_ITEM_PC WHERE raw_data_item_id = %s', [rawDataItemId,])
                 num_dependancies += cursor.fetchone()[0]
                 cursor.execute('SELECT count(*) FROM OSG_DATA_ITEM_PC_SITE WHERE raw_data_item_id = %s', [rawDataItemId,])
@@ -304,7 +300,6 @@ def cleanRaw(dataItemTypes):
                 
                 if num_dependancies == 0:
                     dbExecute(cursor, 'DELETE FROM RAW_DATA_ITEM_PC WHERE raw_data_item_id = %s', [rawDataItemId,])
-                    dbExecute(cursor, 'DELETE FROM ALIGNED_RAW_DATA_ITEM_PC WHERE raw_data_item_pc_site_id = %s', [rawDataItemId, ])
                     dbExecute(cursor, 'DELETE FROM RAW_DATA_ITEM WHERE raw_data_item_id = %s', [rawDataItemId,])
                 else:
                     logging.warning('Can not delete entry for removed ' + absPath + '. Related data items still there!')
@@ -408,27 +403,28 @@ def addRawDataItem(absPath, itemId, dataItemType):
         dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM (raw_data_item_id, item_id, abs_path, last_mod, last_check) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING raw_data_item_id", 
                         [itemId, absPath, modTime, initialTime])
         rawDataItemId = cursor.fetchone()[0]
-        
+        srid = None
         if dataItemType == PC_FT:
             current = isCurrent(absPath)
             color8bit = is8BitColor(absPath)
             (srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz) = readLASInfo(absPath)  
-            
-            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_PC (raw_data_item_id, srid, number_points, extension, minx, miny, minz, maxx, maxy, maxz, color_8bit) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
-                            [rawDataItemId, srid, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit])
+            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_PC (raw_data_item_id, number_points, extension, minx, miny, minz, maxx, maxy, maxz, color_8bit) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
+                            [rawDataItemId, numberPoints, extension, minx, miny, minz, maxx, maxy, maxz, color8bit])
         elif dataItemType == MESH_FT:
             current = isCurrent(absPath)
             srid = getMeshSRID(absPath)
             mtlAbsPath = getMTLAbsPath(absPath)
             color8bit = is8BitColor(absPath)
-            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_MESH (raw_data_item_id, srid, current_mesh, mtl_abs_path, color_8bit) VALUES (%s,%s,%s,%s,%s)", 
-                            [rawDataItemId, srid, current, mtlAbsPath, color8bit])
+            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_MESH (raw_data_item_id, current_mesh, mtl_abs_path, color_8bit) VALUES (%s,%s,%s,%s)", 
+                            [rawDataItemId, current, mtlAbsPath, color8bit])
         else:
             current = isCurrent(absPath)
             thumbnail = isThumbnail(absPath)
             (srid, x, y, z, dx, dy, dz, ux, uy, uz) = readPictureInfo(absPath)
-            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_PICTURE (raw_data_item_id, current_picture, thumbnail, srid, x, y, z, dx, dy, dz, ux, uy, uz) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
-                            [rawDataItemId, current, thumbnail, srid, x, y, z, dx, dy, dz, ux, uy, uz])
+            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_PICTURE (raw_data_item_id, current_picture, thumbnail, x, y, z, dx, dy, dz, ux, uy, uz) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", 
+                            [rawDataItemId, current, thumbnail, x, y, z, dx, dy, dz, ux, uy, uz])
+        if srid != None:
+            dbExecute(cursor, 'UPDATE RAW_DATA_ITEM SET srid=%s WHERE raw_data_item_id = %s', [srid, rawDataItemId])
     else:
         (rawDataItemId, lastModDB) = row
         if modTime > lastModDB: #Data has changed
@@ -439,12 +435,12 @@ def addOSGDataItem(absPath, itemId, dataItemType):
     modTime = getCurrentTime(getLastModification(absPath))
     
     rawAbsPath = absPath.replace(OSG_FT, RAW_FT)
-    dbExecute(cursor, 'SELECT raw_data_item_id FROM RAW_DATA_ITEM WHERE abs_path = %s', [rawAbsPath,])
+    dbExecute(cursor, 'SELECT raw_data_item_id, srid FROM RAW_DATA_ITEM WHERE abs_path = %s', [rawAbsPath,])
     row = cursor.fetchone()
     if row == None:
         logging.error('Skipping ' + absPath + '. None related RAW data item found in ' + rawAbsPath)
         return
-    rawDataItemId = cursor.fetchone()[0]
+    (rawDataItemId, rawSRID) = cursor.fetchone()
     
     if not checkOSG(absPath):
         logging.error('Skipping ' + absPath + '. None .osgb file found')
@@ -461,7 +457,7 @@ def addOSGDataItem(absPath, itemId, dataItemType):
         if isPCBackground:
             (offsetX, offsetY, offsetZ) = readOffsets(absPath)
             if offsetX == None:
-                logging.error('Skipping ' + absPath + '. No offsets found')
+                logging.error('Skipping ' + absPath + '. None offsets found')
                 return
             dbExecute(cursor, "INSERT INTO OSG_DATA_ITEM_PC_BACKGROUND (osg_data_item_pc_background_id, raw_data_item_id, abs_path, last_mod, last_check, offset_x, offset_y, offset_z) VALUES (DEFAULT,%s,%s,%s,%s,%s,%s,%s)", 
                         [rawDataItemId, absPath, modTime, initialTime, offsetX, offsetY, offsetZ])
@@ -470,39 +466,42 @@ def addOSGDataItem(absPath, itemId, dataItemType):
             if xmlAbsPath == None:
                 logging.error('Skipping ' + absPath + '. None XML file found')
                 return
-            (aligned, backgroundAligned) = isAligned(absPath)
-            if aligned:
-                (bOffsetX, bOffsetY, bOffsetZ, bSrid) = getBackgroundOffset(absPath, backgroundAligned)
+            (srid,x,y,z) = (None, 0, 0, DEFAULT_Z)
+            # We try to get the SRID and position of this OSG object
+            if rawSRID != None:
+                # Try to get it from OSG generated offsets
+                (bOffsetX, bOffsetY, bOffsetZ) = getBackgroundOffset(rawSRID)
                 if bOffset == None:
-                    logging.error('Skipping ' + absPath + '. None related background found')
-                    return
-                (offsetX, offsetY, offsetZ) = readOffsets(absPath)
-                if offsetX == None:
-                    logging.error('Skipping ' + absPath + '. No offsets found')
-                    return
-                (srid, x, y, z) = (bSrid, offsetX + bOffsetX, offsetY + bOffsetY, offsetZ + bOffsetZ) 
-            else: #It is not aligned
-                srid = None
-                if dataItemType in (PC_FT, PIC_FT):
-                    # We can get position from the raw data items
-                    if dataItemType == PC_FT:
-                        dbExecute(cursor, 'SELECT srid, minx + ((maxx - minx) / 2), miny + ((maxy - miny) / 2), minz + ((maxz - minz) / 2) FROM RAW_DATA_ITEM_PC WHERE raw_data_item_id = %s', [rawDataItemId,])
+                    logging.warn('OSG position of ' + absPath + ' could not be computed. None background found with same SRID')
+                else:
+                    (offsetX, offsetY, offsetZ) = readOffsets(absPath)
+                    if offsetX == None:
+                        logging.warn('OSG position of ' + absPath + ' could not be computed. None offsets found')
                     else:
-                        dbExecute(cursor, 'SELECT srid, x, y, z FROM RAW_DATA_ITEM_PICTURE WHERE raw_data_item_id = %s', [rawDataItemId,])
+                        srid = rawSRID
+                        (x, y, z) = (offsetX + bOffsetX, offsetY + bOffsetY, offsetZ + bOffsetZ)
+            
+            if srid == None: 
+                # We can get position from the raw data items
+                if dataItemType in (PC_FT, PIC_FT):                    
+                    if dataItemType == PC_FT:
+                        dbExecute(cursor, 'SELECT minx + ((maxx - minx) / 2), miny + ((maxy - miny) / 2), minz + ((maxz - minz) / 2) FROM RAW_DATA_ITEM_PC WHERE raw_data_item_id = %s', [rawDataItemId,])
+                    else:
+                        dbExecute(cursor, 'SELECT x, y, z FROM RAW_DATA_ITEM_PICTURE WHERE raw_data_item_id = %s', [rawDataItemId,])
                     row = cursor.fetchone()
                     if row == None:
-                        logging.error('Skipping ' + absPath + '. No related raw data item ' + dataItemType + ' found')
+                        logging.critical('Skipping ' + absPath + '. None related raw data item ' + dataItemType + ' found')
                         return
-                    (srid, x, y, z) = row
-                if srid == None: #If it is a Mesh or the values from point clouds and pictures are null
-                    # we can get from the item geometry
-                    dbExecute(cursor, "select Find_SRID('public', 'ITEM', 'geom'), st_x(g), st_y(g) from (select st_centroid(geometry(geom)) AS g from ITEM where item_id = %s) A", [itemId,])
-                    if cursor.rowcount:
-                        (srid, x, y) = cursor.fetchone()
-                    else:
-                        (srid, x, y) = (None, 0, 0)
-                        logging.warn('Not possible to get position from footprint: footprint not found for ' + absPath)
-                    z = DEFAULT_Z
+                    srid = rawSRID
+                    (x, y, z) = row
+                    
+            if srid == None: #If it is a Mesh or the values from point clouds and pictures are null
+                # we can get from the item geometry
+                dbExecute(cursor, "select Find_SRID('public', 'ITEM', 'geom'), st_x(g), st_y(g) from (select st_centroid(geometry(geom)) AS g from ITEM where item_id = %s) A", [itemId,])
+                if cursor.rowcount:
+                    (srid, x, y) = cursor.fetchone()
+                else:
+                    logging.warn('Not possible to get position from footprint: footprint not found for ' + absPath)
                     
             dbExecute(cursor, "INSERT INTO OSG_LOCATION (osg_location_id, srid, x, y, z) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING osg_location_id", 
                     [srid, x, y, z])
