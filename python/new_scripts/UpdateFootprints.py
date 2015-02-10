@@ -4,11 +4,19 @@
 #                   which are imported from an sql file (another DB dump)
 # Author:           Elena Ranguelova, NLeSc, E.Ranguelova@nlesc.nl                                       
 # Creation date:    22.01.2015      
-# Modification date:
+# Modification date: 09.02.2015
 # Modifications:   
 # Notes:            Based on mergefootprints.py from the PattyFFW Oct 2014
 ################################################################################
-import os, argparse, utils, logging
+import os, argparse, utils
+import psycopg2
+
+logger = None
+connection = None
+cursor = None
+
+# CONSTANTS
+LOG_FILENAME = 'UpdateFootprints.log'
 
 def argument_parser():
     """ Define the arguments and return the parser object"""
@@ -33,41 +41,79 @@ def apply_argument_parser(options=None):
             
     return args
 
+def clean_temp_table():
+    cursor.execute("DROP TABLE IF EXISTS sites_geoms_temp")
+    connection.commit()
+    msg = 'Removed table sites_geoms_temp (if existed).'
+    print msg
+    logger.info(msg)
+    
 def load_sql_file(args):
     success = False
     
-    connParams = utils.postgresConnectString(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport, True)
-    logFile = args.input + '.log'
-    command = 'psql ' + connParams + ' -f ' + args.input + ' &> ' + logFile
-    logging.info(command)
-    os.system(command) 
+    # set the level temporarily to autocommit
+    old_isolation_level = connection.isolation_level
+    connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     
-    if os.popen('cat ' + logFile + ' | grep ERROR').read().count("ERROR"):
-        msg  = 'There was some errors in the data loading. Please see log ' + logFile
-        print msg
-        logging.error(msg)
-    else:
-        success = True    
+    local_cursor = connection.cursor()
+    # execute the SQL statement from the external DBdump of site object geometries
+    try:    
+        local_cursor.execute(open(args.input,"r").read())
+    except Exception, E:
+        err_msg = 'Cannot execute the commands in %s.'%args.input
+        print(err_msg)
+        logger.error(err_msg)
+        logger.error(" %s: %s" % (E.__class__.__name__, E))
+        raise
+        
+    success = True
+    msg = 'Successful execution of the commands in %s.'%args.input
+    print msg
+    logger.debug(msg)
+        
+    local_cursor.close()  
+    
+    # retun back the old level
+    connection.set_isolation_level(old_isolation_level)
     
     return success
 #------------------------------------------------------------------------------        
 def run(args): 
     
+    global logger
+    global connection
+    global cursor
+    
+    # start logging
+    logger = utils.start_logging(filename=LOG_FILENAME, level=utils.DEFAULT_LOG_LEVEL)
+    localtime = utils.getCurrentTimeAsAscii()
+    msg = 'UpdateFoorptints scipt logging starts at %s.' %localtime
+    print msg
+    logger.info(msg)
+
+    # start timer
+    t0 = utils.getCurrentTime()
+    
     if os.popen('head -500 ' + args.input + ' | grep "CREATE TABLE sites_geoms_temp"').read().count("CREATE TABLE sites_geoms_temp") == 0:
-        logging.error("The table in the SQL file must be named sites_geom_temp. Replace the table name to sites_geoms_temp")
+        logger.error("The table in the SQL file must be named sites_geom_temp. Replace the table name to sites_geoms_temp!")
         return  
         
     # connect to the DB
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport)  
     
+    # clean the temp table if exsisted
+    clean_temp_table()
+
     # load the table sites_geoms_temp from the SQL file ot the DB
     success_loading = load_sql_file(args)
-    
+        
 #    if success_loading:
 #        
 #        # get the union geometry inside the SQL file
 #        select_geom_sql = "SELECT site_id as site_id, ST_Multi(ST_Transform( ST_Union( geom ), " + str(utils.SRID) + " )) AS geom FROM sites_geoms_temp GROUP BY site_id"
 #        values, num_geoms = utils.dbExecute(cursor, select_geom_sql)
+#        print "Number of geometries, %s", num_geoms
+#        print "Values: ", values
 #        
 #        # check if the SITES table is empty, then change the type of the geom field
 #        check_query = "SELECT COUNT(*) FROM site"
@@ -89,6 +135,18 @@ def run(args):
                     
     # close the conection to the DB
     utils.closeConnectionDB(connection, cursor)
+    
+    # measure elapsed time
+    elapsed_time = utils.getCurrentTime() - t0    
+    msg = 'Finished. Total elapsed time: %s s.' %elapsed_time
+    print(msg)
+    logger.info(msg)
+    
+    # end logging
+    localtime = utils.getCurrentTimeAsAscii()  
+    msg = 'UpdateFootprints script logging ends at %s'% localtime
+    print(msg)
+    logger.info(msg)
     
     return
 
