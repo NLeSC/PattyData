@@ -24,6 +24,7 @@ import utils
 import glob
 import subprocess
 import argparse
+import shlex
 
 logger = None
 
@@ -108,7 +109,6 @@ def createOSG(opts, abOffsetX=None,
     else:
         # input is already a directory
         os.chdir(inFile)
-        # os.chdir('/home/ronaldvh/test')  # REMOVE, FOR TESTING ONLY
 
     outputPrefix = 'data'
     aligned = (abOffsetX is not None)
@@ -117,15 +117,21 @@ def createOSG(opts, abOffsetX=None,
     # A PC SITE
     if (inType == utils.PC_FT and inKind == utils.SITE_FT):
         tmode = '--mode lodPoints --reposition'
+        inputFiles = glob.glob(inFile + '/*.las') + glob.glob(
+            inFile + '/*.laz')
     # A PC BACKGROUND
     elif (inType == utils.PC_FT and inKind == utils.BG_FT):  # A PC BG
         tmode = '--mode quadtree --reposition'
+        inputFiles = glob.glob(inFile + '/*.las') + glob.glob(
+            inFile + '/*.laz')
     # A MESH
     elif inType == utils.MESH_FT:
         tmode = '--mode polyMesh --convert --reposition'
+        inputFiles = glob.glob(inFile + '/*.obj')        
     # A PICTURE
     elif inType == utils.PIC_FT:
         tmode = '--mode picturePlane'
+        inputFiles = glob.glob(inFile + '/*')
 
     if color8Bit:
         command += ' --8bitColor '
@@ -134,24 +140,30 @@ def createOSG(opts, abOffsetX=None,
             ' ' + str(abOffsetZ)
 
     logFile = os.path.join(outFolder, outputPrefix + '.log')
-    # inputFiles = glob.glob(inFile + '/*.las') + glob.glob(
-    #                   inFile + '/*.laz')
-    inputFiles = glob.glob(inFile + '/*')
+    
+    # Call CONVERTER_COMMAND for each of the inputFiles
     for filename in inputFiles:
         command = CONVERTER_COMMAND + ' ' + tmode + ' --outputPrefix ' + \
-            outputPrefix + ' --files ' + os.path.join(os.path.basename(inFile),
-                                                      filename)
+            outputPrefix + ' --files ' + os.path.basename(filename)
         command += ' &> ' + logFile
-
         logger.info(command)
-        subprocess.Popen(command, stdout=subprocess.PIPE,
+        args = shlex.split(command)
+        subprocess.Popen(args, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE).communicate()
 
     # move files to outFolder; drop outputPrefix from filename
     outputFiles = glob.glob(outputPrefix + '*')
     for filename in outputFiles:
-        shutil.move(os.path.abspath(filename),
-                    os.path.join(outFolder, filename[len(outputPrefix)+1:]))
+        if (inType == utils.PC_FT):
+            shutil.move(os.path.abspath(filename),
+                        os.path.join(outFolder,
+                                     filename[len(outputPrefix)+1:]))
+        else:
+            # outputPrefix is appended slightly different for PC and MESH
+            shutil.move(os.path.abspath(filename),
+                        os.path.join(outFolder,
+                                     filename[len(outputPrefix):]))
+
     logger.info("Moving files to " + outFolder)
 
     ofiles = sorted(glob.glob(os.path.join(outFolder, '*' + ofile)))
@@ -162,7 +174,8 @@ def createOSG(opts, abOffsetX=None,
                         '). Check log: ' + logFile)
     else:
         mainOsgb = ofiles[0]
-        if inType != utils.BG_FT:
+        if not (inType == utils.PC_FT and inKind == utils.BG_FT):
+            # if not a PC BACK
             xmlfiles = glob.glob(os.path.join(outFolder, '*xml'))
             if len(xmlfiles) == 0:
                 logger.error('none XML file was generated (found in ' +
