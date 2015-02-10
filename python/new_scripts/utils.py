@@ -168,6 +168,17 @@ def closeConnectionDB(connection, cursor):
     logging.debug(msg)
     
     return    
+
+def countElementsTable(cursor, table):
+    """ Checks and returns the number of elements in a table"""    
+    num_elements= 0
+    
+    count_query = "SELECT COUNT(*) FROM " + table
+    dbExecute(cursor, count_query)
+    
+    num_elements = cursor.fetchone()
+    
+    return num_elements
     
 def fetchDataFromDB(cursor, fetch_query):
     """ Fetches data from a DB, given the sursor object and the fetch query
