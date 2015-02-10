@@ -3,7 +3,7 @@
 #    Created by Oscar Martinez                                                 #
 #    o.rubi@esciencecenter.nl                                                  #
 ################################################################################
-import os, subprocess, time, calendar, logging
+import os, time, calendar, logging
 import psycopg2
 from osgeo import osr
 
@@ -148,7 +148,7 @@ def connectToDB(dbName = None, userName= None, password = None, dbHost = None, d
         logging.error((err_msg, "; %s: %s" % (E.__class__.__name__, E)))
         raise
         
-    msg = 'Succesful connection to %s DB.'%dbName
+    msg = 'Successful connection to %s DB.'%dbName
     print msg
     logging.debug(msg)
     
