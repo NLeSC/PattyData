@@ -180,6 +180,25 @@ def countElementsTable(cursor, table):
     
     return num_elements
     
+def typeColumnTable(cursor, column, table):
+    """ Returns the PG type of a given column froma given table"""
+    col_type = ''
+    
+    # select the column of interest from the given table
+    select_column_sql = "SELECT {0} FROM {1}".format(column,table)
+    
+    dbExecute(cursor, select_column_sql)
+    
+    # get the internal PG type code
+    type_code = cursor.description[0].type_code
+    
+    select_type_sql = "SELECT typname FROM pg_type WHERE OID=%s"%type_code
+    values, nums = fetchDataFromDB(cursor, select_type_sql)
+    
+    col_type = values[0][0]
+    
+    return col_type
+    
 def fetchDataFromDB(cursor, fetch_query):
     """ Fetches data from a DB, given the sursor object and the fetch query
         Return the fetched data items and their number

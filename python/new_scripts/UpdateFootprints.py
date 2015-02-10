@@ -116,8 +116,27 @@ def run(args):
         # get the union geometry inside the SQL file
         select_geom_sql = "SELECT site_id as site_id, ST_Multi(ST_Transform( ST_Union( geom ), " + str(utils.SRID) + " )) AS geom FROM sites_geoms_temp GROUP BY site_id"
         values, num_geoms = utils.fetchDataFromDB(cursor, select_geom_sql)
+        
+        # check if the SITES table is empty, then change the type of the geom field
+        num_items = utils.countElementsTable(cursor, 'item')
+        print "Number of elements in item table: %s" %num_items        
+        
+#        select_geom_sql = "SELECT geom FROM item"
+#        values, num_geoms = utils.fetchDataFromDB(cursor, select_geom_sql)
+#
+#        print cursor.description
+#        type_code  = cursor.description[0].type_code
+#        print type_code
 #        
-#        # check if the SITES table is empty, then change the type of the geom field
+#        select_type_sql = "SELECT typname FROM pg_type WHERE OID=%s"%type_code
+#        values, num_geoms = utils.fetchDataFromDB(cursor, select_type_sql)
+#        
+#        print values[0]
+        
+        col_type = utils.typeColumnTable(cursor, 'geom','item')
+        print col_type
+        
+      
 #        check_query = "SELECT COUNT(*) FROM site"
 #        utils.dbExecute(cursor, check_query)    
 #        num_items = cursor.fetchone()
@@ -134,7 +153,9 @@ def run(args):
 #       # else: # merge the data from the sites_geom_table (filled from the input SQL file) into the DB
 #            #if the DB has no overlap with the entries from the sites_geoms_temp
 #            # if the DB has overlap with the entries from the sites_geoms_temp
-                    
+    
+        # clean the temp table
+        clean_temp_table(args)         
     # close the conection to the DB
     utils.closeConnectionDB(connection, cursor)
     
