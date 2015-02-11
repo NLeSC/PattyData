@@ -133,18 +133,17 @@ def createOSG(opts, abOffsetX=None,
         tmode = '--mode picturePlane'
         inputFiles = glob.glob(inFile + '/*')
 
-    if color8Bit:
-        command += ' --8bitColor '
-    if aligned:
-        command += ' --translate ' + str(abOffsetX) + ' ' + str(abOffsetY) + \
-            ' ' + str(abOffsetZ)
-
     logFile = os.path.join(outFolder, outputPrefix + '.log')
     
     # Call CONVERTER_COMMAND for each of the inputFiles
     for filename in inputFiles:
         command = CONVERTER_COMMAND + ' ' + tmode + ' --outputPrefix ' + \
             outputPrefix + ' --files ' + os.path.basename(filename)
+        if color8Bit:
+            command += ' --8bitColor '
+        if aligned:
+            command += ' --translate ' + str(abOffsetX) + ' ' + str(abOffsetY) + \
+                ' ' + str(abOffsetZ)
         command += ' &> ' + logFile
         logger.info(command)
         args = shlex.split(command)
