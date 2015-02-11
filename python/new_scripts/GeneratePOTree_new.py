@@ -31,7 +31,7 @@ import shlex
 logger = None
 
 CONVERTER_COMMAND = 'PotreeConverter'
-
+outputFormat = 'LAS'
 
 def createPOTree(opts, abOffsetX=None,
               abOffsetY=None, abOffsetZ=None, color8Bit=False):
@@ -50,37 +50,7 @@ def createPOTree(opts, abOffsetX=None,
     # extract inType & outFolder, create outFolder in non-existent
     inType, inKind, outFolder = extract_inType(abspath, site_id,
                                                opts.potreeDir)
-    inFile = abspath  # CORRECT ?
-
-    # Get 8bitcolor information from DB
-    data_items, num_items = utils.fetchDataFromDB(
-        cursor, 'SELECT RAW_DATA_ITEM_PC.color_8bit, ' +
-        'RAW_DATA_ITEM_MESH.color_8bit FROM RAW_DATA_ITEM LEFT JOIN ' +
-        'RAW_DATA_ITEM_PC ON RAW_DATA_ITEM.raw_data_item_id=' +
-        'RAW_DATA_ITEM_PC.raw_data_item_id LEFT JOIN RAW_DATA_ITEM_MESH ON ' +
-        'RAW_DATA_ITEM.raw_data_item_id=RAW_DATA_ITEM_MESH.raw_data_item_id ' +
-        'WHERE ' +
-        'RAW_DATA_ITEM.raw_data_item_id = %s' % (opts.itemid))
-    try:
-        if (True in data_items[0]):
-            color8Bit = True
-        else:
-            color8Bit = False
-    except IndexError:
-        color8Bit = False  # no 8BC color in database, set to false
-
-    # Get alignment info from DB
-    data_items, num_items = utils.fetchDataFromDB(
-        cursor, 'SELECT offset_x, offset_y, offset_z FROM ' +
-        'OSG_DATA_ITEM_PC_BACKGROUND INNER JOIN RAW_DATA_ITEM ON ' +
-        'OSG_DATA_ITEM_PC_BACKGROUND.raw_data_item_id=' +
-        'RAW_DATA_ITEM.raw_data_item_id WHERE RAW_DATA_ITEM.srid = ' +
-        '(SELECT srid from RAW_DATA_ITEM WHERE raw_data_item_id=' +
-        '%s )' % (opts.itemid))
-
-    # Set offset if item is aligned
-    if len(data_items) > 0:
-        (abOffsetX, abOffsetY, abOffsetZ) = data_items[0]
+    inFile = abspath
 
     # close DB connection
     utils.closeConnectionDB(connection, cursor)
@@ -96,63 +66,31 @@ def createPOTree(opts, abOffsetX=None,
 
     outputPrefix = 'data'
     aligned = (abOffsetX is not None)
-    ofile = getOSGFileFormat(inType)
+#    ofile = getOSGFileFormat(inType)
 
-    # A PC SITE
-    if (inType == utils.PC_FT and inKind == utils.SITE_FT):
-        inputFiles = glob.glob(inFile + '/*.las') + glob.glob(
-            inFile + '/*.laz')  # needed?
-        # TODO: process item
-    # A PC BACKGROUND
-    elif (inType == utils.PC_FT and inKind == utils.BG_FT):  # A PC BG
-        inputFiles = glob.glob(inFile + '/*.las') + glob.glob(
-            inFile + '/*.laz')  # needed?
-        # TODO: process item        
-    else:
-        logger.error("POTree converter should one be used on PC's")
-        raise Exception("POTree converter should one be used on PC's")
+    # list of all LAS and LAZ files in directory
+    inputFiles = glob.glob(inFile + '/*.las') + glob.glob(
+            inFile + '/*.laz')
 
     logFile = os.path.join(outFolder, outputPrefix + '.log')
     
     # Call CONVERTER_COMMAND for each of the inputFiles
     for filename in inputFiles:
         command = CONVERTER_COMMAND + ' -o ' + outFolder + ' -l ' + \
-            numLevels + ' --output-format ' + outputFormat + ' --source ' + \
+            opts.levels + ' --output-format ' + outputFormat + ' --source ' + \
                 inFile
-        if color8Bit:
-            command += ' --8bitColor '
-        if aligned:
-            command += ' --translate ' + str(abOffsetX) + ' ' + str(abOffsetY) + \
-                ' ' + str(abOffsetZ)
         command += ' &> ' + logFile
         logger.info(command)
         args = shlex.split(command)
         subprocess.Popen(args, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE).communicate()
 
-    # move files to outFolder; drop outputPrefix from filename
-#    outputFiles = glob.glob(outputPrefix + '*')
-#    for filename in outputFiles:
-#        if (inType == utils.PC_FT):
-#            shutil.move(os.path.abspath(filename),
-#                        os.path.join(outFolder,
-#                                     filename[len(outputPrefix)+1:]))
-#        else:
-#            # outputPrefix is appended slightly different for PC and MESH
-#            shutil.move(os.path.abspath(filename),
-#                        os.path.join(outFolder,
-#                                     filename[len(outputPrefix):]))
-
-#    logger.info("Moving files to " + outFolder)
-
-    ofiles = sorted(glob.glob(os.path.join(outFolder, '*' + ofile)))
+    ofiles = sorted(glob.glob(os.path.join(outFolder, '*')))
     if len(ofiles) == 0:
         logger.error('none POTree file was generated (found in ' + outFolder +
                      '). Check log: ' + logFile)
         raise Exception('none POTree file was generated (found in ' + outFolder +
                         '). Check log: ' + logFile)
-#    else:
-#        pass
 
 
 def extract_inType(abspath, site_id, potreeDir):
@@ -177,11 +115,15 @@ def extract_inType(abspath, site_id, potreeDir):
     if (inType == utils.PC_FT and inKind == utils.SITE_FT):
         outFolder = os.path.join(os.path.abspath(potreeDir), utils.PC_FT,
                                  inKind, 'S'+str(site_id),
-                                 os.path.basename(os.path.normpath(abspath)))
+                                 os.path.basename(os.path.normpath(abspath)),
+                                 os.path.basename(os.path.normpath(abspath)) +
+                                 '_levels_' + opts.levels)
     elif (inType == utils.PC_FT and inKind == utils.BG_FT):
         outFolder = os.path.join(os.path.abspath(potreeDir), utils.PC_FT,
                                  inKind,
-                                 os.path.basename(os.path.normpath(abspath)))
+                                 os.path.basename(os.path.normpath(abspath)),
+                                 os.path.basename(os.path.normpath(abspath)) +
+                                 '_levels_' + opts.levels)
     else:
         logger.error("POTree converter should one be used on PC's")
         raise Exception("POTree converter should one be used on PC's")
@@ -201,7 +143,7 @@ def main(opts):
     global logger
     logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
     logger.info('#######################################')
-    logger.info('Starting script GenerateOSG.py')
+    logger.info('Starting script GeneratePOTree.py')
     logger.info('#######################################')
     createPOTree(opts)
 
@@ -225,6 +167,8 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--potreeDir', default=utils.DEFAULT_POTREE_DATA_DIR,
                         help='POTREE data directory [default ' +
                         utils.DEFAULT_POTREE_DATA_DIR + ']', action='store')
+    parser.add_argument('--levels',default='',help='Number of levels of the Octree, parameter for PotreeConverter.',action='store', required=True)
+    
     parser.add_argument('-l', '--log', help='Log level',
                         choices=['debug', 'info', 'warning', 'error',
                                  'critical'],
