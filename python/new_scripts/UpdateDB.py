@@ -154,13 +154,11 @@ def checkOSG(absPath):
     else:
         return True
     
-def getPOTParams(absPath):
-    (numLevels, spacing) = (None, None)
-    if absPath.count('level'):
-        numLevels = int(a[a.index('level') + len('level'):].split('_')[0])
-    if absPath.count('spacing'):
-        spacing = int(a[a.index('spacing') + len('spacing'):].split('_')[0])
-    return (numLevels, spacing)
+def getPOTNumberLevels(absPath):
+    numLevels = None
+    if absPath.count('_levels_') > 0:
+        numLevels = int(absPath[absPath.index('_levels_') + len('_levels_'):].split('_')[0])
+    return numLevels
 
 def getMTLAbsPath(absPath):
     mtlfiles = glob.glob(absPath + '/*mtl')
@@ -528,9 +526,8 @@ def addOSGDataItem(absPath, itemId, dataItemType):
             dbExecute(cursor, 'UPDATE OSG_DATA_ITEM SET last_check=%s WHERE osg_data_item_id = %s', [initialTime, osgDataItemId])
 
 def addPOTDataItem(absPath, itemId, dataItemType):
-    modTime = getCurrentTime(getLastModification(absPath))
     if dataItemType != PC_FT:
-        logging.error('Skipping ' + absPath + '. Only POTREE point clouds are added')
+        logging.error('Skipping ' + sAbsPath + '. Only POTREE point clouds are added')
         return
     
     rawAbsPath = absPath.replace(POT_FT, RAW_FT)
@@ -541,17 +538,21 @@ def addPOTDataItem(absPath, itemId, dataItemType):
         return
     rawDataItemId = cursor.fetchone()[0]
     
-    dbExecute(cursor, 'SELECT potree_data_item_id, last_mod FROM POTREE_DATA_ITEM_PC WHERE abs_path = %s', [absPath,])
-    row = cursor.fetchone()
-    if row == None: #This folder has been added recently
-        (numLevels, spacing) = getPOTParams(absPath)
-        dbExecute(cursor, "INSERT INTO POTREE_DATA_ITEM_PC (potree_data_item_id, raw_data_item_id, abs_path, last_mod, last_check, number_levels, spacing) VALUES (DEFAULT,%s,%s,%s,%s,%s,%s)", 
-                [rawDataItemId, absPath, modTime, initialTime, numLevels, spacing])
-    else:
-        (potreeDataItemId, lastModDB) = row
-        if modTime > lastModDB: #Data has changed
-            logging.warn('POTREE data item in ' + absPath + ' may have been updated and it may not be reflected in the DB.')
-        dbExecute(cursor, 'UPDATE POTREE_DATA_ITEM_PC SET last_check=%s WHERE potree_data_item_id = %s', [initialTime, potreeDataItemId])
+    #  POTree can have multiple conversion per raw data item
+    for sPath in os.listdir(absPath):
+        sAbsPath = absPath + '/' + sPath
+        modTime = getCurrentTime(getLastModification(sAbsPath))
+        dbExecute(cursor, 'SELECT potree_data_item_id, last_mod FROM POTREE_DATA_ITEM_PC WHERE abs_path = %s', [sAbsPath,])
+        row = cursor.fetchone()
+        if row == None: #This folder has been added recently
+            numLevels = getPOTNumberLevels(sAbsPath)
+            dbExecute(cursor, "INSERT INTO POTREE_DATA_ITEM_PC (potree_data_item_id, raw_data_item_id, abs_path, last_mod, last_check, number_levels) VALUES (DEFAULT,%s,%s,%s,%s,%s)", 
+                    [rawDataItemId, sAbsPath, modTime, initialTime, numLevels])
+        else:
+            (potreeDataItemId, lastModDB) = row
+            if modTime > lastModDB: #Data has changed
+                logging.warn('POTREE data item in ' + sAbsPath + ' may have been updated and it may not be reflected in the DB.')
+            dbExecute(cursor, 'UPDATE POTREE_DATA_ITEM_PC SET last_check=%s WHERE potree_data_item_id = %s', [initialTime, potreeDataItemId])
 
 if __name__ == "__main__":
     usage = 'Usage: %prog [options]'
