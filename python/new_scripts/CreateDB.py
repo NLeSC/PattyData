@@ -13,11 +13,21 @@ def main(opts):
     connectionString = postgresConnectString(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport, True)
     
     os.system('createdb ' + connectionString)
-    os.system('psql ' + connectionString + ' -c "CREATE EXTENSION POSTGIS;"')
-    os.system('psql ' + connectionString + ' -f ' + opts.sql)
+
+    #os.system('psql ' + connectionString + ' -c "CREATE EXTENSION POSTGIS;"')
+    #os.system('psql ' + connectionString + ' -f ' + opts.sql)
     
     connection = psycopg2.connect(postgresConnectString(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport, False))
     cursor = connection.cursor()
+
+    cursor.execute("CREATE EXTENSION POSTGIS")
+    connection.commit()
+
+    old_isolation_level = connection.isolation_level
+    connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+
+    cursor.execute(open(opts.sql,"r").read())
+    connection.set_isolation_level(old_isolation_level)
     
     cursor.execute("select tablename from  pg_tables where schemaname = 'public'")
     tablesNames = cursor.fetchall()

@@ -84,7 +84,7 @@ def readLASInfo(absPath):
         [maxx, maxy, maxz] = lasHeader.get_max()
     
     if srid == None:
-        logging.warn('SRID is not set in ' + absPath)
+        logging.info('SRID is not set in ' + absPath)
     elif srid == -1:
         logging.error('SRID is not the same in all files in ' + absPath)
         srid = None
@@ -118,39 +118,26 @@ def readOffsets(absPath):
     return offsets
 
 def is8BitColor(absPath):
-    name = os.path.basename(absPath) 
-    return name.count('_8BC') > 0
+    return (absPath.lower().count('8bc') > 0) or (absPath.lower().count('8bit') > 0)
     
 def getMeshSRID(absPath):
-    name = os.path.basename(absPath) 
-    
     srid = None
-    if name.count('_SRID_') > 0:
+    if absPath.count('_SRID_') > 0:
         try:
-            srid = int(name[name.index('_SRID_') + len('_SRID_'):].split('_')[0])
+            srid = int(absPath[absPath.index('_SRID_') + len('_SRID_'):].split('_')[0])
         except:
             logging.error('SRID not recognized from ' + absPath)
             srid = None
     return srid
 
-def getBackgrounds():
-    cursor.execute('SELECT A.abs_path FROM RAW_DATA_ITEM A, ITEM B WHERE A.item_id = B.item_id and B.background = %s', [True,])
-    backgrounds = []
-    for (absPath, ) in cursor:
-        backgrounds.append(os.path.basename(absPath))
-    return backgrounds
-
 def isThumbnail(absPath):
-    name = os.path.basename(absPath) 
-    return name.lower().count('_thumb') > 0
+    return absPath.lower().count('_thumb') > 0
 
 def isCurrent(absPath):
-   
     return (absPath.count(CURR_FT) > 0)
-    #return (os.path.basename(os.path.abspath(absPath + '/../..')) == CURR_FT)
 
 def isBackground(absPath):
-    return (absPath.count(BACK_FT) > 0)
+    return (absPath.count(BG_FT) > 0)
     
 def getBackgroundOffset(srid):
     dbExecute(cursor, 'SELECT A.offset_x, A.offset_y, A.offset_z FROM OSG_DATA_ITEM_PC_BACKGROUND A, RAW_DATA_ITEM_PC B, RAW_DATA_ITEM C WHERE A.raw_data_item_id = B.raw_data_item_id AND A.raw_data_item_id = C.raw_data_item_id AND C.srid = %s', [srid,])
@@ -262,6 +249,9 @@ def process(absPath, dataItemTypes, addDataItemMethod):
                     processSites(sdisAbsPath + '/' + HIST_FT , addDataItemMethod, dataItemType)
                 
 def processBackgrounds(absPath, addMethod, dataItemType):
+    if not os.path.isdir(absPath):
+        logging.error('Skipping ' + absPath + '. It does not exist')
+        return
     t0 = time.time()
     logging.info('Processing ' + absPath)
     backgrounds = os.listdir(absPath)
@@ -270,6 +260,9 @@ def processBackgrounds(absPath, addMethod, dataItemType):
     logging.info('Processing ' + absPath + ' finished in %.2f' % (time.time() - t0))
 
 def processSites(absPath, addMethod, dataItemType):
+    if not os.path.isdir(absPath):
+        logging.error('Skipping ' + absPath + '. It does not exist')
+        return
     t0 = time.time()
     logging.info('Processing ' + absPath)
     sites = os.listdir(absPath)
@@ -440,7 +433,7 @@ def addOSGDataItem(absPath, itemId, dataItemType):
     if row == None:
         logging.error('Skipping ' + absPath + '. None related RAW data item found in ' + rawAbsPath)
         return
-    (rawDataItemId, rawSRID) = cursor.fetchone()
+    (rawDataItemId, rawSRID) = row
     
     if not checkOSG(absPath):
         logging.error('Skipping ' + absPath + '. None .osgb file found')
@@ -471,7 +464,7 @@ def addOSGDataItem(absPath, itemId, dataItemType):
             if rawSRID != None:
                 # Try to get it from OSG generated offsets
                 (bOffsetX, bOffsetY, bOffsetZ) = getBackgroundOffset(rawSRID)
-                if bOffset == None:
+                if bOffsetX == None:
                     logging.warn('OSG position of ' + absPath + ' could not be computed. None background found with same SRID')
                 else:
                     (offsetX, offsetY, offsetZ) = readOffsets(absPath)
@@ -497,12 +490,16 @@ def addOSGDataItem(absPath, itemId, dataItemType):
                     
             if srid == None: #If it is a Mesh or the values from point clouds and pictures are null
                 # we can get from the item geometry
-                dbExecute(cursor, "select Find_SRID('public', 'ITEM', 'geom'), st_x(g), st_y(g) from (select st_centroid(geometry(geom)) AS g from ITEM where item_id = %s) A", [itemId,])
-                if cursor.rowcount:
-                    (srid, x, y) = cursor.fetchone()
-                else:
-                    logging.warn('Not possible to get position from footprint: footprint not found for ' + absPath)
-                    
+                try:
+                    dbExecute(cursor, "select Find_SRID('public', 'ITEM', 'geom'), st_x(g), st_y(g) from (select st_centroid(geometry(geom)) AS g from ITEM where item_id = %s) A", [itemId,])
+                    if cursor.rowcount:
+                        (srid, x, y) = cursor.fetchone()
+                    else:
+                        logging.warn('Not possible to get position from footprint: footprint not found for ' + absPath)
+                except Exception ,e:
+                    logging.error(e)
+                    cursor.connection.rollback()
+    
             dbExecute(cursor, "INSERT INTO OSG_LOCATION (osg_location_id, srid, x, y, z) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING osg_location_id", 
                     [srid, x, y, z])
             osgLocationId = cursor.fetchone()[0]

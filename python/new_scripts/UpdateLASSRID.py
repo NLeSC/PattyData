@@ -12,7 +12,7 @@ def main():
     args = parser.parse_args()
 
     osrs = osr.SpatialReference()
-    osrs.SetFromUserInput( "EPSG:{}".format( args.srs ) )
+    osrs.SetFromUserInput( "EPSG:{0}".format( args.srs ) )
 
     lsrs = liblas.srs.SRS()
     lsrs.set_wkt( osrs.ExportToWkt() )
@@ -21,7 +21,7 @@ def main():
     header = f1.header
     header.set_srs( lsrs )
 
-    f2 = liblas.file.File( args.outfile, header=header, mode="w" )
+    f2 = liblas.file.File(args.outfile, header=header, mode="w")
     for p in f1:
         f2.write(p)
 
