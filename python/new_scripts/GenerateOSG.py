@@ -86,13 +86,13 @@ def createOSG(opts, abOffsetX=None,
         color8Bit = False  # no 8BC color in database, set to false
 
     # Get alignment info from DB
-    # TODO: TEST, no values in DB yet
     data_items, num_items = utils.fetchDataFromDB(
         cursor, 'SELECT offset_x, offset_y, offset_z FROM ' +
         'OSG_DATA_ITEM_PC_BACKGROUND INNER JOIN RAW_DATA_ITEM ON ' +
         'OSG_DATA_ITEM_PC_BACKGROUND.raw_data_item_id=' +
-        'RAW_DATA_ITEM.raw_data_item_id WHERE ' +
-        'RAW_DATA_ITEM.raw_data_item_id = %s' % (opts.itemid))
+        'RAW_DATA_ITEM.raw_data_item_id WHERE RAW_DATA_ITEM.srid = ' +
+        '(SELECT srid from RAW_DATA_ITEM WHERE raw_data_item_id=' +
+        '%s )' % (opts.itemid))
 
     # Set offset if item is aligned
     if len(data_items) > 0:
