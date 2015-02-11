@@ -18,7 +18,9 @@ import multiprocessing
 import glob
 import shutil
 import utils
+import argparse
 import viewer_conf_api
+
 logger = None
 
 DEFAULT_PREFENCES = """
@@ -100,10 +102,12 @@ def main(opts):
                    'OSG_LOCATION INNER JOIN OSG_ITEM_OBJECT ON ' +
                    'OSG_LOCATION.osg_location_id=' +
                    'OSG_ITEM_OBJECT.osg_location_id WHERE ' +
-                   'osg_location_id NOT IN (SELECT ' +
-                   'DISTINCT osg_location_id FROM OSG_CAMERA WHERE ' +
-                   'osg_location_id IS NOT null) AND object_id = %s ORDER ' +
-                   'BY osg_location_id', [utils.SITE_OBJECT_NUMBER])
+                   'item_id NOT IN (SELECT ' +
+                   'DISTINCT tbl1_object.item_id, object_id FROM OSG_ITEM_CAMERA INNER JOIN ' +
+                   'tbl1_object ON OSG_ITEM_CAMERA.item_id=' +
+                   'tbl1_object.item_id WHERE ' +
+                   'tbl1_object.item_id IS NOT null) AND object_id = %s ORDER ' +
+                   'BY item_id', [utils.ITEM_OBJECT_NUMBER_ITEM])
     for (siteId, x, y, z, h, p, r) in cursor:
         cameras.add_camera(viewer_conf_api.camera
                            (name=utils.DEFAULT_CAMERA_PREFIX + str(siteId),
@@ -280,7 +284,7 @@ if __name__ == "__main__":
                         help='OSG data directory [default ' +
                         utils.DEFAULT_OSG_DATA_DIR + ']', action='store')
     # required input ?
-    parser.add_option('-f', '--output', help='XML file', action='store')
+    parser.add_argument('-f', '--output', help='XML file', action='store')
     parser.add_argument('-l', '--log', help='Log level',
                         choices=['debug', 'info', 'warning', 'error',
                                  'critical'],
