@@ -112,8 +112,12 @@ def run(args):
     success_loading = load_sql_file(args)
         
     if success_loading:
-         
         # check if the ITEM table is empty or weather the geom column typeis multipolygon, then change the type of the geom field
+        # get the union geometry inside the SQL file
+        select_geom_sql = "SELECT site_id as site_id, ST_Multi(ST_Transform( ST_Union( geom ), %s)) AS geom FROM sites_geoms_temp GROUP BY site_id"
+        values, num_geoms = utils.fetchDataFromDB(cursor, select_geom_sql, [utils.SRID,])
+        
+        # check if the SITES table is empty, then change the type of the geom field
         num_items = utils.countElementsTable(cursor, 'item')
         msg = "Number of elements in item table: %s" %num_items        
         print msg
