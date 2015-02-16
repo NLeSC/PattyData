@@ -199,12 +199,12 @@ def typeColumnTable(cursor, column, table):
     
     return col_type
     
-def fetchDataFromDB(cursor, query, queryArgs = None, mogrify = True):
+def fetchDataFromDB(cursor, query, queryArgs = None, mogrify = True, verbose = True):
     """ Fetches data from a DB, given the sursor object and the fetch query
         Return the fetched data items and their number
     """ 
     data_items = []
-    
+
     try:
         dbExecute(cursor, query, queryArgs, mogrify)
     except Exception, E:
@@ -216,9 +216,11 @@ def fetchDataFromDB(cursor, query, queryArgs = None, mogrify = True):
     data_items = cursor.fetchall()
     
     num_items = cursor.rowcount
-    msg = 'Retrived %s data_items.'%num_items
-    print msg
-    logging.debug(msg)
+    
+    if verbose:
+        msg = 'Retrived %s data_items.'%num_items
+        print msg
+        logging.debug(msg)
 
     return data_items, num_items    
     
