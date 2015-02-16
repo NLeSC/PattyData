@@ -112,50 +112,61 @@ def run(args):
     success_loading = load_sql_file(args)
         
     if success_loading:
-
-        # get the union geometry inside the SQL file
-        select_geom_sql = "SELECT site_id as site_id, ST_Multi(ST_Transform( ST_Union( geom ), " + str(utils.SRID) + " )) AS geom FROM sites_geoms_temp GROUP BY site_id"
-        values, num_geoms = utils.fetchDataFromDB(cursor, select_geom_sql)
-        
-        # check if the SITES table is empty, then change the type of the geom field
+         
+        # check if the ITEM table is empty or weather the geom column typeis multipolygon, then change the type of the geom field
         num_items = utils.countElementsTable(cursor, 'item')
-        print "Number of elements in item table: %s" %num_items        
-        
-#        select_geom_sql = "SELECT geom FROM item"
-#        values, num_geoms = utils.fetchDataFromDB(cursor, select_geom_sql)
-#
-#        print cursor.description
-#        type_code  = cursor.description[0].type_code
-#        print type_code
-#        
-#        select_type_sql = "SELECT typname FROM pg_type WHERE OID=%s"%type_code
-#        values, num_geoms = utils.fetchDataFromDB(cursor, select_type_sql)
-#        
-#        print values[0]
-        
+        msg = "Number of elements in item table: %s" %num_items        
+        print msg
+        logger.debug(msg)
+                
         col_type = utils.typeColumnTable(cursor, 'geom','item')
-        print col_type
+        msg = "Current geom column type is %s."%col_type
+        print msg
+        logger.debug(msg)
+ 
+        if (num_items == 0) or (col_type == 'polygon'): 
+            # alter the geometry field type
+            alter_type_sql = "ALTER TABLE item ALTER COLUMN geom TYPE geometry(MultiPolygon, " + str(utils.SRID) + ") USING geom:: geometry(MultiPolygon, " + str(utils.SRID) + ")"            
+            utils.dbExecute(cursor, alter_type_sql)
+            
+            msg = "Current geom column type is MultiPolygon, " + str(utils.SRID)
+            print msg
+            logger.debug(msg)
         
-      
-#        check_query = "SELECT COUNT(*) FROM site"
-#        utils.dbExecute(cursor, check_query)    
-#        num_items = cursor.fetchone()
-#        
-# #       insert_sql_bunch = "INSERT INTO site(site_id, geom) VALUES(values)" # is this correct!???
-# #       insert_sql_missing = "INSERT INTO site(site_id, geo) VALUES(site_id_values, geom_value)"
-# #       update_sql = "UPDATE TABLE site SET geom = geom_value WHERE site_id = site_id_value"
-#        
-#        if (num_items == 0): # alter the geometry field type
-#             # shall we read this from utils!?? Is it a fixed thing!?
-#            alter_type_sql = "ALTER TABLE site ALTER COLUMN geom TYPE geometry(MultiPolygon, " + str(utils.SRID) + ")"            
-#            utils.dbExecute(cursor, alter_type_sql)
-#            
-#       # else: # merge the data from the sites_geom_table (filled from the input SQL file) into the DB
-#            #if the DB has no overlap with the entries from the sites_geoms_temp
-#            # if the DB has overlap with the entries from the sites_geoms_temp
+        # find the list of IDs which are in the temporary geometris table, but not in item table   
+        no_item_well_temp_sql = "SELECT DISTINCT site_id::integer FROM sites_geoms_temp WHERE (site_id NOT IN (SELECT item_id FROM item))"
+        no_item_well_temp_ids, num_ids = utils.fetchDataFromDB(cursor, no_item_well_temp_sql)
+        
+        msg = "The unique item ids not in item table, but in sites_geoms_temp are %s in number"%num_ids
+        print msg
+        logger.debug(msg)
+
+        # find the list of IDs which are both in the temporary geometris table, but not in item table   
+        both_in_item_and_temp_sql = "SELECT DISTINCT site_id FROM sites_geoms_temp WHERE (site_id IN (SELECT item_id FROM item))"
+        both_in_item_andl_temp_ids, num_both_ids = utils.fetchDataFromDB(cursor, both_in_item_and_temp_sql)
+        
+        msg = "The item ids both in item table and n sites_geoms_temp are %s in number"%num_both_ids
+        print msg
+        logger.debug(msg)
+        
+        # TO DO:  update or insert into the DB using INSERT in a loop.Background whould be always FALSE
+
+        # insert the union of object geometries per site for the sites not in item, but in the sites_geoms_temp table
+        for (sid,) in no_item_well_temp_ids:      
+            print sid
+             # background = false                
+            union_geom_sql =  "SELECT site_id AS site_id, ST_Multi(ST_Transform( ST_Union(geom), %s)) AS geom FROM sites_geoms_temp WHERE site_id = %s GROUP BY site_id", [utils.SRID,sid]
+            print union_geom_sql
+            data,num = utils.fetchDataFromDB(cursor, union_geom_sql)
+            msg = "data: %s" %data
+            print msg
+            logger.debug(msg)
+#msg = "The geometries have been updated!"        
+#        print msg
+#        logger.debug(msg)
     
         # clean the temp table
-        clean_temp_table(args)         
+     #   clean_temp_table(args)         
     # close the conection to the DB
     utils.closeConnectionDB(connection, cursor)
     
