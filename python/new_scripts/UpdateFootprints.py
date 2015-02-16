@@ -137,7 +137,7 @@ def run(args):
             print msg
             logger.debug(msg)
         
-        # find the list of IDs which are in the temporary geometris table, but not in item table   
+        # find the list of IDs which are in the temporary geometries table, but not in item table   
         no_item_well_temp_sql = "SELECT DISTINCT site_id::integer FROM sites_geoms_temp WHERE (site_id NOT IN (SELECT item_id FROM item))"
         no_item_well_temp_ids, num_ids = utils.fetchDataFromDB(cursor, no_item_well_temp_sql)
         
@@ -145,7 +145,7 @@ def run(args):
         print msg
         logger.debug(msg)
 
-        # find the list of IDs which are both in the temporary geometris table, but not in item table   
+        # find the list of IDs which are both in the temporary geometries table and the item table   
         both_in_item_and_temp_sql = "SELECT DISTINCT site_id FROM sites_geoms_temp WHERE (site_id IN (SELECT item_id FROM item))"
         both_in_item_andl_temp_ids, num_both_ids = utils.fetchDataFromDB(cursor, both_in_item_and_temp_sql)
         
@@ -156,21 +156,33 @@ def run(args):
         # TO DO:  update or insert into the DB using INSERT in a loop.Background whould be always FALSE
 
         # insert the union of object geometries per site for the sites not in item, but in the sites_geoms_temp table
+        number = 1
         for (sid,) in no_item_well_temp_ids:      
-            print sid
-             # background = false                
-            union_geom_sql =  "SELECT site_id AS site_id, ST_Multi(ST_Transform( ST_Union(geom), %s)) AS geom FROM sites_geoms_temp WHERE site_id = %s GROUP BY site_id", [utils.SRID,sid]
-            print union_geom_sql
-            data,num = utils.fetchDataFromDB(cursor, union_geom_sql)
-            msg = "data: %s" %data
+            
+            msg = "Processing %s site from %s sites in total"% (number, num_ids)
             print msg
             logger.debug(msg)
-#msg = "The geometries have been updated!"        
-#        print msg
-#        logger.debug(msg)
+            
+            fetch_union_geom_sql = "SELECT site_id AS item_id, ST_Multi(ST_Transform( ST_Union(geom), %s)) AS geom FROM sites_geoms_temp WHERE site_id = %s GROUP BY site_id"                
+            data,num = utils.fetchDataFromDB(cursor, fetch_union_geom_sql, [utils.SRID, sid], [], False)
+            
+            item_id = data[0][0]
+            background = False
+            geometry = data[0][1]
+            
+            insert_union_geom_sql = "INSERT INTO item VALUES (%s,%s,%s)"
+            utils.dbExecute(cursor, insert_union_geom_sql, [item_id, background, geometry])
+            
+            number = number + 1  
+            
+            
+        msg = "The geometries have been updated!"        
+        print msg
+        logger.debug(msg)
     
         # clean the temp table
-     #   clean_temp_table(args)         
+        clean_temp_table(args)         
+        
     # close the conection to the DB
     utils.closeConnectionDB(connection, cursor)
     
