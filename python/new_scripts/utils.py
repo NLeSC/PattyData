@@ -199,14 +199,14 @@ def typeColumnTable(cursor, column, table):
     
     return col_type
     
-def fetchDataFromDB(cursor, query, queryArgs):
+def fetchDataFromDB(cursor, query, queryArgs = None, mogrify = True):
     """ Fetches data from a DB, given the sursor object and the fetch query
         Return the fetched data items and their number
     """ 
     data_items = []
     
     try:
-        dbExecute(cursor, query, queryArgs, True)
+        dbExecute(cursor, query, queryArgs, mogrify)
     except Exception, E:
         err_msg = "Cannot execute the SQL query: %s" % cursor.mogrify(query, queryArgs)
         print(err_msg)

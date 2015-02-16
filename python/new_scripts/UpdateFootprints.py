@@ -114,8 +114,8 @@ def run(args):
     if success_loading:
 
         # get the union geometry inside the SQL file
-        select_geom_sql = "SELECT site_id as site_id, ST_Multi(ST_Transform( ST_Union( geom ), " + str(utils.SRID) + " )) AS geom FROM sites_geoms_temp GROUP BY site_id"
-        values, num_geoms = utils.fetchDataFromDB(cursor, select_geom_sql)
+        select_geom_sql = "SELECT site_id as site_id, ST_Multi(ST_Transform( ST_Union( geom ), %s)) AS geom FROM sites_geoms_temp GROUP BY site_id"
+        values, num_geoms = utils.fetchDataFromDB(cursor, select_geom_sql, [utils.SRID,])
         
         # check if the SITES table is empty, then change the type of the geom field
         num_items = utils.countElementsTable(cursor, 'item')
