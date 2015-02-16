@@ -108,7 +108,7 @@ def main(opts):
                    'OSG_ITEM_CAMERA AS D1, tbl1_object AS R1 WHERE ' +
                    'R1.item_id=D1.item_id) AS R1 WHERE ' + 
                    'R1.item_id IS NOT null AND R1.object_id=%s) ' +
-                   'ORDER by item_id' % (utils.ITEM_OBJECT_NUMBER_ITEM), None)
+                   'ORDER by item_id', [utils.ITEM_OBJECT_NUMBER_ITEM,])
     import pdb; pdb.set_trace()
 
     for (siteId, x, y, z, h, p, r) in cursor:

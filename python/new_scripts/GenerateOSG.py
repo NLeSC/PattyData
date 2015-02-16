@@ -61,7 +61,7 @@ def createOSG(opts, abOffsetX=None,
     # extract abspath using raw_data_item_id
     data_items, num_items = utils.fetchDataFromDB(
         cursor, "SELECT abs_path, item_id FROM RAW_DATA_ITEM WHERE " +
-        "raw_data_item_id = '%s'" % (opts.itemid))
+        "raw_data_item_id = '%s'", (opts.itemid,))
     abspath, site_id = data_items[0]
 
     # extract inType & outFolder, create outFolder in non-existent
@@ -76,7 +76,7 @@ def createOSG(opts, abOffsetX=None,
         'RAW_DATA_ITEM_PC.raw_data_item_id LEFT JOIN RAW_DATA_ITEM_MESH ON ' +
         'RAW_DATA_ITEM.raw_data_item_id=RAW_DATA_ITEM_MESH.raw_data_item_id ' +
         'WHERE ' +
-        'RAW_DATA_ITEM.raw_data_item_id = %s' % (opts.itemid))
+        'RAW_DATA_ITEM.raw_data_item_id = %s', (opts.itemid,))
     try:
         if (True in data_items[0]):
             color8Bit = True
@@ -92,7 +92,7 @@ def createOSG(opts, abOffsetX=None,
         'OSG_DATA_ITEM_PC_BACKGROUND.raw_data_item_id=' +
         'RAW_DATA_ITEM.raw_data_item_id WHERE RAW_DATA_ITEM.srid = ' +
         '(SELECT srid from RAW_DATA_ITEM WHERE raw_data_item_id=' +
-        '%s )' % (opts.itemid))
+        '%s )', (opts.itemid,))
 
     # Set offset if item is aligned
     if len(data_items) > 0:
