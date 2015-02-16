@@ -65,7 +65,7 @@ def createOSG(opts, abOffsetX=None,
     # extract abspath using raw_data_item_id
     data_items, num_items = utils.fetchDataFromDB(
         cursor, "SELECT abs_path, item_id FROM RAW_DATA_ITEM WHERE " +
-        "raw_data_item_id = '%s'", (opts.itemid,))
+        "raw_data_item_id = %s", (opts.itemid,))
     abspath, site_id = data_items[0]
 
     # extract inType & outFolder, create outFolder in non-existent
