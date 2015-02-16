@@ -58,6 +58,10 @@ def createOSG(opts, abOffsetX=None,
     connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser,
                                            opts.dbpass, opts.dbhost,
                                            opts.dbport)
+    if opts.itemid == '?':
+        utils.listRawDataItems(cursor)
+        return
+    
     # extract abspath using raw_data_item_id
     data_items, num_items = utils.fetchDataFromDB(
         cursor, "SELECT abs_path, item_id FROM RAW_DATA_ITEM WHERE " +
@@ -279,7 +283,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=description)
 
     # fill argument groups
-    parser.add_argument('-i', '--itemid', help='Raw data item id',
+    parser.add_argument('-i', '--itemid', help='Raw data item id (with ? the list of raw data items are listed)',
                         action='store', required=True)
     parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
                         help='Postgres DB name [default ' + utils.DEFAULT_DB +

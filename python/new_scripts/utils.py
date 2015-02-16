@@ -233,6 +233,13 @@ def dbExecute(cursor, query, queryArgs = None, mogrify = True):
         cursor.execute(query, queryArgs)
     cursor.connection.commit()
 
+def listRawDataItems(cursor):
+    data_items, num_items = fetchDataFromDB(cursor, "SELECT raw_data_item_id, abs_path FROM RAW_DATA_ITEM")
+    if num_items:
+        logging.info('\t'.join(('#RawDataItemId','absPath')))
+        for (rawDataItem, absPath) in data_items:
+            logging.info('\t'.join((str(rawDataItem),absPath)))
+
 def start_logging(filename=LOG_FILENAME, level=DEFAULT_LOG_LEVEL):
     "Start logging with given filename and level."
     logging.basicConfig(filename=filename, level=LOG_LEVELS[level],
