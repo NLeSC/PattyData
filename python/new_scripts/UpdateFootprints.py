@@ -54,13 +54,10 @@ def load_sql_file(args):
     success = False
     
     # set the level temporarily to autocommit
- #   old_isolation_level = connection.isolation_level
     connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     
-    #local_cursor = connection.cursor()
     # execute the SQL statement from the external DBdump of site object geometries
     try:    
-    #    local_cursor.execute(open(args.input,"r").read())
         cursor.execute(open(args.input,"r").read())
     except Exception, E:
         err_msg = 'Cannot execute the commands in %s.'%args.input
@@ -105,6 +102,28 @@ def update_geometries(list_ids, new):
     msg = "The geometries have been updated!"        
     print msg
     logger.debug(msg)    
+    
+def update_geom_col_type(cursor):
+    """ function to update the initial geometries column type """
+    num_items = utils.countElementsTable(cursor, 'item')
+    msg = "Number of elements in item table: %s" %num_items        
+    print msg
+    logger.debug(msg)
+            
+    col_type = utils.typeColumnTable(cursor, 'geom','item')
+    msg = "Current geom column type is %s."%col_type
+    print msg
+    logger.debug(msg)
+ 
+    if (num_items == 0) or (col_type == 'polygon'): 
+        # alter the geometry field type
+        alter_type_sql = "ALTER TABLE item ALTER COLUMN geom TYPE geometry(MultiPolygon, " + str(utils.SRID) + ") USING geom:: geometry(MultiPolygon, " + str(utils.SRID) + ")"            
+        utils.dbExecute(cursor, alter_type_sql)
+        
+        msg = "Current geom column type is MultiPolygon, " + str(utils.SRID)
+        print msg
+        logger.debug(msg)
+
 #------------------------------------------------------------------------------        
 def run(args): 
     
@@ -136,30 +155,9 @@ def run(args):
     success_loading = load_sql_file(args)
         
     if success_loading:
-        # check if the ITEM table is empty or weather the geom column typeis multipolygon, then change the type of the geom field
-        # get the union geometry inside the SQL file
-        select_geom_sql = "SELECT site_id as site_id, ST_Multi(ST_Transform( ST_Union( geom ), %s)) AS geom FROM sites_geoms_temp GROUP BY site_id"
-        values, num_geoms = utils.fetchDataFromDB(cursor, select_geom_sql, [utils.SRID,])
-        
+      
         # check if the SITES table is empty, then change the type of the geom field
-        num_items = utils.countElementsTable(cursor, 'item')
-        msg = "Number of elements in item table: %s" %num_items        
-        print msg
-        logger.debug(msg)
-                
-        col_type = utils.typeColumnTable(cursor, 'geom','item')
-        msg = "Current geom column type is %s."%col_type
-        print msg
-        logger.debug(msg)
- 
-        if (num_items == 0) or (col_type == 'polygon'): 
-            # alter the geometry field type
-            alter_type_sql = "ALTER TABLE item ALTER COLUMN geom TYPE geometry(MultiPolygon, " + str(utils.SRID) + ") USING geom:: geometry(MultiPolygon, " + str(utils.SRID) + ")"            
-            utils.dbExecute(cursor, alter_type_sql)
-            
-            msg = "Current geom column type is MultiPolygon, " + str(utils.SRID)
-            print msg
-            logger.debug(msg)
+        update_geom_col_type(cursor)
         
         # find the list of IDs which are in the temporary geometries table, but not in item table   
         no_item_well_temp_sql = "SELECT DISTINCT site_id::integer FROM sites_geoms_temp WHERE (site_id NOT IN (SELECT item_id FROM item))"
