@@ -84,17 +84,20 @@ def update_geometries(list_ids, new):
         print msg
         logger.debug(msg)
         
-        if new:
-            fetch_union_geom_sql = "SELECT site_id AS item_id, ST_Multi(ST_Transform( ST_Union(geom), %s)) AS geom FROM sites_geoms_temp WHERE site_id = %s GROUP BY site_id"                
-            data,num = utils.fetchDataFromDB(cursor, fetch_union_geom_sql, [utils.SRID, sid], [], False)
-        
+        fetch_geom_sql = "SELECT site_id AS item_id, ST_Multi(ST_Transform( ST_Union(geom), %s)) AS geom FROM sites_geoms_temp WHERE site_id = %s GROUP BY site_id"                
+        data,num = utils.fetchDataFromDB(cursor, fetch_geom_sql, [utils.SRID, sid], [], False)
+
         item_id = data[0][0]
         background = False
         geometry = data[0][1]
         
         if new:            
-            insert_union_geom_sql = "INSERT INTO item VALUES (%s,%s,%s)"            
-            utils.dbExecute(cursor, insert_union_geom_sql, [item_id, background, geometry])
+            insert_geom_sql = "INSERT INTO item VALUES (%s,%s,%s)"            
+            utils.dbExecute(cursor, insert_geom_sql, [item_id, background, geometry])
+        else: 
+            update_geom_sql = "UPDATE item SET background=%s,geom=%s WHERE item_id=%s"            
+            utils.dbExecute(cursor, update_geom_sql, [background, geometry, item_id])
+            
         
         number = number + 1  
         
@@ -124,6 +127,24 @@ def update_geom_col_type(cursor):
         print msg
         logger.debug(msg)
 
+def find_lists(cursor):
+       # find the list of IDs which are in the temporary geometries table, but not in item table           
+        no_item_well_temp_sql = "SELECT DISTINCT site_id::integer FROM sites_geoms_temp WHERE (site_id NOT IN (SELECT item_id FROM item))"
+        no_item_well_temp_ids, num_ids = utils.fetchDataFromDB(cursor, no_item_well_temp_sql)
+        
+        msg = "The unique item ids not in item table, but in sites_geoms_temp are %s in number"%num_ids
+        print msg
+        logger.debug(msg)
+
+        # find the list of IDs which are both in the temporary geometries table and the item table   
+        both_in_item_and_temp_sql = "SELECT DISTINCT site_id FROM sites_geoms_temp WHERE (site_id IN (SELECT item_id FROM item))"
+        both_in_item_and_temp_ids, num_both_ids = utils.fetchDataFromDB(cursor, both_in_item_and_temp_sql)
+        
+        msg = "The item ids both in item table and n sites_geoms_temp are %s in number"%num_both_ids
+        print msg
+        logger.debug(msg)
+
+        return  no_item_well_temp_ids, both_in_item_and_temp_ids
 #------------------------------------------------------------------------------        
 def run(args): 
     
@@ -159,25 +180,15 @@ def run(args):
         # check if the SITES table is empty, then change the type of the geom field
         update_geom_col_type(cursor)
         
-        # find the list of IDs which are in the temporary geometries table, but not in item table   
-        no_item_well_temp_sql = "SELECT DISTINCT site_id::integer FROM sites_geoms_temp WHERE (site_id NOT IN (SELECT item_id FROM item))"
-        no_item_well_temp_ids, num_ids = utils.fetchDataFromDB(cursor, no_item_well_temp_sql)
-        
-        msg = "The unique item ids not in item table, but in sites_geoms_temp are %s in number"%num_ids
-        print msg
-        logger.debug(msg)
-
-        # find the list of IDs which are both in the temporary geometries table and the item table   
-        both_in_item_and_temp_sql = "SELECT DISTINCT site_id FROM sites_geoms_temp WHERE (site_id IN (SELECT item_id FROM item))"
-        both_in_item_andl_temp_ids, num_both_ids = utils.fetchDataFromDB(cursor, both_in_item_and_temp_sql)
-        
-        msg = "The item ids both in item table and n sites_geoms_temp are %s in number"%num_both_ids
-        print msg
-        logger.debug(msg)
+        # find the lists of new IDs and list of overlapping IDs 
+        no_item_well_temp_ids,both_in_item_and_temp_ids = find_lists(cursor) 
                 
-        # insert the union of object geometries per site for the sites not in item, but in the sites_geoms_temp table
+        # insert the object geometries per site for the sites not in item, but in the sites_geoms_temp table
         update_geometries(no_item_well_temp_ids, True)
     
+        # update the union of object geometries per site for the sites both in item and sites_geoms_temp table
+        update_geometries(both_in_item_and_temp_ids, False)
+
         # clean the temp table
         clean_temp_table(args)         
         
