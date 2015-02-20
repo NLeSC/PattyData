@@ -16,7 +16,7 @@ connection = None
 cursor = None
 
 # CONSTANTS
-LOG_FILENAME = 'UpdateFootprints.log'
+#LOG_FILENAME = 'UpdateFootprints.log'
 
 def argument_parser():
     """ Define the arguments and return the parser object"""
@@ -153,7 +153,7 @@ def run(args):
     global cursor
     
     # start logging
-    logger = utils.start_logging(filename=LOG_FILENAME, level=utils.DEFAULT_LOG_LEVEL)
+    logger = utils.start_logging(filename=utils.LOG_FILENAME, level=utils.DEFAULT_LOG_LEVEL)
     localtime = utils.getCurrentTimeAsAscii()
     msg = 'UpdateFoorptints scipt logging starts at %s.' %localtime
     print msg
