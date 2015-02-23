@@ -59,6 +59,7 @@ USER_CAMERA = 'SITE_'
 
 # define global LOG variables
 DEFAULT_LOG_LEVEL = 'debug'
+LOG_LEVELS_LIST = ['debug', 'info', 'warning', 'error', 'critical']
 LOG_LEVELS = {'debug': logging.DEBUG,
               'info': logging.INFO,
               'warning': logging.WARNING,
@@ -70,6 +71,9 @@ LOG_FILENAME = '/tmp/patty.log'
 #Ouput Formats
 LAS = 'LAS'
 LAZ = 'LAZ'
+
+POTREE_SERVER_DATA_ROOT = '/home/pattydat/DATA'
+POTREE_DATA_URL_PREFIX = 'http://148.251.106.132:8090'
 
 def getLastModification(absPath, initialLMTime = None):
     """

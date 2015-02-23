@@ -2,9 +2,10 @@
 ################################################################################
 # Description:      Script to gnerate the JSON file for visualizing the site 
 #                   PointClouds in the format outputed by the POTRee converter
-# Author:           Elena Ranguelova, NLeSc, E.Ranguelova@nlesc.nl                                       
+# Author:           Elena Ranguelova, NLeSc, E.Ranguelova@nlesc.nl    
+#                   Oscar Martinez, NLeSC, o.rubi@esciencecenter.nl                                   
 # Creation date:    21.01.2015      
-# Modification date: 09.02.2015
+# Modification date: 23.02.2015
 # Modifications:   
 # Notes:            Based on createjson.py from the Patty FFWD, October 2014
 ################################################################################
@@ -12,24 +13,19 @@ import argparse
 import json
 import utils
 logger = None
-# CONSTANTS
-LOG_FILENAME = 'CreatePOTreeConfig.log'
-
-# Global variables
-jsonData ={}
 
 def argument_parser():
     """ Define the arguments and return the parser object"""
     parser = argparse.ArgumentParser(
-    description="Script to generate JSON file for a Point Cloud (PC) visualization from the (ViaAppia) database")
-    parser.add_argument('-o','--output',help='Output JSON file',type=str, required=True)
-    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name where the PC data are stored [default ' + utils.DEFAULT_DB + ']',type=str , required=False)
+    description="Script to generate a JSON file from the ViaAppiaDB for the ViaAppia POtree web-based visualization")
+    parser.add_argument('-o','--output',help='Output JSON file [Log of operation is stored in [output].log]',type=str, required=True)
+    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB [default ' + utils.DEFAULT_DB + ']',type=str , required=True)
     parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=True)
-    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=True)
-    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=True)
+    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
+    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
     parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
-    parser.add_argument('-l','--location',default='',help='POTree root directory location',type=str, required=False)
-    
+    parser.add_argument('-l','--location',default=utils.DEFAULT_POTREE_DATA_DIR,help='POTree root directory location [default ' + utils.DEFAULT_POTREE_DATA_DIR + ']',type=str, required=True)
+    parser.add_argument('--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
     return parser
     
 def apply_argument_parser(options=None):
@@ -41,29 +37,39 @@ def apply_argument_parser(options=None):
         args = parser.parse_args()    
     return args
 
+def addThumbnail(cursor, itemId, jsonSite):
+    query = 'SELECT A.abs_path, B.thumbnail FROM raw_data_item A, raw_data_item_picture B WHERE A.raw_data_item_id == B.raw_data_item_id AND A.item_id = %s'
+    queryArgs = [itemId,]
+    images, num_images = utils.fetchDataFromDB(cursor, query,  queryArgs)
+    if num_images:
+        imageAbsPath = None
+        # We use the thumbnail if available
+        for (absPath, thumbnail) in images:
+            if thumbnail:
+                imageAbsPath = absPath
+        # If no thumbnail is available we just use the first image
+        if imageAbsPath == None:
+            (absPath, thumbnail) = images[0] 
+            imageAbsPath = absPath
+        jsonSite["thumbnail"] = utils.POTREE_DATA_URL_PREFIX + imageAbsPath.replace(utils.POTREE_SERVER_DATA_ROOT,'')
+
+def addSiteMetaData(cursor, itemId, jsonSite):
+    query = 'SELECT description_site, site_context, site_interpretation FROM tbl1_site WHERE A.raw_data_item_id == B.raw_data_item_id AND A.item_id = %s'
+    queryArgs = [itemId,]
+    images, num_images = utils.fetchDataFromDB(cursor, query,  queryArgs)
     
-def create_fixed_json_fields():
-    global jsonData
-    
-    # type of the JSON file
-    jsonData["type"] = "FeatureCollection"
-    jsonData["crs"] = {} 
-    
-#    # coordinate system
-#    coord_system = {}
-#    coord_system["type"] = "name"
-#    crs_props={}
-#    # crs_props["name"] = "urn:ogc:def:crs:EPSG::32633" - original line
-#    #crs_props["name"] = "urn:ogc:def:crs:EPSG::" - get this from the geometry!
-#    coord_system["properties"]=crs_props 
-#    jsonData["crs"] = coord_system
-    
-    msg = 'Created fixed JSON file parts.'
-    print(msg)
-    logger.debug(msg)
-#    pretty_json = json.dumps(jsonData, indent=4, separators=(',', ': '))
-#    print(pretty_json)
-#    logger.debug(pretty_json)
+    jsonSite["description_site"] = "Pyramid"
+    jsonSite["site_context"] = "Funerary"
+    jsonSite["site_interpretation"] = "Funerary tower"
+    return
+
+
+def addPointCloud(cursor, itemId, jsonSite):
+    return
+def addMeshes(cursor, itemId, jsonSite):
+    return
+def addObjectsMetaData(cursor, itemId, jsonSite):
+    return
 
 def create_features_json(cursor, pc_ids, args):
     global jsonData
@@ -153,23 +159,22 @@ def create_features_json(cursor, pc_ids, args):
     print(pretty_json)
     logger.debug(pretty_json)    
     
-def save2JSON(args):
-    global jsonData
-    
-    with open(args.output, 'w') as outfile:
+def save2JSON(outFileName, jsonData):
+    with open(outFileName, 'w') as outfile:
         pretty_json = json.dumps(jsonData, indent=4, separators=(',', ': '))
         outfile.write(pretty_json)
     msg = 'JSON data written to the output file.'
     print(msg)
     logger.debug(msg)
+    
 #------------------------------------------------------------------------------        
 def run(args):    
     global logger
-    logger = utils.start_logging(filename=LOG_FILENAME, level=utils.DEFAULT_LOG_LEVEL)
+    logger = utils.start_logging(filename=args.output + '.log', level=args.log)
 
     # start logging    
     localtime = utils.getCurrentTimeAsAscii()
-    msg = 'CreatePOTreeConfig scipt logging start at %s'% localtime
+    msg = __file__ + ' script logging start at %s'% localtime
     print msg
     logger.info(msg)
     t0 = utils.getCurrentTime()
@@ -177,21 +182,31 @@ def run(args):
     # connect to DB and get a cursor   
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost)
         
-    # get all sites for which we have converted Point Clouds (PCs)        
-    sql_statement = 'select distinct raw_data_item_id from potree_data_item_pc'        
-    pc_ids, num_pc_ids = utils.fetchDataFromDB(cursor, sql_statement)
+    # get all items         
+    query = 'SELECT item_id, ST_ASGEOJSON(geom) FROM item WHERE NOT background'        
+    sites, num_sites = utils.fetchDataFromDB(cursor, query)
     
-    # generate the generic JSON file parts
-    create_fixed_json_fields()
+    jsonData = []
     
-    # generate the features in JSON format
-    create_features_json(cursor, pc_ids, args)
-    
+    for (itemId, itemGeom) in sites:
+        # Generate the JSON data for this item
+        jsonSite = {}
+        jsonSite["id"] = itemId
+        jsonSite["footprint"] = json.loads(itemGeom)['coordinates']
+        
+        addThumbnail(cursor, itemId, jsonSite)
+        addSiteMetaData(cursor, itemId, jsonSite)
+        addPointCloud(cursor, itemId, jsonSite)
+        addMeshes(cursor, itemId, jsonSite)
+        addObjectsMetaData(cursor, itemId, jsonSite)
+        
+        jsonData.append(jsonSite)
+        
     # close the Db connection
-    utils.closeConnectionDB(connection,cursor)    
+    utils.closeConnectionDB(connection, cursor)    
 
     # save the data into JSON file
-    save2JSON(args)
+    save2JSON(args.output, jsonData)
     
     elapsed_time = utils.getCurrentTime() - t0    
     msg = 'Finished. Total elapsed time: %s s.' %elapsed_time
@@ -200,7 +215,7 @@ def run(args):
 
     # end logging
     localtime = utils.getCurrentTimeAsAscii()  
-    msg = 'CreatePOTreeConfig script logging end at %s'% localtime
+    msg = __file__ + ' script logging end at %s'% localtime
     print(msg)
     logger.info(msg)
     
