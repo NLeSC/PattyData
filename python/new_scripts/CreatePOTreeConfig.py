@@ -9,9 +9,7 @@
 # Modifications:   
 # Notes:            Based on createjson.py from the Patty FFWD, October 2014
 ################################################################################
-import argparse
-import json
-import utils
+import argparse, json, utils, glob, os
 logger = None
 
 def argument_parser():
@@ -19,13 +17,12 @@ def argument_parser():
     parser = argparse.ArgumentParser(
     description="Script to generate a JSON file from the ViaAppiaDB for the ViaAppia POtree web-based visualization")
     parser.add_argument('-o','--output',help='Output JSON file [Log of operation is stored in [output].log]',type=str, required=True)
-    parser.add_argument('-s','--srid',default=utils.SRID, help='SRID used in POtree visualization [default ' + utils.SRID + ']',type=int , required=True)
-    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB [default ' + utils.DEFAULT_DB + ']',type=str , required=True)
-    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=True)
+    parser.add_argument('-s','--srid',default=utils.SRID, help='SRID used in POtree visualization [default ' + str(utils.SRID) + ']',type=int , required=False)
+    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB [default ' + utils.DEFAULT_DB + ']',type=str , required=False)
+    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
     parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
     parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
     parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
-    parser.add_argument('-l','--location',default=utils.DEFAULT_POTREE_DATA_DIR,help='POTree root directory location [default ' + utils.DEFAULT_POTREE_DATA_DIR + ']',type=str, required=True)
     parser.add_argument('--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
     return parser
     
@@ -52,7 +49,7 @@ def addThumbnail(cursor, itemId, jsonSite):
         if imageAbsPath == None:
             (absPath, thumbnail) = site_images[0] 
             imageAbsPath = absPath
-        jsonSite["thumbnail"] = utils.POTREE_DATA_URL_PREFIX + imageAbsPath.replace(utils.POTREE_SERVER_DATA_ROOT,'') + os.listdir(imageAbsPath)[0]
+        jsonSite["thumbnail"] = utils.POTREE_DATA_URL_PREFIX + imageAbsPath.replace(utils.POTREE_SERVER_DATA_ROOT,'') + '/' + os.listdir(imageAbsPath)[0]
     else:
         logger.warning('No image found for item %d' % itemId)
 
@@ -70,17 +67,17 @@ def addSiteMetaData(cursor, itemId, dataSite):
         logger.warning('No meta-data found for item %d' % itemId)
 
 def addPointCloud(cursor, itemId, dataSite, srid):
-    query = 'SELECT C.abs_path, B.minx, B.miny, B.minz, B.maxx, B.maxy, B.maxz FROM raw_data_item A, raw_data_item_pc B, potree_data_item_pc WHERE A.raw_data_item_id = B.raw_data_item_id AND B.raw_data_item_id = C.raw_data_item_id AND A.item_id = %s AND A.srid = %s'
+    query = 'SELECT C.abs_path, B.minx, B.miny, B.minz, B.maxx, B.maxy, B.maxz FROM raw_data_item A, raw_data_item_pc B, potree_data_item_pc C WHERE A.raw_data_item_id = B.raw_data_item_id AND B.raw_data_item_id = C.raw_data_item_id AND A.item_id = %s AND A.srid = %s'
     queryArgs = [itemId,srid]
     site_pcs, num_site_pcs = utils.fetchDataFromDB(cursor, query,  queryArgs)
     if num_site_pcs:
         (pcAbsPath, pcMinx, pcMiny, pcMinz, pcMaxx, pcMaxy, pcMaxz) = site_pcs[0] # We only use first PC
         dataSite["pointcloud_bbox"] = [pcMinx, pcMiny, pcMinz, pcMaxx, pcMaxy, pcMaxz]
-        dataSite["pointcloud"] = utils.POTREE_DATA_URL_PREFIX + absPath.replace(utils.POTREE_SERVER_DATA_ROOT,'') + "/cloud.js"
+        dataSite["pointcloud"] = utils.POTREE_DATA_URL_PREFIX + pcAbsPath.replace(utils.POTREE_SERVER_DATA_ROOT,'') + "/cloud.js"
     else:
         logger.warning('No potree point cloud found for item %d SRID %d' % (itemId, srid))
 
-def getOSGPosition(srid, osgLocationSRID, x, y, z, xs, ys, zs, h, p, r):
+def getOSGPosition(cursor, srid, osgLocationSRID, x, y, z, xs, ys, zs, h, p, r):
     osgPosition = {}
     if srid == osgLocationSRID:
         osgPosition['x'] = x
@@ -139,10 +136,10 @@ WHERE
         for (absPath, mtlAbsPath, current, meshSrid, x, y, z, xs, ys, zs, h, p ,r) in site_meshes:
             if not current or (current and meshData == None):
                 mData = {}
-                mData["data_location"] = utils.POTREE_DATA_URL_PREFIX + absPath.replace(utils.POTREE_SERVER_DATA_ROOT,'') + (os.listdir(absPath + '/*.obj') + os.listdir(absPath + '/*.OBJ'))[0]
+                mData["data_location"] = utils.POTREE_DATA_URL_PREFIX + (glob.glob(absPath + '/*.obj') + glob.glob(absPath + '/*.OBJ'))[0].replace(utils.POTREE_SERVER_DATA_ROOT,'')
                 if mtlAbsPath != None:
-                    mData["data_location"] = utils.POTREE_DATA_URL_PREFIX + mtlAbsPath.replace(utils.POTREE_SERVER_DATA_ROOT,'')
-                mData['osg_position'] = getOSGPosition(srid, meshSrid, x, y, z, xs, ys, zs, h, p, r)
+                    mData["mtl_location"] = utils.POTREE_DATA_URL_PREFIX + mtlAbsPath.replace(utils.POTREE_SERVER_DATA_ROOT,'')
+                mData['osg_position'] = getOSGPosition(cursor, srid, meshSrid, x, y, z, xs, ys, zs, h, p, r)
                 if current:
                     meshData = mData
                 else:
@@ -181,7 +178,7 @@ def addObjectsMetaData(cursor, itemId, jsonSite, srid):
         object_locations, num_object_locations = utils.fetchDataFromDB(cursor, query,  queryArgs)
         if num_object_locations:
             (locationSrid, x, y, z, xs, ys, zs, h, p ,r) = object_locations[0]
-            objectData['osg_position'] = getOSGPosition(srid, locationSrid, x, y, z, xs, ys, zs, h, p, r)
+            objectData['osg_position'] = getOSGPosition(cursor, srid, locationSrid, x, y, z, xs, ys, zs, h, p, r)
             objectsMaterialData= []
             query = "SELECT material_type, material_subtype, material_technique FROM tbl2_object_material  WHERE site_id = %s AND object_id = %s"
             queryArgs = [itemId,object_id]
@@ -221,7 +218,7 @@ def run(args):
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost)
         
     # get all items         
-    query = 'SELECT item_id, ST_ASGEOJSON(geom) FROM item WHERE NOT background'        
+    query = 'SELECT item_id, ST_ASGEOJSON(geom) FROM item WHERE NOT background ORDER BY item_id'
     sites, num_sites = utils.fetchDataFromDB(cursor, query)
     
     data = []
@@ -230,13 +227,14 @@ def run(args):
         # Generate the JSON data for this item
         dataSite = {}
         dataSite["id"] = itemId
-        dataSite["footprint"] = json.loads(itemGeom)['coordinates']
+        if itemGeom != None:
+            dataSite["footprint"] = json.loads(itemGeom)['coordinates']
         
         addThumbnail(cursor, itemId, dataSite)
         addSiteMetaData(cursor, itemId, dataSite)
         addPointCloud(cursor, itemId, dataSite, args.srid)
-        addMeshes(cursor, itemId, dataSite, srid)
-        addObjectsMetaData(cursor, itemId, dataSite, srid)
+        addMeshes(cursor, itemId, dataSite, args.srid)
+        addObjectsMetaData(cursor, itemId, dataSite, args.srid)
         
         data.append(dataSite)
         
