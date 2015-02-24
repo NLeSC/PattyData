@@ -144,13 +144,14 @@ def main(opts):
     # Add all the static objects, i.e. the OSG from the background
     # cursor.execute('SELECT osg_path FROM static_objects')
     utils.dbExecute(cursor, 'SELECT abs_path FROM OSG_DATA_ITEM_PC_BACKGROUND')
+    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT abs_path FROM OSG_DATA_ITEM_PC_BACKGROUND')
     staticObjects = viewer_conf_api.staticObjects()
-    for (osgPath,) in cursor:
+    for (osgPath,) in rows:
         if osgPath.count(opts.osg) == 0:
             logger.error('Mismatch between given OSG ' +
                          'data directory and DB content')
         staticObjects.add_staticObject(viewer_conf_api.staticObject
-                                       (url=os.path.relpath(xmlPath,
+                                       (url=os.path.relpath(glob.glob(osgPath + '/osgb')[0],
                                                             opts.osg)))
 
     # Add hardcoded DOME
