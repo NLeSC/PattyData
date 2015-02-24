@@ -24,9 +24,9 @@ def argument_parser():
     description="Script to update the sites footprints from an SQL file to the DB")
     parser.add_argument('-i','--input',help='Input SQL file',type=str, required=True)
     parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name which should be updated with these footprints ' + utils.DEFAULT_DB + ']',type=str , required=False)
-    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=True)
-    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=True)
-    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=True)
+    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
+    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
+    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
     parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
         
     return parser

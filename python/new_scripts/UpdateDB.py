@@ -181,10 +181,10 @@ def getXMLAbsPath(absPath):
 
 def main(opts):
     # Set logging
-    start_logging(filename=__file__ + '_' + getCurrentTimeAsAscii() + '.log', level=opts.log)
+    start_logging(filename=os.path.basename(__file__) + '.log', level=opts.log)
     # Establish connection with DB
     global cursor
-    connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport) 
+    connection, cursor = connectToDB(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport) 
 
     dataItemTypes = getDataItemTypes(opts.ditypes)
     
@@ -535,27 +535,27 @@ def addPOTDataItem(absPath, itemId, dataItemType):
     if row == None:
         logging.error('Skipping ' + absPath + '. None related RAW data item found in ' + rawAbsPath)
         return
-    rawDataItemId = cursor.fetchone()[0]
+    rawDataItemId = row[0]
     
     #  POTree can have multiple conversion per raw data item
     for sPath in os.listdir(absPath):
         sAbsPath = absPath + '/' + sPath
         modTime = getCurrentTime(getLastModification(sAbsPath))
-        dbExecute(cursor, 'SELECT potree_data_item_id, last_mod FROM POTREE_DATA_ITEM_PC WHERE abs_path = %s', [sAbsPath,])
+        dbExecute(cursor, 'SELECT potree_data_item_pc_id, last_mod FROM POTREE_DATA_ITEM_PC WHERE abs_path = %s', [sAbsPath,])
         row = cursor.fetchone()
         if row == None: #This folder has been added recently
             numLevels = getPOTNumberLevels(sAbsPath)
-            dbExecute(cursor, "INSERT INTO POTREE_DATA_ITEM_PC (potree_data_item_id, raw_data_item_id, abs_path, last_mod, last_check, number_levels) VALUES (DEFAULT,%s,%s,%s,%s,%s)", 
+            dbExecute(cursor, "INSERT INTO POTREE_DATA_ITEM_PC (potree_data_item_pc_id, raw_data_item_id, abs_path, last_mod, last_check, number_levels) VALUES (DEFAULT,%s,%s,%s,%s,%s)", 
                     [rawDataItemId, sAbsPath, modTime, initialTime, numLevels])
         else:
             (potreeDataItemId, lastModDB) = row
             if modTime > lastModDB: #Data has changed
                 logging.warn('POTREE data item in ' + sAbsPath + ' may have been updated and it may not be reflected in the DB.')
-            dbExecute(cursor, 'UPDATE POTREE_DATA_ITEM_PC SET last_check=%s WHERE potree_data_item_id = %s', [initialTime, potreeDataItemId])
+            dbExecute(cursor, 'UPDATE POTREE_DATA_ITEM_PC SET last_check=%s WHERE potree_data_item_pc_id = %s', [initialTime, potreeDataItemId])
 
 def addOSGItemObjects():
     query = 'SELECT item_id,object_number FROM item_object WHERE (item_id,object_number) NOT IN (SELECT item_id,object_number IN osg_item_object)'
-    objects, num_objects = utils.fetchDataFromDB(cursor, query)
+    objects, num_objects = fetchDataFromDB(cursor, query)
     if num_objects:
         for (itemId, objectNumber) in objects:
             srid = None
@@ -563,7 +563,7 @@ def addOSGItemObjects():
             (xs,ys,zs) = (None,None,DEFAULT_ZS)
             query = 'select A.srid, B.minx, B.miny, B.minz, B.maxx, B.maxy, B.maxz FROM raw_data_item A, raw_data_item_pc B where A.raw_data_item_id = B.raw_data_item_id and A.item_id = %s'
             queryArgs = [itemId,]
-            pcs, num_pcs = utils.fetchDataFromDB(cursor, query, queryArgs)
+            pcs, num_pcs = fetchDataFromDB(cursor, query, queryArgs)
             if num_pcs:
                 (srid, minx, miny, minz, maxx, maxy, maxz) = pcs[0]
                 x = minx + ((maxx - minx) / 2.)
@@ -575,7 +575,7 @@ def addOSGItemObjects():
             else:
                 query = 'select ST_SRID(geom), st_x(st_centroid(geom)), st_y(st_centroid(geom)), st_xmax(geom)-st_xmin(geom) as dx, st_ymax(geom)-st_ymin(geom) as dy FROM item WHERE item_id = %s'
                 queryArgs = [itemId,]
-                footprints, num_footprints = utils.fetchDataFromDB(cursor, query, queryArgs)
+                footprints, num_footprints = fetchDataFromDB(cursor, query, queryArgs)
                 if num_footprints:
                     (srid, x, y, xs, ys) = footprints[0]
             

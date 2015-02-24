@@ -12,12 +12,12 @@ def main(opts):
     
     os.system('createdb ' + postgresConnectString(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport, True))
 
-    connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport) 
+    connection, cursor = connectToDB(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport) 
 
     cursor.execute("CREATE EXTENSION POSTGIS")
     connection.commit()
 
-    success_loading = utils.load_sql_file(cursor, opts.sql)
+    success_loading = load_sql_file(cursor, opts.sql)
     
     if success_loading:    
         cursor.execute("select tablename from  pg_tables where schemaname = 'public'")

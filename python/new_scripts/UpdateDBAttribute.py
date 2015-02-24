@@ -16,9 +16,9 @@ def argument_parser():
     description="Merges AccessDB file with ViaAppia DB (it requires to have converted Access file into SQL dump")
     parser.add_argument('-i','--input',help='SQL file with dumped Microsoft Access file',type=str, required=True)
     parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name which should be updated with the attribute data ' + utils.DEFAULT_DB + ']',type=str , required=False)
-    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=True)
-    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=True)
-    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=True)
+    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
+    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
+    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
     parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
     parser.add_argument('--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
     return parser
