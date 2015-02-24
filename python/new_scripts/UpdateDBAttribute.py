@@ -47,19 +47,34 @@ def run(args):
     
     # Establish connection with DB
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport) 
-    
+      
+    # First we drop all tables in attribute
+    logging.info("Dropping all previous atrribute tables")
+    for tablename in ('tbl2_site_relation','tbl2_object_depression','tbl2_object_decoration','tbl2_object_material','tbl1_object','tbl1_site'):
+        cursor.execute('DROP TABLE IF EXISTS ' + tablename + ' CASCADE')
+        connection.commit()
     # First we need to drop the previous constraints in tbl1_site and tbl1_object
-    logging.info("Dropping constraints in tbl1_site and tbl1_object tables")
-    for tablename in ('tbl1_site','tbl1_object'):
-        cursor.execute("select constraint_name from information_schema.table_constraints where table_name=%s", [tablename,])
-        constraintNames = cursor.fetchall()
-        for (constraintName, ) in constraintNames:
-            cursor.execute('ALTER TABLE ' + tablename + ' DROP CONSTRAINT ' + constraintName)
-            connection.commit()
+#    logging.info("Dropping constraints in tbl1_site and tbl1_object tables")
+#    for tablename in ('tbl1_site','tbl1_object'):
+#        cursor.execute("select constraint_name from information_schema.table_constraints where table_name=%s", [tablename,])
+#        constraintNames = cursor.fetchall()
+#        for (constraintName, ) in constraintNames:
+#            cursor.execute('ALTER TABLE ' + tablename + ' DROP CONSTRAINT %s CASCADE', [constraintName,])
+#            connection.commit()
     
     # This script will drop all attribute tables and create them again
     logging.info('Executing SQL file %s' % args.input)
-    utils.load_sql_file(cursor, args.input)
+    #utils.load_sql_file(cursor, args.input)
+    connParams = utils.postgresConnectString(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport, True)
+    logFile = args.input + '.log'
+    command = 'psql ' + connParams + ' -f ' + args.input + ' &> ' + logFile
+    logging.info(command)
+    os.system(command)
+    
+    #Check errors
+    if os.popen('cat ' + logFile + ' | grep ERROR').read().count("ERROR"):
+        logging.error('There was some errors in the data loading. Please see log ' + logFile)
+        return
     
     # Set select permissions to all new tables
     logging.info('Granting select permissions to all tables')
@@ -79,9 +94,9 @@ def run(args):
     
     # All objects in tbl1_object must also be in ITEM_OBJECT
     logging.info('Adding items objects in attribute data that are missing in ITEM_OBJECT table')
-    query = 'SELECT site_id,object_id from tbl1_site WHERE (site_id,object_id) NOT IN (SELECT item_id,object_number FROM item_object)'
+    query = 'SELECT site_id,object_id from tbl1_object WHERE (site_id,object_id) NOT IN (SELECT item_id,object_number FROM item_object)'
     sites_objects, num_sites_objects = utils.fetchDataFromDB(cursor, query)
-    for (siteId, objectId) in sites:
+    for (siteId, objectId) in sites_objects:
         utils.dbExecute(cursor, "INSERT INTO ITEM_OBJECT (item_id, object_number) VALUES (%s,%s)", [siteId, objectId])
                 
     #We add again the constraints that link management and attribute data

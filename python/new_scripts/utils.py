@@ -276,8 +276,11 @@ def load_sql_file(cursor, sqlFile):
     cursor.connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
     
     # execute the SQL statement from the external DBdump of site object geometries
-    try:    
-        cursor.execute(open(sqlFile,"r").read())
+    try:
+        for statement in open(sqlFile,'r').read().split(';'):
+            if statement.strip() != '':
+                print statement
+                cursor.execute(statement)
     except Exception, E:
         err_msg = 'Cannot execute the commands in %s.' % sqlFile
         print(err_msg)

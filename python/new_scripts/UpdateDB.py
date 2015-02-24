@@ -554,7 +554,7 @@ def addPOTDataItem(absPath, itemId, dataItemType):
             dbExecute(cursor, 'UPDATE POTREE_DATA_ITEM_PC SET last_check=%s WHERE potree_data_item_pc_id = %s', [initialTime, potreeDataItemId])
 
 def addOSGItemObjects():
-    query = 'SELECT item_id,object_number FROM item_object WHERE (item_id,object_number) NOT IN (SELECT item_id,object_number IN osg_item_object)'
+    query = 'SELECT item_id,object_number FROM item_object WHERE (item_id,object_number) NOT IN (SELECT item_id,object_number FROM osg_item_object)'
     objects, num_objects = fetchDataFromDB(cursor, query)
     if num_objects:
         for (itemId, objectNumber) in objects:
