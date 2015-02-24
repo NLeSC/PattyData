@@ -99,22 +99,23 @@ def main(opts):
     #                '(SELECT DISTINCT site_id FROM cameras WHERE site_id ' +
     #                'IS NOT null) AND object_id = %s ORDER BY site_id',
     #               [utils.SITE_OBJECT_NUMBER])
-    utils.dbExecute(cursor, 'SELECT DISTINCT OSG_LOCATION.osg_location_id, ' +
-                    'x, y, z, h, p, r FROM OSG_LOCATION INNER JOIN ' +
+    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT DISTINCT OSG_LOCATION.osg_location_id, ' +
+                    'x, y, z, h, p, r, srid FROM OSG_LOCATION INNER JOIN ' +
                     'OSG_DATA_ITEM ON OSG_LOCATION.osg_location_id=' +
-                    'OSG_DATA_ITEM.osg_location_id INNER JOIN ' +
-                    'OSG_ITEM_OBJECT ON OSG_ITEM_OBJECT.osg_location_id=' +
-                    'OSG_LOCATION.osg_location_id WHERE ' +
+                    'OSG_DATA_ITEM.osg_location_id WHERE ' +
                     'OSG_LOCATION.osg_location_id NOT IN (SELECT DISTINCT ' +
                     'osg_location_id FROM OSG_CAMERA WHERE osg_location_id ' +
-                    'IS NOT null) AND object_number = %s ORDER BY ' +
-                    'OSG_LOCATION.osg_location_id',
-                    [utils.ITEM_OBJECT_NUMBER_ITEM, ])
-
-    for (siteId, x, y, z, h, p, r) in cursor:
-        cameras.add_camera(viewer_conf_api.camera
-                           (name=utils.DEFAULT_CAMERA_PREFIX + str(siteId),
-                            x=x, y=y, z=z, h=h, p=p, r=r))
+                    'IS NOT null) ORDER BY ' +
+                    'OSG_LOCATION.osg_location_id')
+    for (siteId, x, y, z, h, p, r, srid) in rows:
+        if all(position is not None for position in [x,y,z]):
+            if (srid is not None):
+                x, y, z  = getOSGPosition(x, y, z, srid)
+            else:
+                x, y, z = getOSGPosition(x, y, z)
+            cameras.add_camera(viewer_conf_api.camera
+                               (name=utils.DEFAULT_CAMERA_PREFIX + str(siteId),
+                                x=x, y=y, z=z, h=h, p=p, r=r))
     rootObject.set_cameras(cameras)
     # Add the XML content of the preferences
     # cursor.execute('select xml_content from preferences')
