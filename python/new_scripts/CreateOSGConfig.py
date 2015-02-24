@@ -59,6 +59,7 @@ def main(opts):
         raise IOError('The output file must end with .conf.xml')
 
     # Create python postgres connection
+    global cursor
     connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser,
                                            opts.dbpass, opts.dbhost,
                                            opts.dbport)
@@ -143,7 +144,6 @@ def main(opts):
     rootObject.set_attributes(attributes)
     # Add all the static objects, i.e. the OSG from the background
     # cursor.execute('SELECT osg_path FROM static_objects')
-    utils.dbExecute(cursor, 'SELECT abs_path FROM OSG_DATA_ITEM_PC_BACKGROUND')
     rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT abs_path FROM OSG_DATA_ITEM_PC_BACKGROUND')
     staticObjects = viewer_conf_api.staticObjects()
     for (osgPath,) in rows:
@@ -164,9 +164,6 @@ def main(opts):
     activeObjects = viewer_conf_api.activeObjects()
     # First we add points, meshes and pcitures which are related to
     # the active_objects_sites
-#    layersData = [('points', 'sites_pc', 'pc'),
-#                  ('photos', 'sites_pictures', 'pic'),
-#                  ('meshes', 'sites_meshes', 'mesh')]
     layersData = [('points', 'OSG_DATA_ITEM_PC_SITE', 'pc'),
                   ('photos', 'OSG_DATA_ITEM_PICTURE', 'pic'),
                   ('meshes', 'OSG_DATA_ITEM_MESH', 'mesh')]
@@ -180,15 +177,19 @@ def main(opts):
         rows, numitems = utils.fetchDataFromDB(
             cursor, 'SELECT OSG_DATA_ITEM.osg_location_id, ' +
             'osg_data_item_id, abs_path, x, y, z, xs, ys, zs, h, p, r, ' +
-            'OSG_LOCATION.cast_shadow FROM ' +
+            'OSG_LOCATION.cast_shadow, srid FROM ' +
             'OSG_DATA_ITEM INNER JOIN ' +
             'OSG_LOCATION ON OSG_DATA_ITEM.osg_location_id=' +
             'OSG_LOCATION.osg_location_id WHERE osg_data_item_id ' +
             'IN (SELECT osg_data_item_id FROM ' +
             tableName + ') ORDER BY osg_location_id')
-
         for (siteId, activeObjectId, osgPath, x, y, z, xs, ys, zs, h, p, r,
-             castShadow) in rows:
+             castShadow, srid) in rows:
+            if inType != 'pic': # pics don't have position defined in DB
+                if (srid is not None):
+                    x, y, z  = getOSGPosition(x, y, z, srid)
+                else:
+                    x, y, z = getOSGPosition(x, y, z)
             fname = os.path.basename(os.path.dirname(osgPath))
             uname = os.path.relpath(osgPath, opts.osg)
             activeObject = viewer_conf_api.activeObject(prototype=uname,
@@ -211,15 +212,18 @@ def main(opts):
             rows, numitems = utils.fetchDataFromDB(
                 cursor, 'SELECT OSG_DATA_ITEM.osg_location_id, ' +
                 'osg_data_item_id, abs_path, ' +
-                'x, y, z, xs, ys, zs, h, p, r, OSG_LOCATION.cast_shadow FROM' +
+                'x, y, z, xs, ys, zs, h, p, r, OSG_LOCATION.cast_shadow, srid FROM' +
                 ' OSG_DATA_ITEM INNER JOIN ' +
                 'OSG_LOCATION ON OSG_DATA_ITEM.osg_location_id=' +
                 'OSG_LOCATION.osg_location_id WHERE osg_data_item_id ' +
                 'IN (SELECT osg_data_item_id FROM ' +
                 tableName + ') ORDER BY osg_location_id')
-
             for (siteId, objectNumber, osgPath, x, y, z, xs, ys, zs, h, p, r,
-                 castShadow) in rows:
+                 castShadow, srid) in rows:
+                if (srid is not None):
+                    x, y, z  = getOSGPosition(x, y, z, srid)
+                else:
+                    x, y, z = getOSGPosition(x, y, z)                
                 uname = os.path.relpath(osgPath, opts.osg)
                 proto = "Bounding Box"
                 activeObject = viewer_conf_api.activeObject(prototype=proto,
@@ -261,6 +265,28 @@ def main(opts):
     # Create the XML
     rootObject.export(open(opts.output, 'w'), 0)
 
+def getOSGPosition(x, y, z, ItemSRID=None):
+    if (ItemSRID is not None):
+        backgroundOffsets, num_backgrounds = utils.fetchDataFromDB(
+            cursor, 'SELECT offset_x, offset_y, offset_z, srid FROM ' +
+            'OSG_DATA_ITEM_PC_BACKGROUND INNER JOIN RAW_DATA_ITEM ON ' +
+            'OSG_DATA_ITEM_PC_BACKGROUND.raw_data_item_id=' +
+            'RAW_DATA_ITEM.raw_data_item_id')
+        background = [BACK for BACK in backgroundOffsets if BACK[3] == ItemSRID]
+        if len(background) == 0:
+            logger.warning('No background with the same SRID %s is found' % (ItemSRID))
+        if len(background) > 1:
+            logger.warning('Multiple backgrounds with the same SRID %s found' % (ItemSRID))
+        else:
+            # found the associated background in the database
+            offset_x, offset_y, offset_z, srid = background[0]
+    else:
+        offset_x, offset_y, offset_z = 0, 0, 0
+    # convert item position to relative to associated background
+    x_out = x - offset_x
+    y_out = y - offset_y
+    z_out = z - offset_z
+    return x_out, y_out, z_out
 
 if __name__ == "__main__":
     # define argument menu
