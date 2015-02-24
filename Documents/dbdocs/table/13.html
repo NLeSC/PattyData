@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>tbl2_object_depression</title>
+		<title>RAW_DATA_ITEM</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="tbl2_object_depression";
+	parent.document.title="RAW_DATA_ITEM";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   tbl2_object_depression</h2>
+		<h2>Table   RAW_DATA_ITEM</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>tbl2_object_depression<br><br></dd>
+		<dd>RAW_DATA_ITEM<br><br></dd>
 </dl>
 
 <dl>
@@ -103,44 +103,35 @@ function asd() {
 	<tr>
 	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#231">id</a>&nbsp;</td>
-	<td>id&nbsp;</td>
-	<td>int&nbsp;</td>
+	<td><a href="#210">raw_data_item_id</a>&nbsp;</td>
+	<td>raw_data_item_id&nbsp;</td>
+	<td>serial&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#199">site_id</a>&nbsp;</td>
-	<td>site_id&nbsp;</td>
+	<td><a href="#149">item_id</a>&nbsp;</td>
+	<td>item_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#200">object_id</a>&nbsp;</td>
-	<td>object_id&nbsp;</td>
-	<td>int&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#232">depression_type</a>&nbsp;</td>
-	<td>depression_type&nbsp;</td>
-	<td>varchar(255)&nbsp;</td>
+	<td><a href="#211">abs_path</a>&nbsp;</td>
+	<td>abs_path&nbsp;</td>
+	<td>text&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#233">amount</a>&nbsp;</td>
-	<td>amount&nbsp;</td>
+	<td><a href="#212">srid</a>&nbsp;</td>
+	<td>srid&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -148,18 +139,18 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#234">measurements</a>&nbsp;</td>
-	<td>measurements&nbsp;</td>
-	<td>varchar(255)&nbsp;</td>
+	<td><a href="#213">last_mod</a>&nbsp;</td>
+	<td>last_mod&nbsp;</td>
+	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#235">date_entry</a>&nbsp;</td>
-	<td>date_entry&nbsp;</td>
-	<td>timestamp&nbsp;</td>
+	<td><a href="#214">last_check</a>&nbsp;</td>
+	<td>last_check&nbsp;</td>
+	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
 </tr>
@@ -186,21 +177,12 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#199">site_id&nbsp;</a></td>
-	<td><a href="../table/7.html">tbl1_object&nbsp;</a></td>
-	<td><a href="../table/7.html#167">site_id&nbsp;</a></td>
+	<td><a href="#149">item_id&nbsp;</a></td>
+	<td><a href="../table/0.html">ITEM&nbsp;</a></td>
+	<td><a href="../table/0.html#143">item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">0..1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#200">object_id&nbsp;</a></td>
-	<td><a href="../table/7.html">tbl1_object&nbsp;</a></td>
-	<td><a href="../table/7.html#176">object_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">0..1&nbsp;</td>
+	<td align="center">1&nbsp;</td>
 	<td align="center">1..n&nbsp;</td>
 </tr>
 
@@ -224,7 +206,34 @@ function asd() {
 		<th width="12%">Cardinality of parent</th>
 		<th width="12%">Cardinality of child</th>
 	</tr>
-	
+	<tr>
+	<td><a href="#210">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/16.html">RAW_DATA_ITEM_PICTURE&nbsp;</a></td>
+	<td><a href="../table/16.html#182">raw_data_item_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#210">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/14.html">RAW_DATA_ITEM_MESH&nbsp;</a></td>
+	<td><a href="../table/14.html#170">raw_data_item_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#210">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/15.html">RAW_DATA_ITEM_PC&nbsp;</a></td>
+	<td><a href="../table/15.html#179">raw_data_item_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+</tr>
+
 </table>
 
 <p>
@@ -279,11 +288,32 @@ function asd() {
 	</tr>
 </table>
 
-<a name="231"></a>
-<h3><img src="../image/icons/pkey.gif">  id</h3>
+<a name="210"></a>
+<h3><img src="../image/icons/pkey.gif">  raw_data_item_id</h3>
 
 <dl>
-	<dd>id
+	<dd>raw_data_item_id
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>serial<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="149"></a>
+<h3> <img src="../image/icons/foreign_key.gif"> item_id</h3>
+
+<dl>
+	<dd>item_id
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -300,11 +330,32 @@ function asd() {
 <p>
 
 <hr>
-<a name="199"></a>
-<h3> <img src="../image/icons/foreign_key.gif"> site_id</h3>
+<a name="211"></a>
+<h3>  abs_path</h3>
 
 <dl>
-	<dd>site_id
+	<dd>abs_path
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>text<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="212"></a>
+<h3>  srid</h3>
+
+<dl>
+	<dd>srid
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -321,11 +372,11 @@ function asd() {
 <p>
 
 <hr>
-<a name="200"></a>
-<h3> <img src="../image/icons/foreign_key.gif"> object_id</h3>
+<a name="213"></a>
+<h3>  last_mod</h3>
 
 <dl>
-	<dd>object_id
+	<dd>last_mod
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -342,32 +393,11 @@ function asd() {
 <p>
 
 <hr>
-<a name="232"></a>
-<h3>  depression_type</h3>
+<a name="214"></a>
+<h3>  last_check</h3>
 
 <dl>
-	<dd>depression_type
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>varchar(255)<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="233"></a>
-<h3>  amount</h3>
-
-<dl>
-	<dd>amount
+	<dd>last_check
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -375,48 +405,6 @@ function asd() {
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>FALSE<br></dt>
 		<dt><b>Type : </b>int<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="234"></a>
-<h3>  measurements</h3>
-
-<dl>
-	<dd>measurements
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>varchar(255)<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="235"></a>
-<h3>  date_entry</h3>
-
-<dl>
-	<dd>date_entry
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>timestamp<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>

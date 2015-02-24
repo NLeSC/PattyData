@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>POTREE_DATA_ITEM_PC</title>
+		<title>RAW_DATA_ITEM_PC</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="POTREE_DATA_ITEM_PC";
+	parent.document.title="RAW_DATA_ITEM_PC";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   POTREE_DATA_ITEM_PC</h2>
+		<h2>Table   RAW_DATA_ITEM_PC</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>POTREE_DATA_ITEM_PC<br><br></dd>
+		<dd>RAW_DATA_ITEM_PC<br><br></dd>
 </dl>
 
 <dl>
@@ -102,17 +102,8 @@ function asd() {
 	<tr>
 	<tr>
 	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#242">potree_data_item_pc_id</a>&nbsp;</td>
-	<td>potree_data_item_pc_id&nbsp;</td>
-	<td>serial&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
 	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#243">raw_data_item_id</a>&nbsp;</td>
+	<td><a href="#179">raw_data_item_id</a>&nbsp;</td>
 	<td>raw_data_item_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -121,38 +112,83 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#244">asb_path</a>&nbsp;</td>
-	<td>asb_path&nbsp;</td>
-	<td>text&nbsp;</td>
+	<td><a href="#218">number_points</a>&nbsp;</td>
+	<td>number_points&nbsp;</td>
+	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#245">last_mod</a>&nbsp;</td>
-	<td>last_mod&nbsp;</td>
-	<td>int&nbsp;</td>
+	<td><a href="#219">extension</a>&nbsp;</td>
+	<td>extension&nbsp;</td>
+	<td>varchar(3)&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#246">last_check</a>&nbsp;</td>
-	<td>last_check&nbsp;</td>
-	<td>int&nbsp;</td>
+	<td><a href="#220">minx</a>&nbsp;</td>
+	<td>minx&nbsp;</td>
+	<td>double precision&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#247">number_levels</a>&nbsp;</td>
-	<td>number_levels&nbsp;</td>
-	<td>int&nbsp;</td>
+	<td><a href="#221">miny</a>&nbsp;</td>
+	<td>miny&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
+	<td><a href="#222">minz</a>&nbsp;</td>
+	<td>minz&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#223">maxx</a>&nbsp;</td>
+	<td>maxx&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#224">maxy</a>&nbsp;</td>
+	<td>maxy&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#225">maxz</a>&nbsp;</td>
+	<td>maxz&nbsp;</td>
+	<td>double precision&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#226">color_8bit</a>&nbsp;</td>
+	<td>color_8bit&nbsp;</td>
+	<td>boolean&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 
 	</tr>
@@ -177,13 +213,13 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#243">raw_data_item_id&nbsp;</a></td>
-	<td><a href="../table/18.html">RAW_DATA_ITEM_PC&nbsp;</a></td>
-	<td><a href="../table/18.html#241">raw_data_item_id&nbsp;</a></td>
+	<td><a href="#179">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/13.html">RAW_DATA_ITEM&nbsp;</a></td>
+	<td><a href="../table/13.html#210">raw_data_item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
+	<td align="center">1&nbsp;</td>
 </tr>
 
 </table>
@@ -206,7 +242,34 @@ function asd() {
 		<th width="12%">Cardinality of parent</th>
 		<th width="12%">Cardinality of child</th>
 	</tr>
-	
+	<tr>
+	<td><a href="#179">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/12.html">POTREE_DATA_ITEM_PC&nbsp;</a></td>
+	<td><a href="../table/12.html#205">raw_data_item_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#179">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/6.html">OSG_DATA_ITEM_PC_SITE&nbsp;</a></td>
+	<td><a href="../table/6.html#180">raw_data_item_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#179">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/5.html">OSG_DATA_ITEM_PC_BACKGROUND&nbsp;</a></td>
+	<td><a href="../table/5.html#172">raw_data_item_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+</tr>
+
 </table>
 
 <p>
@@ -261,29 +324,8 @@ function asd() {
 	</tr>
 </table>
 
-<a name="242"></a>
-<h3><img src="../image/icons/pkey.gif">  potree_data_item_pc_id</h3>
-
-<dl>
-	<dd>potree_data_item_pc_id
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>serial<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="243"></a>
-<h3> <img src="../image/icons/foreign_key.gif"> raw_data_item_id</h3>
+<a name="179"></a>
+<h3><img src="../image/icons/pkey.gif"> <img src="../image/icons/foreign_key.gif"> raw_data_item_id</h3>
 
 <dl>
 	<dd>raw_data_item_id
@@ -303,38 +345,17 @@ function asd() {
 <p>
 
 <hr>
-<a name="244"></a>
-<h3>  asb_path</h3>
+<a name="218"></a>
+<h3>  number_points</h3>
 
 <dl>
-	<dd>asb_path
+	<dd>number_points
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>text<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="245"></a>
-<h3>  last_mod</h3>
-
-<dl>
-	<dd>last_mod
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
 		<dt><b>Type : </b>int<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
@@ -345,18 +366,18 @@ function asd() {
 <p>
 
 <hr>
-<a name="246"></a>
-<h3>  last_check</h3>
+<a name="219"></a>
+<h3>  extension</h3>
 
 <dl>
-	<dd>last_check
+	<dd>extension
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>int<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>varchar(3)<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>
@@ -366,18 +387,144 @@ function asd() {
 <p>
 
 <hr>
-<a name="247"></a>
-<h3>  number_levels</h3>
+<a name="220"></a>
+<h3>  minx</h3>
 
 <dl>
-	<dd>number_levels
+	<dd>minx
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>int<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="221"></a>
+<h3>  miny</h3>
+
+<dl>
+	<dd>miny
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="222"></a>
+<h3>  minz</h3>
+
+<dl>
+	<dd>minz
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="223"></a>
+<h3>  maxx</h3>
+
+<dl>
+	<dd>maxx
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="224"></a>
+<h3>  maxy</h3>
+
+<dl>
+	<dd>maxy
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="225"></a>
+<h3>  maxz</h3>
+
+<dl>
+	<dd>maxz
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>double precision<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="226"></a>
+<h3>  color_8bit</h3>
+
+<dl>
+	<dd>color_8bit
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>boolean<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>

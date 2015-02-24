@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>ITEM</title>
+		<title>OSG_ITEM_CAMERA</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="ITEM";
+	parent.document.title="OSG_ITEM_CAMERA";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   ITEM</h2>
+		<h2>Table   OSG_ITEM_CAMERA</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>ITEM<br><br></dd>
+		<dd>OSG_ITEM_CAMERA<br><br></dd>
 </dl>
 
 <dl>
@@ -101,9 +101,9 @@ function asd() {
 	</tr>
 	<tr>
 	<tr>
-	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#158">item_id</a>&nbsp;</td>
+	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
+	<td><a href="#148">item_id</a>&nbsp;</td>
 	<td>item_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -111,21 +111,12 @@ function asd() {
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#203">background</a>&nbsp;</td>
-	<td>background&nbsp;</td>
-	<td>boolean&nbsp;</td>
+	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
+	<td><a href="#158">osg_camera_name</a>&nbsp;</td>
+	<td>osg_camera_name&nbsp;</td>
+	<td>text&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#204">geom</a>&nbsp;</td>
-	<td>geom&nbsp;</td>
-	<td>polygon&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
 </tr>
 
 	</tr>
@@ -149,7 +140,25 @@ function asd() {
 		<th width="12%">Cardinality of parent</th>
 		<th width="12%">Cardinality of child</th>
 	</tr>
-	
+	<tr>
+	<td><a href="#148">item_id&nbsp;</a></td>
+	<td><a href="../table/0.html">ITEM&nbsp;</a></td>
+	<td><a href="../table/0.html#143">item_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#158">osg_camera_name&nbsp;</a></td>
+	<td><a href="../table/2.html">OSG_CAMERA&nbsp;</a></td>
+	<td><a href="../table/2.html#155">osg_camera_name&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+
 </table>
 
 <p>
@@ -170,43 +179,7 @@ function asd() {
 		<th width="12%">Cardinality of parent</th>
 		<th width="12%">Cardinality of child</th>
 	</tr>
-	<tr>
-	<td><a href="#158">item_id&nbsp;</a></td>
-	<td><a href="../table/4.html">tbl1_site&nbsp;</a></td>
-	<td><a href="../table/4.html#148">site_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">0..1&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#158">item_id&nbsp;</a></td>
-	<td><a href="../table/17.html">ITEM_OBJECT&nbsp;</a></td>
-	<td><a href="../table/17.html#168">item_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#158">item_id&nbsp;</a></td>
-	<td><a href="../table/3.html">OSG_ITEM_CAMERA&nbsp;</a></td>
-	<td><a href="../table/3.html#157">item_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#158">item_id&nbsp;</a></td>
-	<td><a href="../table/14.html">RAW_DATA_ITEM&nbsp;</a></td>
-	<td><a href="../table/14.html#205">item_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
-</tr>
-
+	
 </table>
 
 <p>
@@ -261,8 +234,8 @@ function asd() {
 	</tr>
 </table>
 
-<a name="158"></a>
-<h3><img src="../image/icons/pkey.gif">  item_id</h3>
+<a name="148"></a>
+<h3> <img src="../image/icons/foreign_key.gif"> item_id</h3>
 
 <dl>
 	<dd>item_id
@@ -282,39 +255,18 @@ function asd() {
 <p>
 
 <hr>
-<a name="203"></a>
-<h3>  background</h3>
+<a name="158"></a>
+<h3> <img src="../image/icons/foreign_key.gif"> osg_camera_name</h3>
 
 <dl>
-	<dd>background
+	<dd>osg_camera_name
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>boolean<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="204"></a>
-<h3>  geom</h3>
-
-<dl>
-	<dd>geom
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>polygon<br></dt>
+		<dt><b>Type : </b>text<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>
