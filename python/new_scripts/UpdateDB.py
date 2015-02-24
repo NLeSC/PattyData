@@ -23,7 +23,6 @@ DATA_ITEM_TYPES_CHARS = 'pmi'
 initialTime = getCurrentTime()
 #Declare variable for global cursor to DB
 cursor = None
-dataAbsPath = None
 
 def getDataItemTypes(ditypes):
     dataItemtypes = []
@@ -182,13 +181,11 @@ def getXMLAbsPath(absPath):
 
 def main(opts):
     # Set logging
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', datefmt="%Y/%m/%d/%H:%M:%S", level=getattr(logging, opts.log.upper()))
+    start_logging(filename=__file__ + '_' + getCurrentTimeAsAscii() + '.log', level=opts.log)
     # Establish connection with DB
     global cursor
-    global dataAbsPath
-    connection = psycopg2.connect(postgresConnectString(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport, False))
-    cursor = connection.cursor()
-    
+    connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport) 
+
     dataItemTypes = getDataItemTypes(opts.ditypes)
     
     # The data path
@@ -220,6 +217,7 @@ def main(opts):
         cleanRaw(dataItemTypes)
 
     if 'o' in opts.types:
+        addOSGItemObjects() #Add OSG items for all item_objects
         os.system('touch ' + osgDataAbsPath + '/LAST_MOD')
 
     cursor.close()
@@ -391,6 +389,7 @@ def addRawDataItem(absPath, itemId, dataItemType):
         row = cursor.fetchone()
         if row == None:
              dbExecute(cursor, "INSERT INTO ITEM (item_id, background) VALUES (%s,%s)", [itemId, (itemId < 0)])
+             dbExecute(cursor, "INSERT INTO ITEM_OBJECT (item_id, object_number) VALUES (%s,%s)", [itemId, ITEM_OBJECT_NUMBER_ITEM])
         dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM (raw_data_item_id, item_id, abs_path, last_mod, last_check) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING raw_data_item_id", 
                         [itemId, absPath, modTime, initialTime])
         rawDataItemId = cursor.fetchone()[0]
@@ -553,6 +552,38 @@ def addPOTDataItem(absPath, itemId, dataItemType):
             if modTime > lastModDB: #Data has changed
                 logging.warn('POTREE data item in ' + sAbsPath + ' may have been updated and it may not be reflected in the DB.')
             dbExecute(cursor, 'UPDATE POTREE_DATA_ITEM_PC SET last_check=%s WHERE potree_data_item_id = %s', [initialTime, potreeDataItemId])
+
+def addOSGItemObjects():
+    query = 'SELECT item_id,object_number FROM item_object WHERE (item_id,object_number) NOT IN (SELECT item_id,object_number IN osg_item_object)'
+    objects, num_objects = utils.fetchDataFromDB(cursor, query)
+    if num_objects:
+        for (itemId, objectNumber) in objects:
+            srid = None
+            (x,y,z) = (0,0,DEFAULT_Z)
+            (xs,ys,zs) = (None,None,DEFAULT_ZS)
+            query = 'select A.srid, B.minx, B.miny, B.minz, B.maxx, B.maxy, B.maxz FROM raw_data_item A, raw_data_item_pc B where A.raw_data_item_id = B.raw_data_item_id and A.item_id = %s'
+            queryArgs = [itemId,]
+            pcs, num_pcs = utils.fetchDataFromDB(cursor, query, queryArgs)
+            if num_pcs:
+                (srid, minx, miny, minz, maxx, maxy, maxz) = pcs[0]
+                x = minx + ((maxx - minx) / 2.)
+                xs = maxx-minx
+                y = miny + ((maxy - miny) / 2.)
+                ys = maxy-miny
+                z = minz + ((maxz - minz) / 2.)
+                zs = maxz-minz
+            else:
+                query = 'select ST_SRID(geom), st_x(st_centroid(geom)), st_y(st_centroid(geom)), st_xmax(geom)-st_xmin(geom) as dx, st_ymax(geom)-st_ymin(geom) as dy FROM item WHERE item_id = %s'
+                queryArgs = [itemId,]
+                footprints, num_footprints = utils.fetchDataFromDB(cursor, query, queryArgs)
+                if num_footprints:
+                    (srid, x, y, xs, ys) = footprints[0]
+            
+            dbExecute(cursor, "INSERT INTO OSG_LOCATION (osg_location_id, srid, x, y, z, xs, ys, zs) VALUES (DEFAULT,%s,%s,%s,%s,%s,%s,%s) RETURNING osg_location_id", 
+                    [srid, x, y, z, xs, ys, zs])
+            osgLocationId = cursor.fetchone()[0]
+            dbExecute(cursor, "INSERT INTO osg_item_object (item_id,object_number,osg_location_id) VALUES (%s,%s,%s)", 
+                    [itemId, objectNumber, osgLocationId])
 
 if __name__ == "__main__":
     usage = 'Usage: %prog [options]'
