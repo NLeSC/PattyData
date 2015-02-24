@@ -99,22 +99,23 @@ def main(opts):
     #                '(SELECT DISTINCT site_id FROM cameras WHERE site_id ' +
     #                'IS NOT null) AND object_id = %s ORDER BY site_id',
     #               [utils.SITE_OBJECT_NUMBER])
-    utils.dbExecute(cursor, 'SELECT DISTINCT OSG_LOCATION.osg_location_id, ' +
-                    'x, y, z, h, p, r FROM OSG_LOCATION INNER JOIN ' +
+    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT DISTINCT OSG_LOCATION.osg_location_id, ' +
+                    'x, y, z, h, p, r, srid FROM OSG_LOCATION INNER JOIN ' +
                     'OSG_DATA_ITEM ON OSG_LOCATION.osg_location_id=' +
-                    'OSG_DATA_ITEM.osg_location_id INNER JOIN ' +
-                    'OSG_ITEM_OBJECT ON OSG_ITEM_OBJECT.osg_location_id=' +
-                    'OSG_LOCATION.osg_location_id WHERE ' +
+                    'OSG_DATA_ITEM.osg_location_id WHERE ' +
                     'OSG_LOCATION.osg_location_id NOT IN (SELECT DISTINCT ' +
                     'osg_location_id FROM OSG_CAMERA WHERE osg_location_id ' +
-                    'IS NOT null) AND object_number = %s ORDER BY ' +
-                    'OSG_LOCATION.osg_location_id',
-                    [utils.ITEM_OBJECT_NUMBER_ITEM, ])
-
-    for (siteId, x, y, z, h, p, r) in cursor:
-        cameras.add_camera(viewer_conf_api.camera
-                           (name=utils.DEFAULT_CAMERA_PREFIX + str(siteId),
-                            x=x, y=y, z=z, h=h, p=p, r=r))
+                    'IS NOT null) ORDER BY ' +
+                    'OSG_LOCATION.osg_location_id')
+    for (siteId, x, y, z, h, p, r, srid) in rows:
+        if all(position is not None for position in [x,y,z]):
+            if (srid is not None):
+                x, y, z  = getOSGPosition(x, y, z, srid)
+            else:
+                x, y, z = getOSGPosition(x, y, z)
+            cameras.add_camera(viewer_conf_api.camera
+                               (name=utils.DEFAULT_CAMERA_PREFIX + str(siteId),
+                                x=x, y=y, z=z, h=h, p=p, r=r))
     rootObject.set_cameras(cameras)
     # Add the XML content of the preferences
     # cursor.execute('select xml_content from preferences')
@@ -207,33 +208,28 @@ def main(opts):
     #              'h, p, r, cast_shadow FROM active_objects_sites_objects, ' +
     #              'boundings WHERE active_objects_sites_objects.bounding_id' +
     #              ' = boundings.bounding_id ORDER BY site_id')
-    for (layerName, tableName, inType) in layersData:
-        if inType != 'pic':
-            rows, numitems = utils.fetchDataFromDB(
-                cursor, 'SELECT OSG_DATA_ITEM.osg_location_id, ' +
-                'osg_data_item_id, abs_path, ' +
-                'x, y, z, xs, ys, zs, h, p, r, OSG_LOCATION.cast_shadow, srid FROM' +
-                ' OSG_DATA_ITEM INNER JOIN ' +
-                'OSG_LOCATION ON OSG_DATA_ITEM.osg_location_id=' +
-                'OSG_LOCATION.osg_location_id WHERE osg_data_item_id ' +
-                'IN (SELECT osg_data_item_id FROM ' +
-                tableName + ') ORDER BY osg_location_id')
-            for (siteId, objectNumber, osgPath, x, y, z, xs, ys, zs, h, p, r,
-                 castShadow, srid) in rows:
-                if (srid is not None):
-                    x, y, z  = getOSGPosition(x, y, z, srid)
-                else:
-                    x, y, z = getOSGPosition(x, y, z)                
-                uname = os.path.relpath(osgPath, opts.osg)
-                proto = "Bounding Box"
-                activeObject = viewer_conf_api.activeObject(prototype=proto,
-                                                            uniqueName=uname)
-                setting = viewer_conf_api.setting(
-                    x=x, y=y, z=z, xs=xs, ys=ys, zs=zs, h=h, p=p, r=r,
-                    castShadow=(1 if castShadow else 0))
-                activeObject.set_setting(setting)
-                layer.add_activeObject(activeObject)
-            activeObjects.add_layer(layer)
+    rows, numitems = utils.fetchDataFromDB(
+        cursor, 'SELECT OSG_ITEM_OBJECT.osg_location_id, item_id, ' +
+        'object_number, x, y, z, xs, ys, zs, h, p, r, ' +
+        'OSG_LOCATION.cast_shadow, srid FROM OSG_ITEM_OBJECT INNER JOIN ' +
+        'OSG_LOCATION ON OSG_ITEM_OBJECT.osg_location_id=' +
+        'OSG_LOCATION.osg_location_id ORDER BY osg_location_id')
+    for (siteId, itemId, objectNumber, x, y, z, xs, ys, zs, h, p, r,
+         castShadow, srid) in rows:
+        if (srid is not None):
+            x, y, z  = getOSGPosition(x, y, z, srid)
+        else:
+            x, y, z = getOSGPosition(x, y, z)                
+        uname = 'OBJECT_' + itemId + '_' + objectNumber
+        proto = "Bounding Box"
+        activeObject = viewer_conf_api.activeObject(prototype=proto,
+                                                    uniqueName=uname)
+        setting = viewer_conf_api.setting(
+            x=x, y=y, z=z, xs=xs, ys=ys, zs=zs, h=h, p=p, r=r,
+        castShadow=(1 if castShadow else 0))
+        activeObject.set_setting(setting)
+        layer.add_activeObject(activeObject)
+    activeObjects.add_layer(layer)
 
     # Add the labels
     layer = viewer_conf_api.layer(name='labels')
