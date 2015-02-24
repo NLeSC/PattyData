@@ -94,6 +94,8 @@ def update_geometries(list_ids, new):
         if new:            
             insert_geom_sql = "INSERT INTO item VALUES (%s,%s,%s)"            
             utils.dbExecute(cursor, insert_geom_sql, [item_id, background, geometry])
+            # We also insert for the new item an entry in item_object
+            utils.dbExecute(cursor, "INSERT INTO ITEM_OBJECT (item_id, object_number) VALUES (%s,%s)", [item_id, utils.ITEM_OBJECT_NUMBER_ITEM])
         else: 
             update_geom_sql = "UPDATE item SET background=%s,geom=%s WHERE item_id=%s"            
             utils.dbExecute(cursor, update_geom_sql, [background, geometry, item_id])
