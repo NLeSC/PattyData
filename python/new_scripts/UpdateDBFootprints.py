@@ -30,16 +30,6 @@ def argument_parser():
     parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
         
     return parser
-    
-def apply_argument_parser(options=None):
-    """ Apply the argument parser. """
-    parser = argument_parser()
-    if options is not None:
-        args = parser.parse_args(options)
-    else:
-        args = parser.parse_args() 
-            
-    return args
 
 def clean_temp_table(args):
     
@@ -49,29 +39,6 @@ def clean_temp_table(args):
     msg = 'Removed table sites_geoms_temp (if existed).'
     print msg
     logger.info(msg)
-    
-def load_sql_file(args):
-    success = False
-    
-    # set the level temporarily to autocommit
-    connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-    
-    # execute the SQL statement from the external DBdump of site object geometries
-    try:    
-        cursor.execute(open(args.input,"r").read())
-    except Exception, E:
-        err_msg = 'Cannot execute the commands in %s.'%args.input
-        print(err_msg)
-        logger.error(err_msg)
-        logger.error(" %s: %s" % (E.__class__.__name__, E))
-        raise
-        
-    success = True
-    msg = 'Successful execution of the commands in %s.'%args.input
-    print msg
-    logger.debug(msg)
-        
-    return success
     
 def update_geometries(list_ids, new):
     """ function to update/insert the footprint geometries into the item table
@@ -175,7 +142,7 @@ def run(args):
     clean_temp_table(args)
 
     # load the table sites_geoms_temp from the SQL file ot the DB
-    success_loading = load_sql_file(args)
+    success_loading = utils.load_sql_file(cursor, args.input)
         
     if success_loading:
       
@@ -215,4 +182,4 @@ def run(args):
 
 
 if __name__ == '__main__':
-    run( apply_argument_parser() )
+    run(utils.apply_argument_parser(argument_parser()))
