@@ -204,7 +204,7 @@ def typeColumnTable(cursor, column, table):
     
     return col_type
     
-def fetchDataFromDB(cursor, query, queryArgs = None, mogrify = True, verbose = True):
+def fetchDataFromDB(cursor, query, queryArgs = None, mogrify = True, verbose = False):
     """ Fetches data from a DB, given the sursor object and the fetch query
         Return the fetched data items and their number
     """ 
