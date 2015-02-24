@@ -59,12 +59,12 @@ USER_CAMERA = 'SITE_'
 
 # define global LOG variables
 DEFAULT_LOG_LEVEL = 'debug'
-LOG_LEVELS_LIST = ['debug', 'info', 'warning', 'error', 'critical']
 LOG_LEVELS = {'debug': logging.DEBUG,
               'info': logging.INFO,
               'warning': logging.WARNING,
               'error': logging.ERROR,
               'critical': logging.CRITICAL}
+LOG_LEVELS_LIST = LOG_LEVELS.keys()
 LOG_FORMAT = '%(asctime)-15s %(message)s'
 LOG_FILENAME = '/tmp/patty.log'
 
@@ -266,3 +266,29 @@ def apply_argument_parser(argumentsParser, options=None):
     else:
         args = argumentsParser.parse_args() 
     return args
+
+def load_sql_file(cursor, sqlFile):
+    success = False
+    
+    # set the level temporarily to autocommit
+    old_isolation_level = cursor.connection.isolation_level
+    cursor.connection.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+    
+    # execute the SQL statement from the external DBdump of site object geometries
+    try:    
+        cursor.execute(open(sqlFile,"r").read())
+    except Exception, E:
+        err_msg = 'Cannot execute the commands in %s.' % sqlFile
+        print(err_msg)
+        logging.error(err_msg)
+        logging.error(" %s: %s" % (E.__class__.__name__, E))
+        raise
+    
+    cursor.connection.set_isolation_level(old_isolation_level)
+    
+    success = True
+    msg = 'Successful execution of the commands in %s.' % sqlFile
+    print msg
+    logging.debug(msg)
+        
+    return success

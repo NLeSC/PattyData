@@ -1,5 +1,0 @@
-IMPORTANT:
-In table site, the type of the geom column has to be changed from polygon to geometry
-
-ALTER TABLE site DROP COLUMN geom;
-ALTER TABLE site ADD COLUMN geom public.geometry(Geometry,32633))
