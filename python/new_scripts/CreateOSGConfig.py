@@ -100,13 +100,11 @@ def main(opts):
     #                'IS NOT null) AND object_id = %s ORDER BY site_id',
     #               [utils.SITE_OBJECT_NUMBER])
     rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT DISTINCT OSG_LOCATION.osg_location_id, ' +
-                    'x, y, z, h, p, r, srid FROM OSG_LOCATION INNER JOIN ' +
-                    'OSG_DATA_ITEM ON OSG_LOCATION.osg_location_id=' +
-                    'OSG_DATA_ITEM.osg_location_id WHERE ' +
+                    'x, y, z, h, p, r, srid FROM OSG_LOCATION INNER JOIN OSG_ITEM_OBJECT ON OSG_ITEM_OBJECT.osg_location_id = OSG_LOCATION.osg_location_id WHERE ' +
                     'OSG_LOCATION.osg_location_id NOT IN (SELECT DISTINCT ' +
                     'osg_location_id FROM OSG_CAMERA WHERE osg_location_id ' +
-                    'IS NOT null) ORDER BY ' +
-                    'OSG_LOCATION.osg_location_id')
+                    'IS NOT null)',
+                    [utils.ITEM_OBJECT_NUMBER_ITEM])
     for (siteId, x, y, z, h, p, r, srid) in rows:
         if all(position is not None for position in [x,y,z]):
             if (srid is not None):
@@ -220,7 +218,7 @@ def main(opts):
             x, y, z  = getOSGPosition(x, y, z, srid)
         else:
             x, y, z = getOSGPosition(x, y, z)                
-        uname = 'OBJECT_' + itemId + '_' + objectNumber
+        uname = 'OBJECT_' + str(itemId) + '_' + str(objectNumber)
         proto = "Bounding Box"
         activeObject = viewer_conf_api.activeObject(prototype=proto,
                                                     uniqueName=uname)
