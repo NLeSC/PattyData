@@ -42,7 +42,7 @@ def deleteSiteObject(cursor, ao, aoType, uniqueName, siteId, activeObjectId,
                      objectNumber):
     if aoType == 'obj':
         utils.dbExecute(cursor, 'DELETE FROM OSG_ITEM_OBJECT ' +
-                        'WHERE osg_location_id = %s AND item_id = %s',
+                        'WHERE item_id = %s AND object_number = %s',
                         [siteId, objectNumber])
     elif aoType == 'lab':
         utils.dbExecute(cursor,
@@ -56,7 +56,7 @@ def checkActiveObject(cursor, ao, aoType, uniqueName, siteId,
                       activeObjectId, objectNumber):
     if aoType == 'obj':
         utils.dbExecute(cursor, 'SELECT * FROM OSG_ITEM_OBJECT ' +
-                        'WHERE osg_location_id = %s AND item_id = %s',
+                        'WHERE item_id = %s AND object_number = %s',
                         [siteId, objectNumber])
     elif aoType == 'lab':
         utils.dbExecute(cursor, 'SELECT * FROM OSG_LABEL ' +
@@ -87,7 +87,7 @@ def updateSetting(cursor, ao, aoType, uniqueName, siteId, activeObjectId,
 
     if aoType == 'obj':
         tableName = 'OSG_ITEM_OBJECT'
-        whereStatement = 'osg_location_id = %s and item_id = %s'
+        whereStatement = 'item_id = %s and object_number = %s'
         valuesWhere = [siteId, objectNumber]
     elif aoType == 'lab':
         tableName = 'OSG_LABEL'
@@ -221,7 +221,7 @@ if __name__ == "__main__":
 
     # fill argument groups
     parser.add_argument('-i', '--config', help='XML configuration file',
-                        action='store')
+                        action='store', required=True)
     parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
                         help='Postgres DB name [default ' + utils.DEFAULT_DB +
                         ']', action='store')
