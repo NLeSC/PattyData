@@ -9,7 +9,7 @@
 # Changes:
 # Notes:
 ##############################################################################
-import os, optparse, psycopg2, time, re, subprocess, glob, logging, utils
+import os, argparse, psycopg2, time, re, subprocess, glob, logging, utils
 
 DEFAULT_CONCAVE = 0.9
 DEFAULT_BUFFER = 0
@@ -27,7 +27,7 @@ def argument_parser():
     parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
     parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
     parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
-    parser.add_argument('-b','--buffer',default=DEFAULT_BUFFER,help='Buffer around the footprint [default ' + DEFAULT_BUFFER + ']',type=type(DEFAULT_BUFFER), required=False)
+    parser.add_argument('-b','--buffer',default=DEFAULT_BUFFER,help='Buffer around the footprint [default ' + str(DEFAULT_BUFFER) + ']',type=type(DEFAULT_BUFFER), required=False)
     parser.add_argument('--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
     return parser
 
@@ -42,10 +42,10 @@ def run(args):
     queryDescr = 'Getting bounding box of '
     queryArgs = []
     aux = 'ch'
-    if args.buffer != '0':
+    if args.buffer > 0:
         aux = 'ST_Buffer(ch,%s)'
         queryArgs.append(args.buffer)
-        queryDescr += 'buffer of %.2f of ' % args.buffer
+        queryDescr += 'buffer of %.2f meters around ' % args.buffer
     queryDescr += 'concave hull of footprint of item %s' % args.itemid
     query = """
 SELECT 
@@ -112,8 +112,8 @@ FROM (
         return
     
     # Create CSV with vertices of footprint
+    footoutput = args.output + '_footprint.csv'
     logging.info('Creating CSV %s with vertices of concave hull of footprint' % footoutput)
-    footoutput = args.output + '_footprint.csv' 
     fpOutput = open(footoutput, 'w')
     for point in points:
         point.append(str(avgZ))
