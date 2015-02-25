@@ -99,14 +99,22 @@ def main(opts):
     #                '(SELECT DISTINCT site_id FROM cameras WHERE site_id ' +
     #                'IS NOT null) AND object_id = %s ORDER BY site_id',
     #               [utils.SITE_OBJECT_NUMBER])
-    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT DISTINCT OSG_LOCATION.osg_location_id, ' +
-                    'x, y, z, h, p, r, srid FROM OSG_LOCATION INNER JOIN OSG_ITEM_OBJECT ON OSG_ITEM_OBJECT.osg_location_id = OSG_LOCATION.osg_location_id WHERE ' +
-                    'OSG_LOCATION.osg_location_id NOT IN (SELECT DISTINCT ' +
-                    'osg_location_id FROM OSG_CAMERA WHERE osg_location_id ' +
-                    'IS NOT null) AND object_number = %s ORDER BY OSG_LOCATION.osg_location_id',
-                    [utils.ITEM_OBJECT_NUMBER_ITEM])
+#    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT DISTINCT item_id, ' +
+#                    'x, y, z, h, p, r, srid FROM OSG_LOCATION INNER JOIN OSG_ITEM_OBJECT ON OSG_ITEM_OBJECT.osg_location_id = OSG_LOCATION.osg_location_id WHERE ' +
+#                    'OSG_LOCATION.osg_location_id NOT IN (SELECT DISTINCT ' +
+#                    'osg_location_id FROM OSG_CAMERA WHERE osg_location_id ' +
+#                    'IS NOT null) AND object_number = %s ORDER BY OSG_LOCATION.osg_location_id',
+#                    [utils.ITEM_OBJECT_NUMBER_ITEM])
+    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT DISTINCT item_id,' +
+                    ' x, y, z, h, p, r, srid FROM OSG_LOCATION INNER JOIN ' +
+                    'OSG_ITEM_OBJECT ON OSG_LOCATION.osg_location_id=' +
+                    'OSG_ITEM_OBJECT.osg_location_id WHERE item_id NOT IN ' +
+                    '(SELECT DISTINCT item_id FROM OSG_ITEM_CAMERA WHERE ' +
+                    'item_id IS NOT null) AND object_number = %s ORDER BY ' +
+                    'item_id', [utils.ITEM_OBJECT_NUMBER_ITEM])
     for (siteId, x, y, z, h, p, r, srid) in rows:
         # only call getOSGPosition if [x,y,z] are not None
+        # should item_id = -1 be added? 
         if all(position is not None for position in [x,y,z]):
             if (srid is not None):
                 x, y, z  = getOSGPosition(x, y, z, srid)
@@ -144,15 +152,17 @@ def main(opts):
     rootObject.set_attributes(attributes)
     # Add all the static objects, i.e. the OSG from the background
     # cursor.execute('SELECT osg_path FROM static_objects')
-    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT abs_path FROM OSG_DATA_ITEM_PC_BACKGROUND')
+    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT abs_path FROM ' +
+                                           'OSG_DATA_ITEM_PC_BACKGROUND')
     staticObjects = viewer_conf_api.staticObjects()
     for (osgPath,) in rows:
         if osgPath.count(opts.osg) == 0:
             logger.error('Mismatch between given OSG ' +
                          'data directory and DB content')
         staticObjects.add_staticObject(viewer_conf_api.staticObject
-                                       (url=os.path.relpath(glob.glob(osgPath + '/osgb')[0],
-                                                            opts.osg)))
+                                       (url=os.path.relpath(
+                                           glob.glob(osgPath + '/osgb')[0],
+                                           opts.osg)))
 
     # Add hardcoded DOME
     staticObjects.add_staticObject(viewer_conf_api.staticObject
@@ -175,15 +185,15 @@ def main(opts):
         #               'IN (SELECT active_object_site_id FROM ' +
         #               tableName + ') ORDER BY site_id')
         rows, numitems = utils.fetchDataFromDB(
-            cursor, 'SELECT OSG_DATA_ITEM.osg_location_id, ' +
+            cursor, 'SELECT ' +
             'osg_data_item_id, abs_path, x, y, z, xs, ys, zs, h, p, r, ' +
             'OSG_LOCATION.cast_shadow, srid FROM ' +
             'OSG_DATA_ITEM INNER JOIN ' +
             'OSG_LOCATION ON OSG_DATA_ITEM.osg_location_id=' +
             'OSG_LOCATION.osg_location_id WHERE osg_data_item_id ' +
             'IN (SELECT osg_data_item_id FROM ' +
-            tableName + ') ORDER BY osg_location_id')
-        for (siteId, activeObjectId, osgPath, x, y, z, xs, ys, zs, h, p, r,
+            tableName + ') ORDER BY osg_data_item_id')
+        for (activeObjectId, osgPath, x, y, z, xs, ys, zs, h, p, r,
              castShadow, srid) in rows:
             # only call getOSGPosition if [x,y,z] are not None            
             if all(position is not None for position in [x,y,z]):
@@ -209,28 +219,28 @@ def main(opts):
     #              'boundings WHERE active_objects_sites_objects.bounding_id' +
     #              ' = boundings.bounding_id ORDER BY site_id')
     rows, numitems = utils.fetchDataFromDB(
-        cursor, 'SELECT OSG_ITEM_OBJECT.osg_location_id, item_id, ' +
+        cursor, 'SELECT item_id, ' +
         'object_number, x, y, z, xs, ys, zs, h, p, r, ' +
         'OSG_LOCATION.cast_shadow, srid FROM OSG_ITEM_OBJECT INNER JOIN ' +
         'OSG_LOCATION ON OSG_ITEM_OBJECT.osg_location_id=' +
-        'OSG_LOCATION.osg_location_id ORDER BY osg_location_id')
-    for (siteId, itemId, objectNumber, x, y, z, xs, ys, zs, h, p, r,
+        'OSG_LOCATION.osg_location_id ORDER BY item_id')
+    for (siteId, objectNumber, x, y, z, xs, ys, zs, h, p, r,
          castShadow, srid) in rows:
         # only call getOSGPosition if [x,y,z] are not None
-        if all(position is not None for position in [x,y,z]):        
+        if all(position is not None for position in [x,y,z]) and siteId>0:        
             if (srid is not None):
                 x, y, z  = getOSGPosition(x, y, z, srid)
             else:
                 x, y, z = getOSGPosition(x, y, z)                
-        uname = 'OBJECT_' + str(itemId) + '_' + str(objectNumber)
-        proto = "Bounding Box"
-        activeObject = viewer_conf_api.activeObject(prototype=proto,
-                                                    uniqueName=uname)
-        setting = viewer_conf_api.setting(
-            x=x, y=y, z=z, xs=xs, ys=ys, zs=zs, h=h, p=p, r=r,
-        castShadow=(1 if castShadow else 0))
-        activeObject.set_setting(setting)
-        layer.add_activeObject(activeObject)
+            uname = 'OBJECT_' + str(siteId) + '_' + str(objectNumber)
+            proto = "Bounding Box"
+            activeObject = viewer_conf_api.activeObject(prototype=proto,
+                                                        uniqueName=uname)
+            setting = viewer_conf_api.setting(
+                x=x, y=y, z=z, xs=xs, ys=ys, zs=zs, h=h, p=p, r=r,
+            castShadow=(1 if castShadow else 0))
+            activeObject.set_setting(setting)
+            layer.add_activeObject(activeObject)
     activeObjects.add_layer(layer)
 
     # Add the labels
@@ -270,11 +280,14 @@ def getOSGPosition(x, y, z, ItemSRID=None):
             'OSG_DATA_ITEM_PC_BACKGROUND INNER JOIN RAW_DATA_ITEM ON ' +
             'OSG_DATA_ITEM_PC_BACKGROUND.raw_data_item_id=' +
             'RAW_DATA_ITEM.raw_data_item_id')
-        background = [BACK for BACK in backgroundOffsets if BACK[3] == ItemSRID]
+        background = [BACK for BACK in backgroundOffsets if 
+                      BACK[3] == ItemSRID]
         if len(background) == 0:
-            logger.warning('No background with the same SRID %s is found' % (ItemSRID))
+            logger.warning('No background with the same SRID %s is found'
+                % (ItemSRID))
         if len(background) > 1:
-            logger.warning('Multiple backgrounds with the same SRID %s found' % (ItemSRID))
+            logger.warning('Multiple backgrounds with the same SRID %s found'
+                % (ItemSRID))
         else:
             # found the associated background in the database
             offset_x, offset_y, offset_z, srid = background[0]
