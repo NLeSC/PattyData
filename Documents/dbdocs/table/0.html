@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>ITEM</title>
+		<title>tbl2_site_relation</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="ITEM";
+	parent.document.title="tbl2_site_relation";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   ITEM</h2>
+		<h2>Table   tbl2_site_relation</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>ITEM<br><br></dd>
+		<dd>tbl2_site_relation<br><br></dd>
 </dl>
 
 <dl>
@@ -103,8 +103,26 @@ function asd() {
 	<tr>
 	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#143">item_id</a>&nbsp;</td>
-	<td>item_id&nbsp;</td>
+	<td><a href="#143">id</a>&nbsp;</td>
+	<td>id&nbsp;</td>
+	<td>int&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
+	<td><a href="#144">site_id</a>&nbsp;</td>
+	<td>site_id&nbsp;</td>
+	<td>int&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
+	<td><a href="#145">related_site_id</a>&nbsp;</td>
+	<td>related_site_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
@@ -112,18 +130,18 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#144">background</a>&nbsp;</td>
-	<td>background&nbsp;</td>
-	<td>boolean&nbsp;</td>
+	<td><a href="#146">reliability</a>&nbsp;</td>
+	<td>reliability&nbsp;</td>
+	<td>varchar(255)&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
+	<td align="center">&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#145">geom</a>&nbsp;</td>
-	<td>geom&nbsp;</td>
-	<td>polygon&nbsp;</td>
+	<td><a href="#147">remarks</a>&nbsp;</td>
+	<td>remarks&nbsp;</td>
+	<td>varchar(255)&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
 </tr>
@@ -149,7 +167,25 @@ function asd() {
 		<th width="12%">Cardinality of parent</th>
 		<th width="12%">Cardinality of child</th>
 	</tr>
-	
+	<tr>
+	<td><a href="#144">site_id&nbsp;</a></td>
+	<td><a href="../table/21.html">tbl1_site&nbsp;</a></td>
+	<td><a href="../table/21.html#148">site_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#145">related_site_id&nbsp;</a></td>
+	<td><a href="../table/21.html">tbl1_site&nbsp;</a></td>
+	<td><a href="../table/21.html#148">site_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+
 </table>
 
 <p>
@@ -170,43 +206,7 @@ function asd() {
 		<th width="12%">Cardinality of parent</th>
 		<th width="12%">Cardinality of child</th>
 	</tr>
-	<tr>
-	<td><a href="#143">item_id&nbsp;</a></td>
-	<td><a href="../table/1.html">ITEM_OBJECT&nbsp;</a></td>
-	<td><a href="../table/1.html#146">item_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#143">item_id&nbsp;</a></td>
-	<td><a href="../table/8.html">OSG_ITEM_CAMERA&nbsp;</a></td>
-	<td><a href="../table/8.html#147">item_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">0..n&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#143">item_id&nbsp;</a></td>
-	<td><a href="../table/13.html">RAW_DATA_ITEM&nbsp;</a></td>
-	<td><a href="../table/13.html#148">item_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">1..n&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#143">item_id&nbsp;</a></td>
-	<td><a href="../table/18.html">tbl1_site&nbsp;</a></td>
-	<td><a href="../table/18.html#149">site_id&nbsp;</a></td>
-	<td align="center">NO ACTION&nbsp;</td>
-	<td align="center">NO ACTION&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">0..1&nbsp;</td>
-</tr>
-
+	
 </table>
 
 <p>
@@ -262,10 +262,10 @@ function asd() {
 </table>
 
 <a name="143"></a>
-<h3><img src="../image/icons/pkey.gif">  item_id</h3>
+<h3><img src="../image/icons/pkey.gif">  id</h3>
 
 <dl>
-	<dd>item_id
+	<dd>id
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -283,17 +283,17 @@ function asd() {
 
 <hr>
 <a name="144"></a>
-<h3>  background</h3>
+<h3> <img src="../image/icons/foreign_key.gif"> site_id</h3>
 
 <dl>
-	<dd>background
+	<dd>site_id
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>boolean<br></dt>
+		<dt><b>Type : </b>int<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>
@@ -304,17 +304,59 @@ function asd() {
 
 <hr>
 <a name="145"></a>
-<h3>  geom</h3>
+<h3> <img src="../image/icons/foreign_key.gif"> related_site_id</h3>
 
 <dl>
-	<dd>geom
+	<dd>related_site_id
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>int<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="146"></a>
+<h3>  reliability</h3>
+
+<dl>
+	<dd>reliability
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>polygon<br></dt>
+		<dt><b>Type : </b>varchar(255)<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="147"></a>
+<h3>  remarks</h3>
+
+<dl>
+	<dd>remarks
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>varchar(255)<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>
