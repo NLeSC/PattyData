@@ -104,7 +104,7 @@ def main(opts):
     for (siteId, x, y, z, h, p, r, srid) in rows:
         # only call getOSGPosition if [x,y,z] are not None
         # should item_id = -1 be added? 
-        if all(position is not None for position in [x,y,z]):
+        if all(position is not None for position in [x,y,z]) and siteId>0:
             if (srid is not None):
                 x, y, z  = getOSGPosition(x, y, z, srid)
             else:
@@ -147,10 +147,13 @@ def main(opts):
         if osgPath.count(opts.osg) == 0:
             logger.error('Mismatch between given OSG ' +
                          'data directory and DB content')
-        staticObjects.add_staticObject(viewer_conf_api.staticObject
-                                       (url=os.path.relpath(
+        if opts.background == os.path.basename(osgPath):
+            staticObjects.add_staticObject(viewer_conf_api.staticObject
+                                           (url=os.path.relpath(
                                            glob.glob(osgPath + '/osgb')[0],
                                            opts.osg)))
+        else:
+            logger.error('Background %s not found', [opts.background])
 
     # Add hardcoded DOME
     staticObjects.add_staticObject(viewer_conf_api.staticObject
@@ -261,9 +264,9 @@ def getOSGPosition(x, y, z, ItemSRID=None):
         if len(background) == 0:
             logger.warning('No background with the same SRID %s is found'
                 % (ItemSRID))
-        if len(background) > 1:
-            logger.warning('Multiple backgrounds with the same SRID %s found'
-                % (ItemSRID))
+        #if len(background) > 1:
+        #    logger.warning('Multiple backgrounds with the same SRID %s found'
+        #        % (ItemSRID))
         else:
             # found the associated background in the database
             offset_x, offset_y, offset_z, srid = background[0]
@@ -293,13 +296,15 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--osg', default=utils.DEFAULT_OSG_DATA_DIR,
                         help='OSG data directory [default ' +
                         utils.DEFAULT_OSG_DATA_DIR + ']', action='store')
-    # required input ?
-    parser.add_argument('-f', '--output', help='XML file', action='store',
-                        required=True)
     parser.add_argument('-l', '--log', help='Log level',
                         choices=['debug', 'info', 'warning', 'error',
                                  'critical'],
                         default=utils.DEFAULT_LOG_LEVEL)
+    parser.add_argument('-b', '--background', help='Background', 
+                        default=utils.DEFAULT_BACKGROUND, action='store')
+    # required input
+    parser.add_argument('-f', '--output', help='XML file', action='store',
+                        required=True)
 
     # extract user entered arguments
     opts = parser.parse_args()
