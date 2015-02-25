@@ -104,7 +104,7 @@ def main(opts):
     for (siteId, x, y, z, h, p, r, srid) in rows:
         # only call getOSGPosition if [x,y,z] are not None
         # should item_id = -1 be added? 
-        if all(position is not None for position in [x,y,z]):
+        if all(position is not None for position in [x,y,z]) and siteId>0:
             if (srid is not None):
                 x, y, z  = getOSGPosition(x, y, z, srid)
             else:
