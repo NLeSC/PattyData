@@ -563,7 +563,7 @@ def addOSGItemObjects():
             srid = None
             (x,y,z) = (0,0,DEFAULT_Z)
             (xs,ys,zs) = (None,None,DEFAULT_ZS)
-            query = 'select A.srid, B.minx, B.miny, B.minz, B.maxx, B.maxy, B.maxz FROM raw_data_item A, raw_data_item_pc B where A.raw_data_item_id = B.raw_data_item_id and A.item_id = %s'
+            query = 'select A.srid, B.minx, B.miny, B.minz, B.maxx, B.maxy, B.maxz FROM raw_data_item A, raw_data_item_pc B where A.raw_data_item_id = B.raw_data_item_id and A.item_id = %s ORDER BY A.srid'
             queryArgs = [itemId,]
             pcs, num_pcs = fetchDataFromDB(cursor, query, queryArgs)
             if num_pcs:
