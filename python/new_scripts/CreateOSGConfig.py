@@ -106,6 +106,7 @@ def main(opts):
                     'IS NOT null)',
                     [utils.ITEM_OBJECT_NUMBER_ITEM])
     for (siteId, x, y, z, h, p, r, srid) in rows:
+        # only call getOSGPosition if [x,y,z] are not None
         if all(position is not None for position in [x,y,z]):
             if (srid is not None):
                 x, y, z  = getOSGPosition(x, y, z, srid)
@@ -184,7 +185,8 @@ def main(opts):
             tableName + ') ORDER BY osg_location_id')
         for (siteId, activeObjectId, osgPath, x, y, z, xs, ys, zs, h, p, r,
              castShadow, srid) in rows:
-            if inType != 'pic': # pics don't have position defined in DB
+            # only call getOSGPosition if [x,y,z] are not None            
+            if all(position is not None for position in [x,y,z]):
                 if (srid is not None):
                     x, y, z  = getOSGPosition(x, y, z, srid)
                 else:
@@ -214,10 +216,12 @@ def main(opts):
         'OSG_LOCATION.osg_location_id ORDER BY osg_location_id')
     for (siteId, itemId, objectNumber, x, y, z, xs, ys, zs, h, p, r,
          castShadow, srid) in rows:
-        if (srid is not None):
-            x, y, z  = getOSGPosition(x, y, z, srid)
-        else:
-            x, y, z = getOSGPosition(x, y, z)                
+        # only call getOSGPosition if [x,y,z] are not None
+        if all(position is not None for position in [x,y,z]):        
+            if (srid is not None):
+                x, y, z  = getOSGPosition(x, y, z, srid)
+            else:
+                x, y, z = getOSGPosition(x, y, z)                
         uname = 'OBJECT_' + str(itemId) + '_' + str(objectNumber)
         proto = "Bounding Box"
         activeObject = viewer_conf_api.activeObject(prototype=proto,
