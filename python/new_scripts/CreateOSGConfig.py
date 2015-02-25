@@ -143,6 +143,11 @@ def main(opts):
     rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT abs_path FROM ' +
                                            'OSG_DATA_ITEM_PC_BACKGROUND')
     staticObjects = viewer_conf_api.staticObjects()
+
+    if opts.background not in [os.path.basename(bg[0]) for bg in rows]:
+        raise Exception('Background ' + opts.background + ' is not found')
+        logger.error('Background ' + opts.background + ' is not found')
+
     for (osgPath,) in rows:
         if osgPath.count(opts.osg) == 0:
             logger.error('Mismatch between given OSG ' +
@@ -152,8 +157,6 @@ def main(opts):
                                            (url=os.path.relpath(
                                            glob.glob(osgPath + '/osgb')[0],
                                            opts.osg)))
-        else:
-            logger.error('Background %s not found', [opts.background])
 
     # Add hardcoded DOME
     staticObjects.add_staticObject(viewer_conf_api.staticObject
