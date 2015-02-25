@@ -388,8 +388,10 @@ def addRawDataItem(absPath, itemId, dataItemType):
         dbExecute(cursor, 'SELECT item_id FROM ITEM WHERE item_id = %s', [itemId,])
         row = cursor.fetchone()
         if row == None:
-             dbExecute(cursor, "INSERT INTO ITEM (item_id, background) VALUES (%s,%s)", [itemId, (itemId < 0)])
-             dbExecute(cursor, "INSERT INTO ITEM_OBJECT (item_id, object_number) VALUES (%s,%s)", [itemId, ITEM_OBJECT_NUMBER_ITEM])
+            isBack = (itemId < 0)
+            dbExecute(cursor, "INSERT INTO ITEM (item_id, background) VALUES (%s,%s)", [itemId, isBack])
+            if not isBack: 
+                dbExecute(cursor, "INSERT INTO ITEM_OBJECT (item_id, object_number) VALUES (%s,%s)", [itemId, ITEM_OBJECT_NUMBER_ITEM])
         dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM (raw_data_item_id, item_id, abs_path, last_mod, last_check) VALUES (DEFAULT,%s,%s,%s,%s) RETURNING raw_data_item_id", 
                         [itemId, absPath, modTime, initialTime])
         rawDataItemId = cursor.fetchone()[0]
