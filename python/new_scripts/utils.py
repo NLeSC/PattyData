@@ -66,8 +66,10 @@ LOG_LEVELS = {'debug': logging.DEBUG,
               'error': logging.ERROR,
               'critical': logging.CRITICAL}
 LOG_LEVELS_LIST = LOG_LEVELS.keys()
-LOG_FORMAT = '%(asctime)-15s %(message)s'
+#LOG_FORMAT = '%(asctime)-15s %(message)s'
 LOG_FILENAME = '/tmp/patty.log'
+LOG_FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
+DATE_FORMAT = "%Y/%m/%d/%H:%M:%S"
 
 #Ouput Formats
 LAS = 'LAS'
@@ -140,7 +142,7 @@ def postgresConnectString(dbName = None, userName= None, password = None, dbHost
             connString += " port=" + dbPort
     return connString
 
-def connectToDB(dbName = None, userName= None, password = None, dbHost = None, dbPort = None):
+def connectToDB(dbName = None, userName= None, password = None, dbHost = None, dbPort = None, verbose = False):
     """ Connects to a specified DB and returns connection and cursor objects
     """       
     # Start DB connection
@@ -154,7 +156,8 @@ def connectToDB(dbName = None, userName= None, password = None, dbHost = None, d
         raise
         
     msg = 'Successful connection to %s DB.'%dbName
-    print msg
+    if verbose:
+        print msg
     logging.debug(msg)
     
     # if the connection succeeded get a cursor    
@@ -162,14 +165,15 @@ def connectToDB(dbName = None, userName= None, password = None, dbHost = None, d
         
     return connection, cursor
     
-def closeConnectionDB(connection, cursor):
+def closeConnectionDB(connection, cursor, verbose = False):
     """ Closes a connection to a DB given the connection and cursor objects
     """      
     cursor.close()
     connection.close()    
     
     msg = 'Connection to the DB is closed.'
-    print msg
+    if verbose:
+        print msg
     logging.debug(msg)
     
     return    
@@ -250,7 +254,7 @@ def listRawDataItems(cursor):
 def start_logging(filename=LOG_FILENAME, level=DEFAULT_LOG_LEVEL):
     "Start logging with given filename and level."
     logging.basicConfig(filename=filename, level=LOG_LEVELS[level],
-                        format=LOG_FORMAT)
+                        format=LOG_FORMAT, datefmt=DATE_FORMAT)
     logger = logging.getLogger(__name__)
     return logger
 
