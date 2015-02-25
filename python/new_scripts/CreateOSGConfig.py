@@ -94,17 +94,6 @@ def main(opts):
     for (name, x, y, z, h, p, r) in cursor:
         cameras.add_camera(viewer_conf_api.camera
                            (name=name, x=x, y=y, z=z, h=h, p=p, r=r))
-    # cursor.execute('SELECT DISTINCT site_id, x, y, z, h, p, r FROM ' +
-    #                'active_objects_sites_objects WHERE site_id NOT IN ' +
-    #                '(SELECT DISTINCT site_id FROM cameras WHERE site_id ' +
-    #                'IS NOT null) AND object_id = %s ORDER BY site_id',
-    #               [utils.SITE_OBJECT_NUMBER])
-#    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT DISTINCT item_id, ' +
-#                    'x, y, z, h, p, r, srid FROM OSG_LOCATION INNER JOIN OSG_ITEM_OBJECT ON OSG_ITEM_OBJECT.osg_location_id = OSG_LOCATION.osg_location_id WHERE ' +
-#                    'OSG_LOCATION.osg_location_id NOT IN (SELECT DISTINCT ' +
-#                    'osg_location_id FROM OSG_CAMERA WHERE osg_location_id ' +
-#                    'IS NOT null) AND object_number = %s ORDER BY OSG_LOCATION.osg_location_id',
-#                    [utils.ITEM_OBJECT_NUMBER_ITEM])
     rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT DISTINCT item_id,' +
                     ' x, y, z, h, p, r, srid FROM OSG_LOCATION INNER JOIN ' +
                     'OSG_ITEM_OBJECT ON OSG_LOCATION.osg_location_id=' +
@@ -151,7 +140,6 @@ def main(opts):
 
     rootObject.set_attributes(attributes)
     # Add all the static objects, i.e. the OSG from the background
-    # cursor.execute('SELECT osg_path FROM static_objects')
     rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT abs_path FROM ' +
                                            'OSG_DATA_ITEM_PC_BACKGROUND')
     staticObjects = viewer_conf_api.staticObjects()
@@ -179,11 +167,6 @@ def main(opts):
                   ('meshes', 'OSG_DATA_ITEM_MESH', 'mesh')]
     for (layerName, tableName, inType) in layersData:
         layer = viewer_conf_api.layer(name=layerName)
-        # cursor.execute('SELECT site_id, active_object_site_id, osg_path, ' +
-        #               'x, y, z, xs, ys, zs, h, p, r, cast_shadow FROM ' +
-        #               'active_objects_sites WHERE active_object_site_id ' +
-        #               'IN (SELECT active_object_site_id FROM ' +
-        #               tableName + ') ORDER BY site_id')
         rows, numitems = utils.fetchDataFromDB(
             cursor, 'SELECT ' +
             'osg_data_item_id, abs_path, x, y, z, xs, ys, zs, h, p, r, ' +
@@ -214,10 +197,6 @@ def main(opts):
 
     # Add the boundings
     layer = viewer_conf_api.layer(name='boundings')
-    # cursor.execute('SELECT site_id, object_id, name, x, y, z, xs, ys, zs, ' +
-    #              'h, p, r, cast_shadow FROM active_objects_sites_objects, ' +
-    #              'boundings WHERE active_objects_sites_objects.bounding_id' +
-    #              ' = boundings.bounding_id ORDER BY site_id')
     rows, numitems = utils.fetchDataFromDB(
         cursor, 'SELECT item_id, ' +
         'object_number, x, y, z, xs, ys, zs, h, p, r, ' +
@@ -245,9 +224,6 @@ def main(opts):
 
     # Add the labels
     layer = viewer_conf_api.layer(name='labels')
-    # cursor.execute('SELECT name, text, red, green, blue, rotatescreen, ' +
-    #               'outline, font, x, y, z, xs, ys, zs, h, p, r, ' +
-    #               'cast_shadow FROM active_objects_labels')
     utils.dbExecute(cursor, 'SELECT osg_label_name, text, red, green, blue, ' +
                     'rotate_screen, outline, font, x, y, z, xs, ys, zs, h, ' +
                     'p, r, cast_shadow FROM OSG_LABEL INNER JOIN ' +
