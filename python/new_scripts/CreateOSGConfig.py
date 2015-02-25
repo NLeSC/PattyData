@@ -103,7 +103,7 @@ def main(opts):
                     'x, y, z, h, p, r, srid FROM OSG_LOCATION INNER JOIN OSG_ITEM_OBJECT ON OSG_ITEM_OBJECT.osg_location_id = OSG_LOCATION.osg_location_id WHERE ' +
                     'OSG_LOCATION.osg_location_id NOT IN (SELECT DISTINCT ' +
                     'osg_location_id FROM OSG_CAMERA WHERE osg_location_id ' +
-                    'IS NOT null)',
+                    'IS NOT null) AND object_number = %s ORDER BY OSG_LOCATION.osg_location_id',
                     [utils.ITEM_OBJECT_NUMBER_ITEM])
     for (siteId, x, y, z, h, p, r, srid) in rows:
         # only call getOSGPosition if [x,y,z] are not None
