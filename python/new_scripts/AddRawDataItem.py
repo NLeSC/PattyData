@@ -161,7 +161,22 @@ def check_input_data(opts):
                 if srid is None:
                     logger.warning("srid is not defined in lasheader " +
                                    filename)
-
+    # MESH
+    if (opts.type == utils.MESH_FT):
+        # if input is a file it should have obj extension:
+        if (os.path.isfile(opts.file) and not os.path.splitext(
+              opts.file)[1][1:].lower() in ['obj']):
+            logger.error('File ' + opts.file ' has no required obj extension')
+            raise IOError('File ' + opts.file ' has no required obj extension')
+        # if input is a directory, then
+        # check if there is an obj file in the directory
+        elif os.path.isdir(opts.file):
+            files = glob.glob(opts.file + '/*.obj')
+            if ('.obj' not in [os.path.splitext(x)[1][:] for x in files]):
+                logger.error('No file with required obj extension found in ' +
+                             'directory ' + opts.file)
+                raise IOError('No file with required obj extension found in ' +
+                              'directory ' + opts.file)
 
 def check_json_file(jsonfile):
     """
