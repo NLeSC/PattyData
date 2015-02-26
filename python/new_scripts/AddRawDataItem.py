@@ -145,7 +145,7 @@ def check_input_data(opts):
                 logger.warning("No accompanying JSON file found for input: " +
                                opts.file)
     # SRID for PCs must not be null
-    if (opts.type == utils.PC_FT and opts.kind == utils.SITE_FT):
+    if (opts.type == utils.PC_FT):
         if os.path.isfile(opts.file):  # input is file
             lasHeader = liblas.file.File(opts.file, mode='r').header
             srid = utils.readSRID(lasHeader)
@@ -204,8 +204,8 @@ def srid_8bitcolor_info(inputname, opts):
             else:
                 pass
         else:
-            sridinfo = "_SRID_"+opts.srid
-    srid8bit = sridinfo+eightbitinfo
+            sridinfo = "_SRID_" + opts.srid
+    srid8bit = sridinfo + eightbitinfo
     return srid8bit
 
 
