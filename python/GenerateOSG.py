@@ -126,8 +126,20 @@ def createOSG(opts, abOffsetX=None,
     # A PC BACKGROUND
     elif (inType == utils.PC_FT and inKind == utils.BG_FT):  # A PC BG
         tmode = '--mode quadtree --reposition'
-        inputFiles = glob.glob(inFile + '/*.las') + glob.glob(
-            inFile + '/*.laz')
+        numLAS = len(glob.glob(inFile + '/*.las'))
+        numLAZ = len(glob.glob(inFile + '/*.laz'))
+        if (numLAS != 0) and (numLAZ != 0):
+            errorMsg = 'Folder %s should contain LAS or LAZ but not both!' % inFile
+            logger.error(errorMsg)
+            raise Exception(errorMsg)
+        if numLAS:
+            inputFiles = inFile + '/*.las'
+        elif numLAZ:
+            inputFiles = inFile + '/*.laz'
+        else:
+            errorMsg = 'Folder %s does not contain LAS or LAZ files' % inFile
+            logger.error(errorMsg)
+            raise Exception(errorMsg)
     # A MESH
     elif inType == utils.MESH_FT:
         tmode = '--mode polyMesh --convert --reposition'
