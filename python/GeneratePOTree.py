@@ -61,8 +61,8 @@ def createPOTree(opts, abOffsetX=None,
 
     if os.path.isfile(inFile):
         # input was a file -> raise IOError
-        raise IOERROR('Database key abspath should define a directory, ' +
-                      'file detected: ' + inFile)
+        error('Database key abspath should define a directory, ' +
+                      'file detected: ' + inFile, outFolder)
         # os.chdir(os.path.dirname(inFile))
     else:
         # input is already a directory
@@ -84,11 +84,8 @@ def createPOTree(opts, abOffsetX=None,
 
     ofiles = sorted(glob.glob(os.path.join(outFolder, '*')))
     if len(ofiles) == 0:
-        logger.error('none POTree file was generated (found in ' + outFolder +
-                     '). Check log: ' + logFile)
-        raise Exception('none POTree file was generated (found in ' + outFolder +
-                        '). Check log: ' + logFile)
-
+        error('none POTree file was generated (found in ' + outFolder +
+                     '). Check log: ' + logFile, outFolder)
 
 def extract_inType(abspath, site_id, potreeDir):
     '''
@@ -134,6 +131,11 @@ def extract_inType(abspath, site_id, potreeDir):
         # shutil.rmtree(outFolder)  # if we won't to force remove it
     return inType, inKind, outFolder
 
+def error(errorMessage, outFolder):
+     logger.error(errorMessage)
+     logger.info('Removing %s ' % outFolder)
+     shutil.rmtree(outFolder)
+     raise Exception(errorMessage)
 
 def main(opts):
     # Define logger and start logging
