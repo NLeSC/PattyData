@@ -161,13 +161,15 @@ def check_input_data(opts):
                 if srid is None:
                     logger.warning("srid is not defined in lasheader " +
                                    filename)
-    # MESH
+    # MESH should have an obj extension
     if (opts.type == utils.MESH_FT):
         # if input is a file it should have obj extension:
         if (os.path.isfile(opts.file) and not os.path.splitext(
               opts.file)[1][1:].lower() in ['obj']):
-            logger.error('File ' + opts.file ' has no required obj extension')
-            raise IOError('File ' + opts.file ' has no required obj extension')
+            logger.error('File ' + opts.file +
+                         '  has no required obj extension')
+            raise IOError('File ' + opts.file
+                          + ' has no required obj extension')
         # if input is a directory, then
         # check if there is an obj file in the directory
         elif os.path.isdir(opts.file):
@@ -320,7 +322,7 @@ def copy_data(opts, TARGETDIR):
             for file_name in src_files:
                 if (os.path.isfile(os.path.join(opts.file, file_name))):
                     shutil.copy(os.path.join(opts.file, file_name), TARGETDIR)
-    elif os.path.isfile(opts.file):
+    elif (os.path.isfile(opts.file) and opts.type != utils.MESH_FT):
         # if input was a file:
         # copy the file to TARGETDIR
         # create a directory name from the filename
@@ -335,6 +337,12 @@ def copy_data(opts, TARGETDIR):
                             os.path.join(TARGETDIR, basedir,
                                          os.path.basename
                                          (opts.file + '.json')))
+    elif (os.path.isfile(opts.file) and opts.type == utils.MESH_FT):
+        # if input is a filename and is a MESH
+        # copy all data in the underlying directory
+        for filename in glob.glob(os.path.dirname(opts.file)+'/*'):
+            shutil.copyfile(filename, os.path.join(TARGETDIR,
+                                                   os.path.basename(filename)))
     else:
         try:
             # remove TARGETDIR if input file does not exist
