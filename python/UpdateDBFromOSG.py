@@ -106,7 +106,7 @@ def updateSetting(cursor, ao, aoType, uniqueName, siteId, activeObjectId,
 def main(opts):
     # Define logger and start logging
     global logger
-    logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
+    logger = utils.start_logging(filename=opts.config + '.log', level=opts.log)
     logger.info('#######################################')
     logger.info('Starting script UpdateDBFromOSG.py')
     logger.info('#######################################')
@@ -196,7 +196,7 @@ def main(opts):
             try:
                 siteId = int(name[name.index(utils.USER_CAMERA) +
                                   len(utils.USER_CAMERA):].split('_')[0])
-                names.append('site_id')
+                names.append('item_id')
                 values.append(siteId)
             except:
                 logger.warn('Incorrect camera name:' + name)
@@ -207,12 +207,37 @@ def main(opts):
         auxs = []
         for i in range(len(names)):
             auxs.append('%s')
-        utils.dbExecute(cursor, 'INSERT INTO OSG_CAMERA (' + ','.join(names) +
-                        ') VALUES (' + ','.join(auxs) + ')', values)
+        offsetSRID = get_SRID(data, cursor)
+        import pdb; pdb.set_trace()
+        #utils.dbExecute(cursor, 'INSERT INTO OSG_LOCATION (' + ','.join(names[2:]) +
+        #                ') VALUES (' + ','.join(auxs[2:]) + ') returning osg_location_id', values[2:])
+        #cursor.fetchone()[0]
+        #utils.dbExecute(cursor, 'INSERT INTO OSG_CAMERA (' + ','.join(names[0]) +
+        #                ') VALUES (' + ','.join(auxs[0]) + ')', values[0])            
+        #utils.dbExecute(cursor, 'INSERT INTO OSG_CAMERA (' + ','.join(names[0]) +
+        #                ') VALUES (' + ','.join(auxs[0]) + ')', values[0])            
+        
+        #utils.dbExecute(cursor, 'INSERT INTO OSG_ITEM_CAMERA (' + ','.join(names[0:2]) +
+        #                ') VALUES (' + ','.join(auxs[0:2]) + ')', values[0:2])
 
     # close DB connection
     utils.closeConnectionDB(connection, cursor)
 
+def get_SRID(data, cursor):
+    # get the offset and srid for the background used in the conf.xml file
+    staticobj = [os.path.dirname(x.get('url')) for x in
+                 data.xpath('//staticObject')]
+    matching = [s for s in staticobj if 'PC/BACK/' in s]
+    if len(matching) != 1:
+        raise Exception('More than 1 background detected in xml file')
+    else:
+        offsetSRID, numitems = utils.fetchDataFromDB(
+            cursor, 'SELECT ' +
+            'offset_x, offset_y, offset_z, srid FROM OSG_DATA_ITEM_PC_BACKGROUND INNER JOIN RAW_DATA_ITEM ON OSG_DATA_ITEM_PC_BACKGROUND.raw_data_item_id=RAW_DATA_ITEM.raw_data_item_id WHERE OSG_DATA_ITEM_PC_BACKGROUND.abs_path=%s', [os.path.join(utils.DEFAULT_DATA_DIR,utils.DEFAULT_OSG_DATA_DIR,matching[0])])
+    return offsetSRID
+
+def fill_OSG_LOCATION():
+    pass
 
 if __name__ == "__main__":
     # define argument menu
