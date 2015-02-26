@@ -5,7 +5,7 @@
 # Authors:          Oscar Martinez, NLeSC, o.rubi@esciencecenter.nl
 #                   Elena Ranguelova, NLeSc
 # Created:          16.02.2015
-# Last modified:    20.02.2015
+# Last modified:    23.02.2015
 #
 # Changes:
 #
@@ -28,9 +28,9 @@ def argument_parser():
     parser.add_argument('-i', '--itemid', help='Raw data item id (with ? the available raw data items are listed)',
                         action='store', required=True)
     parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name which should be updated with these footprints ' + utils.DEFAULT_DB + ']',type=str , required=False)
-    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=True)
-    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=True)
-    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=True)
+    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
+    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
+    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
     parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
     parser.add_argument('-l', '--log', help='Log level',
                         choices=['debug', 'info', 'warning', 'error',
@@ -57,11 +57,13 @@ def apply_argument_parser(options=None):
 #   # logger.info("Finished copying data to " + TARGETDIR)
 
 
-def fetch_abs_path():
+def fetch_abs_path(siteId):
     """ get the absolute data item path given the site ID"""
     abs_path = ""
     
-    
+    fetch_abs_path_statement = 'select abs_path from raw_data_item natural join raw_data_item_pc where (raw_data_item_id = %s'
+    abs_path,num = utils.fetchDataFromDB(cursor, fetch_abs_path_statement, [siteId,],[], True)
+        
     
     return abs_path
     
@@ -81,12 +83,18 @@ def run(args):
  # start timer
     t0 = utils.getCurrentTime()
     
-    # connect to the Db
-     # connect to the DB
+    # connect to the DB
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport) 
-        
+
+    # fetch the abs_path
+    abs_path = fetch_abs_path(args.itemid)        
+    msg = 'Abs path fetched: %s', abs_path
+    print msg
+    logger.info(msg)
     # copy the data to the target directory
     #remove_data(opts)
+
+
 
     return
 
