@@ -49,7 +49,7 @@ DEFAULT_PREFENCES = """
 def main(opts):
     # Define logger and start logging
     global logger
-    logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
+    logger = utils.start_logging(filename=opts.output + '.log', level=opts.log)
     logger.info('#######################################')
     logger.info('Starting script CreateOSGConfig.py')
     logger.info('#######################################')
