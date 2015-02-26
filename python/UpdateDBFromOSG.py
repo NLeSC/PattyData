@@ -187,10 +187,10 @@ def main(opts):
     # and can not be deleted or updated)
     cameras = data.xpath('//camera[not(starts-with(@name,"' +
                          utils.DEFAULT_CAMERA_PREFIX + '"))]')
-    utils.dbExecute(cursor, 'DELETE FROM cameras')
+    utils.dbExecute(cursor, 'DELETE FROM OSG_CAMERA')
     for camera in cameras:
         name = camera.get('name')
-        names = ['camera_name', ]
+        names = ['osg_camera_name', ]
         values = [name, ]
         if name.count(utils.USER_CAMERA):
             try:
@@ -207,7 +207,7 @@ def main(opts):
         auxs = []
         for i in range(len(names)):
             auxs.append('%s')
-        utils.dbExecute(cursor, 'INSERT INTO cameras (' + ','.join(names) +
+        utils.dbExecute(cursor, 'INSERT INTO OSG_CAMERA (' + ','.join(names) +
                         ') VALUES (' + ','.join(auxs) + ')', values)
 
     # close DB connection
