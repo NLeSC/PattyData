@@ -107,8 +107,8 @@ def createOSG(opts, abOffsetX=None,
 
     if os.path.isfile(inFile):
         # input was a file -> raise IOError
-        raise IOERROR('Database key abspath should define a directory, ' +
-                      'file detected: ' + inFile)
+        error('Database key abspath should define a directory, ' +
+                      'file detected: ' + inFile, outFolder)
         # os.chdir(os.path.dirname(inFile))
     else:
         # input is already a directory
@@ -129,17 +129,13 @@ def createOSG(opts, abOffsetX=None,
         numLAS = len(glob.glob(inFile + '/*.las'))
         numLAZ = len(glob.glob(inFile + '/*.laz'))
         if (numLAS != 0) and (numLAZ != 0):
-            errorMsg = 'Folder %s should contain LAS or LAZ but not both!' % inFile
-            logger.error(errorMsg)
-            raise Exception(errorMsg)
+            error('Folder %s should contain LAS or LAZ but not both!' % inFile, outFolder)
         if numLAS:
-            inputFiles = inFile + '/*.las'
+            inputFiles = [inFile + '/*.las',]
         elif numLAZ:
-            inputFiles = inFile + '/*.laz'
+            inputFiles = [inFile + '/*.laz',]
         else:
-            errorMsg = 'Folder %s does not contain LAS or LAZ files' % inFile
-            logger.error(errorMsg)
-            raise Exception(errorMsg)
+            error('Folder %s does not contain LAS or LAZ files' % inFile, outFolder)
     # A MESH
     elif inType == utils.MESH_FT:
         tmode = '--mode polyMesh --convert --reposition'
@@ -147,23 +143,27 @@ def createOSG(opts, abOffsetX=None,
     # A PICTURE
     elif inType == utils.PIC_FT:
         tmode = '--mode picturePlane'
-        inputFiles = glob.glob(inFile + '/*')
-
+        inputFiles = glob.glob(inFile + '/*.png') + glob.glob(inFile + '/*.jpg') + glob.glob(inFile + '/*.jpeg')
+    
+    if len(inputFiles) > 1:
+        error('Multiple valid files found in %s' % inFile,outFolder)
+    elif len(inputFiles) == 0:
+        error('None valid files found in %s' % inFile,outFolder)
+    filename = inputFiles[0]
     logFile = os.path.join(outFolder, outputPrefix + '.log')
     
-    # Call CONVERTER_COMMAND for each of the inputFiles
-    for filename in inputFiles:
-        command = CONVERTER_COMMAND + ' ' + tmode + ' --outputPrefix ' + \
-            outputPrefix + ' --files ' + os.path.basename(filename)
-        if color8Bit:
-            command += ' --8bitColor '
-        if aligned:
-            command += ' --translate ' + str(abOffsetX) + ' ' + str(abOffsetY) + \
-                ' ' + str(abOffsetZ)
-        command += ' &> ' + logFile
-        logger.info(command)
-        args = shlex.split(command)
-        subprocess.Popen(args, stdout=subprocess.PIPE,
+    # Call CONVERTER_COMMAND for the inputFile
+    command = CONVERTER_COMMAND + ' ' + tmode + ' --outputPrefix ' + \
+        outputPrefix + ' --files ' + os.path.basename(filename)
+    if color8Bit:
+        command += ' --8bitColor '
+    if aligned:
+        command += ' --translate ' + str(abOffsetX) + ' ' + str(abOffsetY) + \
+            ' ' + str(abOffsetZ)
+    command += ' &> ' + logFile
+    logger.info(command)
+    args = shlex.split(command)
+    subprocess.Popen(args, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE).communicate()
 
     # move files to outFolder; drop outputPrefix from filename
@@ -183,29 +183,22 @@ def createOSG(opts, abOffsetX=None,
 
     ofiles = sorted(glob.glob(os.path.join(outFolder, '*' + ofile)))
     if len(ofiles) == 0:
-        logger.error('none OSG file was generated (found in ' + outFolder +
-                     '). Check log: ' + logFile)
-        raise Exception('none OSG file was generated (found in ' + outFolder +
-                        '). Check log: ' + logFile)
+        error('none OSG file was generated (found in ' + outFolder +
+                     '). Check log: ' + logFile, outFolder)
     else:
         mainOsgb = ofiles[0]
         if not (inType == utils.PC_FT and inKind == utils.BG_FT):
             # if not a PC BACK
             xmlfiles = glob.glob(os.path.join(outFolder, '*xml'))
             if len(xmlfiles) == 0:
-                logger.error('none XML file was generated (found in ' +
-                             outFolder + '). Check log: ' + logFile)
-                raise Exception('none XML file was generated (found in ' +
-                                outFolder + '). Check log: ' + logFile)
+                error('none XML file was generated (found in ' +
+                             outFolder + '). Check log: ' + logFile, outFolder)
                 xmlPath = None
             else:
                 xmlPath = xmlfiles[0]
                 if len(xmlfiles) > 1:
-                    logger.error('multiple XMLs file were generated (found in '
-                                 + outFolder + '). Using ' + xmlPath)
-                    raise Exception('multiple XMLs file were generated (' +
-                                    'found in ' + outFolder + '). Using ' +
-                                    xmlPath)
+                    error('multiple XMLs file were generated (found in '
+                                 + outFolder + '). Using ' + xmlPath, outFolder)
             # upate xml file
             updateXMLDescription(xmlPath,
                                  os.path.relpath(outFolder,
@@ -278,6 +271,12 @@ def extract_inType(abspath, site_id, osgDir):
                       'please remove manually')
         # shutil.rmtree(outFolder)  # if we won't to force remove it
     return inType, inKind, outFolder
+
+def error(errorMessage, outFolder):
+     logger.error(errorMessage)
+     logger.info('Removing %s ' % outFolder)
+     shutil.rmtree(outFolder)
+     raise Exception(errorMessage)
 
 
 def main(opts):
