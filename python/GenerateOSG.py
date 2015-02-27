@@ -158,19 +158,21 @@ def createOSG(opts, abOffsetX=None,
                          stderr=subprocess.PIPE).communicate()
 
     # move files to outFolder; drop outputPrefix from filename
+    logger.info("Moving files to " + outFolder)
     outputFiles = glob.glob(outputPrefix + '*')
     for filename in outputFiles:
-        if (inType == utils.PC_FT):
-            shutil.move(os.path.abspath(filename),
-                        os.path.join(outFolder,
-                                     filename[len(outputPrefix)+1:]))
-        else:
-            # outputPrefix is appended slightly different for PC and MESH
-            shutil.move(os.path.abspath(filename),
-                        os.path.join(outFolder,
-                                     filename[len(outputPrefix):]))
+        shutil.move(os.path.abspath(filename), os.path.join(outFolder,filename)) # Move also with data
+#        if (inType == utils.PC_FT):
+#            shutil.move(os.path.abspath(filename),
+#                        os.path.join(outFolder,
+#                                     filename[len(outputPrefix)+1:]))
+#        else:
+#            # outputPrefix is appended slightly different for PC and MESH
+#            shutil.move(os.path.abspath(filename),
+#                        os.path.join(outFolder,
+#                                     filename[len(outputPrefix):]))
 
-    logger.info("Moving files to " + outFolder)
+    
 
     ofiles = sorted(glob.glob(os.path.join(outFolder, '*' + ofile)))
     if len(ofiles) == 0:
@@ -191,9 +193,7 @@ def createOSG(opts, abOffsetX=None,
                     error('multiple XMLs file were generated (found in '
                                  + outFolder + '). Using ' + xmlPath, outFolder)
             # upate xml file
-            updateXMLDescription(xmlPath,
-                                 os.path.relpath(outFolder,
-                                                 utils.DEFAULT_RAW_DATA_DIR))
+            updateXMLDescription(xmlPath, os.path.relpath(mainOsgb, opts.osgDir))
 
         txtfiles = glob.glob(os.path.join(outFolder, '*offset.txt'))
         if len(txtfiles):
