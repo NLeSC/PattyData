@@ -42,7 +42,10 @@ def main(opts):
         connection.commit()
         connection.close()
     
-     m = 'Finished creating DB in %.2f seconds' % (time.time() - t0)
+    m = 'Finished creating DB in %.2f seconds' % (time.time() - t0)
+    logging.info(m)
+    print m
+
 
 if __name__ == "__main__":
     usage = 'Usage: %prog [options]'
