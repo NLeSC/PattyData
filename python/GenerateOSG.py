@@ -105,7 +105,7 @@ def createOSG(opts, abOffsetX=None,
         # input is already a directory
         os.chdir(inFile)
 
-    outputPrefix = 'data'
+    outputPrefix = utils.OSG_DATA_PREFIX
     aligned = (abOffsetX is not None)
     ofile = getOSGFileFormat(inType)
 

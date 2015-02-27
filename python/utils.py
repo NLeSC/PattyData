@@ -78,6 +78,8 @@ LAZ = 'LAZ'
 POTREE_SERVER_DATA_ROOT = '/home/pattydat/DATA'
 POTREE_DATA_URL_PREFIX = 'http://148.251.106.132:8090'
 
+OSG_DATA_PREFIX = 'data'
+
 def getLastModification(absPath, initialLMTime = None):
     """
     Get the last modification time of the provided path. 

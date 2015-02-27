@@ -155,7 +155,7 @@ def main(opts):
         if opts.background == os.path.basename(osgPath):
             staticObjects.add_staticObject(viewer_conf_api.staticObject
                                            (url=os.path.relpath(
-                                           glob.glob(osgPath + '/osgb')[0],
+                                           glob.glob(osgPath + '/' + utils.OSG_DATA_PREFIX + '.osgb')[0],
                                            opts.osg)))
 
     # Add hardcoded DOME
