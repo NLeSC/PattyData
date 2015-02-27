@@ -160,7 +160,7 @@ def main(opts):
 
     # Add hardcoded DOME
     staticObjects.add_staticObject(viewer_conf_api.staticObject
-                                   (url='DOMES/skydome.osg'))
+                                   (url=utils.DOMES_OSG_RELATIVE))
 
     rootObject.set_staticObjects(staticObjects)
 
