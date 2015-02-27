@@ -25,9 +25,10 @@ def argument_parser():
 
 def run(args):
     utils.start_logging(filename=args.input + '.log', level=args.log)
-
-    t0 = utils.getCurrentTime()
-    msg = 'Staring AccessDB dump merge'    
+    
+    localtime = utils.getCurrentTimeAsAscii()
+    t0 = time.time()
+    msg = os.path.basename(__file__) + ' script starts at %s.' %localtime
     print msg
     logging.info(msg)
 
@@ -128,8 +129,8 @@ ON UPDATE NO ACTION
 ON DELETE NO ACTION""")
     connection.commit()
     
-    elapsed_time = utils.getCurrentTime() - t0    
-    msg = 'Finished. Total elapsed time: %s s.' %elapsed_time
+    elapsed_time = time.time() - t0    
+    msg = 'Finished. Total elapsed time: %.02f seconds' %elapsed_time
     print(msg)
     logging.info(msg)
 

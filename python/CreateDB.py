@@ -3,32 +3,32 @@
 #    Created by Oscar Martinez                                                 #
 #    o.rubi@esciencecenter.nl                                                  #
 ################################################################################
-import os, optparse, psycopg2, logging, time
-from utils import *
+import os, optparse, psycopg2, logging, time, utils
 
 def main(opts):
     # Set logging
-    start_logging(filename=opts.sql + '.log', level=opts.log)
+    utils.start_logging(filename=opts.sql + '.log', level=opts.log)
    
-    to = time.time()
-    m = 'Creating DB'
-    logging.info(m) 
-    print m
-    os.system('createdb ' + postgresConnectString(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport, True))
+    localtime = utils.getCurrentTimeAsAscii()
+    t0 = time.time()
+    msg = os.path.basename(__file__) + ' script starts at %s.' %localtime
+    print msg
+    logging.info(msg)
+    os.system('createdb ' + utils.postgresConnectString(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport, True))
     
-    connection, cursor = connectToDB(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport) 
+    connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport) 
 
-    m = 'Adding PostGIS extension'
-    logging.info(m)
-    print m
+    msg = 'Adding PostGIS extension'
+    logging.info(msg)
+    #print msg
     cursor.execute("CREATE EXTENSION POSTGIS")
     connection.commit()
 
-    success_loading = load_sql_file(cursor, opts.sql)
+    success_loading = utils.load_sql_file(cursor, opts.sql)
  
-    m = 'Granting relevant permissions' 
-    logging.info(m)
-    print m
+    msg = 'Granting relevant permissions' 
+    logging.info(msg)
+    #print msg
 
     if success_loading:    
         cursor.execute("select tablename from  pg_tables where schemaname = 'public'")
@@ -42,9 +42,9 @@ def main(opts):
         connection.commit()
         connection.close()
     
-    m = 'Finished creating DB in %.2f seconds' % (time.time() - t0)
-    logging.info(m)
-    print m
+    msg = 'Finished. Total elapsed time  %.02f seconds' % (time.time() - t0)
+    logging.info(msg)
+    print msg
 
 
 if __name__ == "__main__":
@@ -52,11 +52,11 @@ if __name__ == "__main__":
     description = "Create the DB"
     op = optparse.OptionParser(usage=usage, description=description)
     op.add_option('-f','--sql',default='',help='File with the SQL commands to create the DB',type='string')
-    op.add_option('-d','--dbname',default=DEFAULT_DB,help='Postgres DB name [default ' + DEFAULT_DB + ']',type='string')
-    op.add_option('-u','--dbuser',default=USERNAME,help='DB user [default ' + USERNAME + ']',type='string')
+    op.add_option('-d','--dbname',default=utils.DEFAULT_DB,help='Postgres DB name [default ' + utils.DEFAULT_DB + ']',type='string')
+    op.add_option('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type='string')
     op.add_option('-p','--dbpass',default='',help='DB pass',type='string')
     op.add_option('-b','--dbhost',default='',help='DB host',type='string')
     op.add_option('-r','--dbport',default='',help='DB port',type='string')
-    op.add_option('-l','--log',help='Logging level (choose from ' + ','.join(LOG_LEVELS_LIST) + ' ; default ' + DEFAULT_LOG_LEVEL + ')',type='choice', choices=['debug', 'info', 'warning', 'error','critical'], default=DEFAULT_LOG_LEVEL)
+    op.add_option('-l','--log',help='Logging level (choose from ' + ','.join(utils.LOG_LEVELS_LIST) + ' ; default ' + utils.DEFAULT_LOG_LEVEL + ')',type='choice', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
     (opts, args) = op.parse_args()
     main(opts)

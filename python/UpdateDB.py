@@ -195,8 +195,9 @@ def main(opts):
     osgDataAbsPath = dataAbsPath + '/' + OSG_FT
     potDataAbsPath = dataAbsPath + '/' + POT_FT
 
+    localtime = getCurrentTimeAsAscii()
     t0 = time.time()
-    msg = 'Starting UpdateDB'
+    msg = os.path.basename(__file__) + ' script starts at %s.' %localtime
     print msg
     logging.info(msg)
     if 'r' in opts.types:
@@ -223,7 +224,7 @@ def main(opts):
 
     cursor.close()
     connection.close()
-    msg = 'Finished UpdateDB in ' + ('%.02f' % (time.time() - t0))
+    msg = 'Finished. Total elapsed time: %.02f seconds' % (time.time() - t0)
     print msg
     logging.info(msg)
 

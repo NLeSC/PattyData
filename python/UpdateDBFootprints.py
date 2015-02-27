@@ -8,8 +8,7 @@
 # Modifications:   
 # Notes:            Based on mergefootprints.py from the PattyFFW Oct 2014
 ################################################################################
-import os, argparse, utils
-import psycopg2
+import os, argparse, utils, psycopg2, time
 
 logger = None
 connection = None
@@ -72,7 +71,7 @@ def update_geometries(list_ids, new):
         
         
     msg = "The geometries have been updated!"        
-    print msg
+#    print msg
     logger.debug(msg)    
     
 def update_geom_col_type(cursor):
@@ -124,12 +123,10 @@ def run(args):
     # start logging
     logger = utils.start_logging(filename=utils.LOG_FILENAME, level=utils.DEFAULT_LOG_LEVEL)
     localtime = utils.getCurrentTimeAsAscii()
-    msg = 'UpdateFoorptints scipt logging starts at %s.' %localtime
+    t0 = time.time()
+    msg = os.path.basename(__file__) + ' script starts at %s.' %localtime
     print msg
     logger.info(msg)
-
-    # start timer
-    t0 = utils.getCurrentTime()
     
     if os.popen('head -500 ' + args.input + ' | grep "CREATE TABLE sites_geoms_temp"').read().count("CREATE TABLE sites_geoms_temp") == 0:
         msg = "The table in the SQL file must be named sites_geom_temp. Replace the table name to sites_geoms_temp!"
@@ -167,16 +164,16 @@ def run(args):
     utils.closeConnectionDB(connection, cursor)
     
     # measure elapsed time
-    elapsed_time = utils.getCurrentTime() - t0    
-    msg = 'Finished. Total elapsed time: %s s.' %elapsed_time
+    elapsed_time = time.time() - t0    
+    msg = 'Finished. Total elapsed time: %.02f seconds' % elapsed_time
     print(msg)
     logger.info(msg)
     
     # end logging
-    localtime = utils.getCurrentTimeAsAscii()  
-    msg = 'UpdateFootprints script logging ends at %s'% localtime
-    print(msg)
-    logger.info(msg)
+#    localtime = utils.getCurrentTimeAsAscii()  
+#    msg = 'UpdateFootprints script logging ends at %s'% localtime
+#    print(msg)
+#    logger.info(msg)
     
     return
 
