@@ -196,8 +196,9 @@ def main(opts):
     potDataAbsPath = dataAbsPath + '/' + POT_FT
 
     t0 = time.time()
-    logging.info('Starting UpdateDB')
-
+    msg = 'Starting UpdateDB'
+    print msg
+    logging.info(msg)
     if 'r' in opts.types:
         process(rawDataAbsPath, dataItemTypes, addRawDataItem)
     
@@ -222,7 +223,9 @@ def main(opts):
 
     cursor.close()
     connection.close()
-    logging.info('Finished UpdateDB in ' + ('%.02f' % (time.time() - t0)))
+    msg = 'Finished UpdateDB in ' + ('%.02f' % (time.time() - t0))
+    print msg
+    logging.info(msg)
 
 def process(absPath, dataItemTypes, addDataItemMethod):
     for dataItemType in (PC_FT, MESH_FT, PIC_FT):

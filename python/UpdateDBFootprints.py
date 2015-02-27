@@ -37,7 +37,7 @@ def clean_temp_table(args):
     utils.dbExecute(cursor, drop_table_sql)
     
     msg = 'Removed table sites_geoms_temp (if existed).'
-    print msg
+#    print msg
     logger.info(msg)
     
 def update_geometries(list_ids, new):
@@ -48,7 +48,7 @@ def update_geometries(list_ids, new):
     for (sid,) in list_ids:      
         
         msg = "Processing %s site from %s sites in total"% (number, len(list_ids))
-        print msg
+#        print msg
         logger.debug(msg)
         
         fetch_geom_sql = "SELECT site_id AS item_id, ST_Multi(ST_Transform( ST_Union(geom), %s)) AS geom FROM sites_geoms_temp WHERE site_id = %s GROUP BY site_id"                
@@ -79,12 +79,12 @@ def update_geom_col_type(cursor):
     """ function to update the initial geometries column type """
     num_items = utils.countElementsTable(cursor, 'item')
     msg = "Number of elements in item table: %s" %num_items        
-    print msg
+#    print msg
     logger.debug(msg)
             
     col_type = utils.typeColumnTable(cursor, 'geom','item')
     msg = "Current geom column type is %s."%col_type
-    print msg
+#    print msg
     logger.debug(msg)
  
     if (num_items == 0) or (col_type == 'polygon'): 
@@ -93,7 +93,7 @@ def update_geom_col_type(cursor):
         utils.dbExecute(cursor, alter_type_sql)
         
         msg = "Current geom column type is MultiPolygon, " + str(utils.SRID)
-        print msg
+#        print msg
         logger.debug(msg)
 
 def find_lists(cursor):
@@ -102,7 +102,7 @@ def find_lists(cursor):
         no_item_well_temp_ids, num_ids = utils.fetchDataFromDB(cursor, no_item_well_temp_sql)
         
         msg = "The unique item ids not in item table, but in sites_geoms_temp are %s in number"%num_ids
-        print msg
+#        print msg
         logger.debug(msg)
 
         # find the list of IDs which are both in the temporary geometries table and the item table   
@@ -110,7 +110,7 @@ def find_lists(cursor):
         both_in_item_and_temp_ids, num_both_ids = utils.fetchDataFromDB(cursor, both_in_item_and_temp_sql)
         
         msg = "The item ids both in item table and n sites_geoms_temp are %s in number"%num_both_ids
-        print msg
+#        print msg
         logger.debug(msg)
 
         return  no_item_well_temp_ids, both_in_item_and_temp_ids
@@ -132,7 +132,9 @@ def run(args):
     t0 = utils.getCurrentTime()
     
     if os.popen('head -500 ' + args.input + ' | grep "CREATE TABLE sites_geoms_temp"').read().count("CREATE TABLE sites_geoms_temp") == 0:
-        logger.error("The table in the SQL file must be named sites_geom_temp. Replace the table name to sites_geoms_temp!")
+        msg = "The table in the SQL file must be named sites_geom_temp. Replace the table name to sites_geoms_temp!"
+        print msg
+        logger.error(msg)
         return  
      
     # connect to the DB

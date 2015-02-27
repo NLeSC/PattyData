@@ -3,22 +3,33 @@
 #    Created by Oscar Martinez                                                 #
 #    o.rubi@esciencecenter.nl                                                  #
 ################################################################################
-import os, optparse, psycopg2, logging
+import os, optparse, psycopg2, logging, time
 from utils import *
 
 def main(opts):
     # Set logging
     start_logging(filename=opts.sql + '.log', level=opts.log)
-    
+   
+    to = time.time()
+    m = 'Creating DB'
+    logging.info(m) 
+    print m
     os.system('createdb ' + postgresConnectString(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport, True))
-
+    
     connection, cursor = connectToDB(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport) 
 
+    m = 'Adding PostGIS extension'
+    logging.info(m)
+    print m
     cursor.execute("CREATE EXTENSION POSTGIS")
     connection.commit()
 
     success_loading = load_sql_file(cursor, opts.sql)
-    
+ 
+    m = 'Granting relevant permissions' 
+    logging.info(m)
+    print m
+
     if success_loading:    
         cursor.execute("select tablename from  pg_tables where schemaname = 'public'")
         tablesNames = cursor.fetchall()
@@ -31,6 +42,8 @@ def main(opts):
         connection.commit()
         connection.close()
     
+     m = 'Finished creating DB in %.2f seconds' % (time.time() - t0)
+
 if __name__ == "__main__":
     usage = 'Usage: %prog [options]'
     description = "Create the DB"

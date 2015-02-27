@@ -27,22 +27,34 @@ def run(args):
     utils.start_logging(filename=args.input + '.log', level=args.log)
 
     t0 = utils.getCurrentTime()
+    msg = 'Staring AccessDB dump merge'    
+    print msg
+    logging.info(msg)
 
     logging.info('Checking validity of SQL file')
     # Check that beginning of the file does not contain a create database statement
     if os.popen('head -500 ' + args.input + ' | grep "CREATE DATABASE"').read().count("CREATE DATABASE"):
-        logging.error("You must remove CREATE DATABASE statement from the SQL file")
+        msg = "You must remove CREATE DATABASE statement from the SQL file"
+        print msg
+        logging.error(msg)
         return
     # Check that ther are not defaults in TIMESTAMPS that would cause errors
     if os.popen('grep "TIMESTAMP DEFAULT" ' + args.input).read().count("TIMESTAMP DEFAULT"):
-        logging.error("You must remove any DEFAULT value of any TIMESTAMP column")
+        msg = "You must remove any DEFAULT value of any TIMESTAMP column"
+        print msg
+        logging.error(msg)
         return
     # Check that ther are not index creations
     if os.popen('grep "INDEX" ' + args.input).read().count("INDEX"):
-        logging.error("You must remove any INDEX creation")
+        msg = "You must remove any INDEX creation"
+        print msg
+        logging.error(msg)
         return
     if os.popen("""grep '"' """ + args.input).read().count('"'):
-        logging.error('You must remove any double quote (")')
+        msg ='You must remove any double quote (")'
+        print msg
+        logging.error(msg)
+
         return
     
     # Establish connection with DB
@@ -73,7 +85,9 @@ def run(args):
     
     #Check errors
     if os.popen('cat ' + logFile + ' | grep ERROR').read().count("ERROR"):
-        logging.error('There was some errors in the data loading. Please see log ' + logFile)
+        msg = 'There was some errors in the data loading. Please see log ' + logFile
+        print msg
+        logging.error(msg)
         return
     
     # Set select permissions to all new tables
