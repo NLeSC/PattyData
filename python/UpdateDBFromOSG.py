@@ -15,6 +15,7 @@ import psycopg2
 import utils
 import viewer_conf_api
 from lxml import etree as ET
+from numpy import array as nparray
 
 logger = None
 
@@ -200,6 +201,11 @@ def main(opts):
                 values.append(siteId)
             except:
                 logger.warn('Incorrect camera name:' + name)
+        # add srid
+        offsetSRID = get_SRID(data, cursor)
+        names.append('srid')
+        values.append(offsetSRID[0][-1])
+        # add location
         for c in ('x', 'y', 'z', 'h', 'p', 'r'):
             if c in camera.keys():
                 names.append(c)
@@ -207,7 +213,7 @@ def main(opts):
         auxs = []
         for i in range(len(names)):
             auxs.append('%s')
-        offsetSRID = get_SRID(data, cursor)
+        fill_OSG_LOCATION(names, values, auxs, cursor)
         import pdb; pdb.set_trace()
         #utils.dbExecute(cursor, 'INSERT INTO OSG_LOCATION (' + ','.join(names[2:]) +
         #                ') VALUES (' + ','.join(auxs[2:]) + ') returning osg_location_id', values[2:])
@@ -224,7 +230,9 @@ def main(opts):
     utils.closeConnectionDB(connection, cursor)
 
 def get_SRID(data, cursor):
-    # get the offset and srid for the background used in the conf.xml file
+    '''
+    get the offset and srid for the background used in the conf.xml file
+    '''
     staticobj = [os.path.dirname(x.get('url')) for x in
                  data.xpath('//staticObject')]
     matching = [s for s in staticobj if 'PC/BACK/' in s]
@@ -236,8 +244,25 @@ def get_SRID(data, cursor):
             'offset_x, offset_y, offset_z, srid FROM OSG_DATA_ITEM_PC_BACKGROUND INNER JOIN RAW_DATA_ITEM ON OSG_DATA_ITEM_PC_BACKGROUND.raw_data_item_id=RAW_DATA_ITEM.raw_data_item_id WHERE OSG_DATA_ITEM_PC_BACKGROUND.abs_path=%s', [os.path.join(utils.DEFAULT_DATA_DIR,utils.DEFAULT_OSG_DATA_DIR,matching[0])])
     return offsetSRID
 
-def fill_OSG_LOCATION():
-    pass
+
+def fill_OSG_LOCATION(itemList, valueList, auxList, cursor):
+    '''
+    Fill the OSG_LOCATION DB table
+    '''
+    OSG_LOCATION_list = ['srid', 'x', 'y', 'z', 'xs', 'ys', 'zs', 'h', 'p',
+                         'r', 'cast_shadow']
+    # intersection of itemList with OSG_LOCATION_list
+    addItemNames = list(set(itemList) & set(OSG_LOCATION_list))
+    # index of addItemNames in itemList
+    addIndex = [itemList.index(item) for item in addItemNames]
+    # extract required values using the index
+    addItemValues = nparray(valueList)[addIndex].tolist()
+    addItemAuxs = nparray(auxList)[addIndex].tolist()
+    # Add item to OSG_LOCATTION DB table
+    utils.dbExecute(cursor, 'INSERT INTO OSG_LOCATION (' + ','.join(addItemNames) +
+                    ') VALUES (' + ','.join(addItemAuxs) +
+                    ') returning osg_location_id', addItemValues)
+    return 1
 
 if __name__ == "__main__":
     # define argument menu
