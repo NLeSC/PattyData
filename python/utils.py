@@ -5,7 +5,7 @@
 ################################################################################
 import os, time, calendar, logging
 import psycopg2
-from osgeo import osr
+#from osgeo import osr
 
 # Python Module containing methods used in other scripts
 PROPERTIES = {'administrator':('initials', 'list_participants'),
@@ -77,6 +77,8 @@ LAZ = 'LAZ'
 
 POTREE_SERVER_DATA_ROOT = '/home/pattydat/DATA'
 POTREE_DATA_URL_PREFIX = 'http://148.251.106.132:8090'
+
+OSG_DATA_PREFIX = 'data'
 
 def getLastModification(absPath, initialLMTime = None):
     """
@@ -227,7 +229,7 @@ def fetchDataFromDB(cursor, query, queryArgs = None, mogrify = True, verbose = F
     num_items = cursor.rowcount
     
     if verbose:
-        msg = 'Retrived %s data_items.'%num_items
+        msg = 'Retrieved %s data_items.'%num_items
         print msg
         logging.debug(msg)
 
