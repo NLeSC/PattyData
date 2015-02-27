@@ -68,14 +68,24 @@ def fetch_abs_path(siteId):
     return abs_path
     
 def fetch_potree_abs_paths(siteId):
-    """ get the absolute data item path for the potree converted data given the site ID"""
+    """ get the absolute data item paths for the potree converted data given the site ID"""
     abs_paths = ""
     
     fetch_potree_abs_path_statement = 'select abs_path from potree_data_item_pc natural join raw_data_item_pc natural join item where item_id = %s'
     abs_paths,num = utils.fetchDataFromDB(cursor, fetch_potree_abs_path_statement, [siteId,],[], False)
         
     
-    return abs_paths, num    
+    return abs_paths, num   
+    
+def fetch_osg_abs_paths_pc(siteId):
+    """ get the absolute data item paths for the osg PC data given the site ID"""
+    abs_paths = ""
+    
+    fetch_osg_abs_path_statement = 'select abs_path from osg_data_item natural join osg_data_item_pc_site natural join  raw_data_item_pc natural join item where item_id = %s'
+    abs_paths,num = utils.fetchDataFromDB(cursor, fetch_osg_abs_path_statement, [siteId,],[], False)
+        
+    
+    return abs_paths, num       
 #------------------------------------------------------------------------------        
 def run(args): 
     
@@ -101,12 +111,17 @@ def run(args):
     print msg
     logger.info(msg)
     
-    # fetch the potree abs_path
+    # fetch the potree abs_paths
     abs_potree_paths, num = fetch_potree_abs_paths(args.itemid)        
-    msg = 'Abs potree path fetched %s paths: %s' %(num, abs_potree_paths)
+    msg = '%s abs potree paths fetched %s' %(num, abs_potree_paths)
     print msg
     logger.info(msg)
     
+    # fetch the OSG abs_paths
+    abs_osg_pc_paths, num = fetch_osg_abs_paths_pc(args.itemid)        
+    msg = '%s abs OSG paths for PC fetched: %s' %(num, abs_osg_pc_paths)
+    print msg
+    logger.info(msg)    
     # copy the data to the target directory
     #remove_data(opts)
 
