@@ -130,11 +130,11 @@ def createOSG(opts, abOffsetX=None,
     # A MESH
     elif inType == utils.MESH_FT:
         tmode = '--mode polyMesh --convert --reposition'
-        inputFiles = glob.glob(inFile + '/*.obj')        
+        inputFiles = glob.glob(inFile + '/*.obj') + glob.glob(inFile + '/*.OBJ') 
     # A PICTURE
     elif inType == utils.PIC_FT:
         tmode = '--mode picturePlane'
-        inputFiles = glob.glob(inFile + '/*.png') + glob.glob(inFile + '/*.jpg') + glob.glob(inFile + '/*.jpeg')
+        inputFiles = glob.glob(inFile + '/*.png') + glob.glob(inFile + '/*.jpg') + glob.glob(inFile + '/*.jpeg') + glob.glob(inFile + '/*.PNG') + glob.glob(inFile + '/*.JPG') + glob.glob(inFile + '/*.JPEG')
     
     if len(inputFiles) > 1:
         error('Multiple valid files found in %s' % inFile,outFolder)
