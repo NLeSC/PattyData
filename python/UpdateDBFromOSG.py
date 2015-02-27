@@ -120,6 +120,9 @@ def main(opts):
                                            opts.dbpass, opts.dbhost,
                                            opts.dbport)
 
+    # get offset and srid of the background defined in the conf file
+    offsetSRID = get_SRID(data, cursor)
+    
     # Process updates
     updateAOS = data.xpath('//*[@status="updated"]')
     for ao in updateAOS:
@@ -186,32 +189,45 @@ def main(opts):
 
     # Process the cameras (the DEF CAMs are added for all objects
     # and can not be deleted or updated)
+    # TODO: get a list of updated items -> delete/re-add them
     cameras = data.xpath('//camera[not(starts-with(@name,"' +
                          utils.DEFAULT_CAMERA_PREFIX + '"))]')
     # get a list of cameras from the db
     data,rows = utils.fetchDataFromDB(
         cursor, 'SELECT osg_camera_name, osg_location_id FROM OSG_CAMERA')
-    # convert list of tuples into two lists
-    camerasInDB,camerasInDBId = map(list, zip(*data))
-    # cameras in DB that are not conf file need to be removed
-    camerasInConf = [camera.get('name') for camera in cameras]
-    camerasRemove = list(set(camerasInDB) - set(camerasInConf))
-    # index of camerasRemove in camerasInDB
-    delIndex = [camerasInDB.index(item) for item in camerasRemove]
-    # extract matching osg_location_id for camera names
-    camerasRemoveId = nparray(camerasInDBId)[delIndex].tolist()
-    # loop over all the cameras that need to be deleted
-    for i in range(0,len(camerasRemove)):
-        # delete from osg_item_camera
-        utils.dbExecute(cursor, 'DELETE FROM OSG_ITEM_CAMERA WHERE ' +
-                        'osg_camera_name=%s', [camerasRemove[i]])                                                                                         
-        # delete from osg_camera
-        utils.dbExecute(cursor, 'DELETE FROM OSG_CAMERA WHERE ' +
-                        'osg_camera_name=%s', [camerasRemove[i]])
-        # delete from osg_location
-        utils.dbExecute(cursor, 'DELETE FROM OSG_LOCATION WHERE ' +
-                        'osg_location_id=%s', [camerasRemoveId[i]])
-    for camera in cameras:
+    # only execute if there are non default cameras in the DB
+    if len(data) > 0:
+        # convert list of tuples into two lists
+        camerasInDB,camerasInDBId = map(list, zip(*data))
+        # cameras in DB that are not conf file need to be removed
+        camerasInConf = [camera.get('name') for camera in cameras]
+        camerasRemove = list(set(camerasInDB) - set(camerasInConf))
+        # index of camerasRemove in camerasInDB
+        delIndex = [camerasInDB.index(item) for item in camerasRemove]
+        # extract matching osg_location_id for camera names
+        camerasRemoveId = nparray(camerasInDBId)[delIndex].tolist()
+        # loop over all the cameras that need to be deleted
+        for i in range(0,len(camerasRemove)):
+            # delete from osg_item_camera
+            utils.dbExecute(cursor, 'DELETE FROM OSG_ITEM_CAMERA WHERE ' +
+                            'osg_camera_name=%s', [camerasRemove[i]])                                                                                         
+            # delete from osg_camera
+            utils.dbExecute(cursor, 'DELETE FROM OSG_CAMERA WHERE ' +
+                            'osg_camera_name=%s', [camerasRemove[i]])
+            # delete from osg_location
+            utils.dbExecute(cursor, 'DELETE FROM OSG_LOCATION WHERE ' +
+                            'osg_location_id=%s', [camerasRemoveId[i]])
+        # Add all new cameras to the DB
+        # list of cameras to add
+        camerasAdd = list(set(camerasInConf) - set(camerasInDB))
+        # index of camerasRemove in camerasInDB
+        AddIndex = [camerasInDB.index(item) for item in camerasAdd]
+        camerasToAdd = nparray(cameras)[AddIndex].tolist()
+    else: 
+        # all cameras in config are new and need to be added
+        camerasToAdd = cameras
+        
+    for camera in camerasToAdd:
         name = camera.get('name')
         names = ['osg_camera_name', ]
         values = [name, ]
@@ -224,7 +240,6 @@ def main(opts):
             except:
                 logger.warn('Incorrect camera name:' + name)
         # add srid
-        offsetSRID = get_SRID(data, cursor)
         names.append('srid')
         values.append(offsetSRID[0][-1])
         # add location
@@ -249,7 +264,6 @@ def main(opts):
         # fill OSG_ITEM_CAMERA
         OSG_ITEM_CAMERA_list = ['item_id', 'osg_camera_name'] 
         fill_DB_table(names, values, auxs, OSG_ITEM_CAMERA_list, 'OSG_ITEM_CAMERA', cursor)
-
     # close DB connection
     utils.closeConnectionDB(connection, cursor)
 
