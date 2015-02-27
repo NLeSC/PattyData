@@ -188,7 +188,29 @@ def main(opts):
     # and can not be deleted or updated)
     cameras = data.xpath('//camera[not(starts-with(@name,"' +
                          utils.DEFAULT_CAMERA_PREFIX + '"))]')
-    utils.dbExecute(cursor, 'DELETE FROM OSG_CAMERA')
+    # get a list of cameras from the db
+    data,rows = utils.fetchDataFromDB(
+        cursor, 'SELECT osg_camera_name, osg_location_id FROM OSG_CAMERA')
+    # convert list of tuples into two lists
+    camerasInDB,camerasInDBId = map(list, zip(*data))
+    # cameras in DB that are not conf file need to be removed
+    camerasInConf = [camera.get('name') for camera in cameras]
+    camerasRemove = list(set(camerasInDB) - set(camerasInConf))
+    # index of camerasRemove in camerasInDB
+    delIndex = [camerasInDB.index(item) for item in camerasRemove]
+    # extract matching osg_location_id for camera names
+    camerasRemoveId = nparray(camerasInDBId)[delIndex].tolist()
+    # loop over all the cameras that need to be deleted
+    for i in range(0,len(camerasRemove)):
+        # delete from osg_item_camera
+        utils.dbExecute(cursor, 'DELETE FROM OSG_ITEM_CAMERA WHERE ' +
+                        'osg_camera_name=%s', [camerasRemove[i]])                                                                                         
+        # delete from osg_camera
+        utils.dbExecute(cursor, 'DELETE FROM OSG_CAMERA WHERE ' +
+                        'osg_camera_name=%s', [camerasRemove[i]])
+        # delete from osg_location
+        utils.dbExecute(cursor, 'DELETE FROM OSG_LOCATION WHERE ' +
+                        'osg_location_id=%s', [camerasRemoveId[i]])
     for camera in cameras:
         name = camera.get('name')
         names = ['osg_camera_name', ]
