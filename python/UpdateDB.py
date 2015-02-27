@@ -251,7 +251,7 @@ def process(absPath, dataItemTypes, addDataItemMethod):
                 
 def processBackgrounds(absPath, addMethod, dataItemType):
     if not os.path.isdir(absPath):
-        logging.error('Skipping ' + absPath + '. It does not exist')
+        logging.warn('Skipping ' + absPath + '. It does not exist')
         return
     t0 = time.time()
     logging.info('Processing ' + absPath)
@@ -262,7 +262,7 @@ def processBackgrounds(absPath, addMethod, dataItemType):
 
 def processSites(absPath, addMethod, dataItemType):
     if not os.path.isdir(absPath):
-        logging.error('Skipping ' + absPath + '. It does not exist')
+        logging.warn('Skipping ' + absPath + '. It does not exist')
         return
     t0 = time.time()
     logging.info('Processing ' + absPath)
