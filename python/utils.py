@@ -287,7 +287,7 @@ def load_sql_file(cursor, sqlFile):
     try:
         for statement in open(sqlFile,'r').read().split(';'):
             if statement.strip() != '':
-                print statement
+                logging.debug(statement)
                 cursor.execute(statement)
     except Exception, E:
         err_msg = 'Cannot execute the commands in %s.' % sqlFile
@@ -300,7 +300,7 @@ def load_sql_file(cursor, sqlFile):
     
     success = True
     msg = 'Successful execution of the commands in %s.' % sqlFile
-    print msg
+#    print msg
     logging.debug(msg)
         
     return success
