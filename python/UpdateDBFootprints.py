@@ -121,7 +121,7 @@ def run(args):
     global cursor
     
     # start logging
-    logger = utils.start_logging(filename=utils.LOG_FILENAME, level=utils.DEFAULT_LOG_LEVEL)
+    logger = utils.start_logging(filename=args.input + '.log', level=utils.DEFAULT_LOG_LEVEL)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
     msg = os.path.basename(__file__) + ' script starts at %s.' %localtime
