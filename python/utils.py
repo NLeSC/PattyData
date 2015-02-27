@@ -5,7 +5,7 @@
 ################################################################################
 import os, time, calendar, logging
 import psycopg2
-from osgeo import osr
+#from osgeo import osr
 
 # Python Module containing methods used in other scripts
 PROPERTIES = {'administrator':('initials', 'list_participants'),
@@ -227,7 +227,7 @@ def fetchDataFromDB(cursor, query, queryArgs = None, mogrify = True, verbose = F
     num_items = cursor.rowcount
     
     if verbose:
-        msg = 'Retrived %s data_items.'%num_items
+        msg = 'Retrieved %s data_items.'%num_items
         print msg
         logging.debug(msg)
 
