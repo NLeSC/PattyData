@@ -345,8 +345,8 @@ def cleanOSG(dataItemTypes):
             if os.path.isfile(absPath) or os.path.isdir(absPath):
                 logging.error('OSG data item in ' + absPath + ' has not been checked!')
             else: # There is not any file or folder in that location -> we can delete this entry
-                dbExecute(cursor, 'DELETE FROM OSG_DATA_ITEM WHERE osg_data_item_id = %s', [osgDataItemId,])
                 dbExecute(cursor, 'DELETE FROM OSG_DATA_ITEM_PC_SITE WHERE osg_data_item_id = %s', [osgDataItemId,])
+                dbExecute(cursor, 'DELETE FROM OSG_DATA_ITEM WHERE osg_data_item_id = %s', [osgDataItemId,])
     if MESH_FT in dataItemTypes:
         dbExecute(cursor, 'SELECT A.osg_data_item_id, A.abs_path FROM OSG_DATA_ITEM A,OSG_DATA_ITEM_MESH B WHERE A.osg_data_item_id = B.osg_data_item_id AND last_check < %s', [initialTime,])
         rows = cursor.fetchall()
@@ -354,8 +354,8 @@ def cleanOSG(dataItemTypes):
             if os.path.isfile(absPath) or os.path.isdir(absPath):
                 logging.error('OSG data item in ' + absPath + ' has not been checked!')
             else: # There is not any file or folder in that location -> we can delete this entry
-                dbExecute(cursor, 'DELETE FROM OSG_DATA_ITEM WHERE osg_data_item_id = %s', [osgDataItemId,])
                 dbExecute(cursor, 'DELETE FROM OSG_DATA_ITEM_MESH WHERE osg_data_item_id = %s', [osgDataItemId,])
+                dbExecute(cursor, 'DELETE FROM OSG_DATA_ITEM WHERE osg_data_item_id = %s', [osgDataItemId,])
     if PIC_FT in dataItemTypes:
         dbExecute(cursor, 'SELECT A.osg_data_item_id, A.abs_path FROM OSG_DATA_ITEM A,OSG_DATA_ITEM_PICTURE B WHERE A.osg_data_item_id = B.osg_data_item_id AND last_check < %s', [initialTime,])
         rows = cursor.fetchall()
@@ -363,8 +363,8 @@ def cleanOSG(dataItemTypes):
             if os.path.isfile(absPath) or os.path.isdir(absPath):
                 logging.error('OSG data item in ' + absPath + ' has not been checked!')
             else: # There is not any file or folder in that location -> we can delete this entry
-                dbExecute(cursor, 'DELETE FROM OSG_DATA_ITEM WHERE osg_data_item_id = %s', [osgDataItemId,])
                 dbExecute(cursor, 'DELETE FROM OSG_DATA_ITEM_PICTURE WHERE osg_data_item_id = %s', [osgDataItemId,])
+                dbExecute(cursor, 'DELETE FROM OSG_DATA_ITEM WHERE osg_data_item_id = %s', [osgDataItemId,])
 
 def cleanPOT(dataItemTypes):
     logging.info('Cleaning POTREE data items...') 
