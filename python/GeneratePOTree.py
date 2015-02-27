@@ -20,13 +20,7 @@
 #                   * Unique identifier is created in xml config file
 ##############################################################################
 
-import shutil
-import os
-import utils
-import glob
-import subprocess
-import argparse
-import shlex
+import shutil, time, os, utils, glob, subprocess, argparse, shlex,
 
 logger = None
 
@@ -139,12 +133,20 @@ def error(errorMessage, outFolder):
 
 def main(opts):
     # Define logger and start logging
-    global logger
-    logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
-    logger.info('#######################################')
-    logger.info('Starting script GeneratePOTree.py')
-    logger.info('#######################################')
+    logname = os.path.basename(__file__).split('.')[0] + '_' + str(opts.itemid) + '.log'
+    logger = utils.start_logging(filename=logname, level=opts.log)
+    localtime = utils.getCurrentTimeAsAscii()
+    t0 = time.time()
+    msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
+    print msg
+    logger.info(msg)
+
     createPOTree(opts)
+
+    elapsed_time = time.time() - t0
+    msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
+    print(msg)
+    logger.info(msg)
 
 if __name__ == "__main__":
     # define argument menu

@@ -275,7 +275,7 @@ def error(errorMessage, outFolder):
 def main(opts):
     # Define logger and start logging
     global logger
-    logname = str(opts.itemid) + '.log'
+    logname = os.path.basename(__file__).split('.')[0] + '_' + str(opts.itemid) + '.log'
     logger = utils.start_logging(filename=logname, level=opts.log)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
