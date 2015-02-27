@@ -24,7 +24,8 @@ def argument_parser():
     return parser
 
 def run(args):
-    utils.start_logging(filename=args.input + '.log', level=args.log)
+    logname = args.input + '.log'
+    utils.start_logging(filename=logname, level=args.log)
     
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
@@ -130,7 +131,7 @@ ON DELETE NO ACTION""")
     connection.commit()
     
     elapsed_time = time.time() - t0    
-    msg = 'Finished. Total elapsed time: %.02f seconds' %elapsed_time
+    msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time,logname)
     print(msg)
     logging.info(msg)
 

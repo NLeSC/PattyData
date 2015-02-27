@@ -7,7 +7,8 @@ import os, optparse, psycopg2, logging, time, utils
 
 def main(opts):
     # Set logging
-    utils.start_logging(filename=opts.sql + '.log', level=opts.log)
+    logname = opts.sql + '.log'
+    utils.start_logging(filename=logname, level=opts.log)
    
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
@@ -42,7 +43,7 @@ def main(opts):
         connection.commit()
         connection.close()
     
-    msg = 'Finished. Total elapsed time  %.02f seconds' % (time.time() - t0)
+    msg = 'Finished. Total elapsed time  %.02f seconds. See %s' % ((time.time() - t0), logname)
     logging.info(msg)
     print msg
 

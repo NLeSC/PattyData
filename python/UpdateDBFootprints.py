@@ -121,7 +121,8 @@ def run(args):
     global cursor
     
     # start logging
-    logger = utils.start_logging(filename=args.input + '.log', level=utils.DEFAULT_LOG_LEVEL)
+    logname = args.input + '.log'
+    logger = utils.start_logging(filename=logname, level=utils.DEFAULT_LOG_LEVEL)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
     msg = os.path.basename(__file__) + ' script starts at %s.' %localtime
@@ -165,7 +166,7 @@ def run(args):
     
     # measure elapsed time
     elapsed_time = time.time() - t0    
-    msg = 'Finished. Total elapsed time: %.02f seconds' % elapsed_time
+    msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
     print(msg)
     logger.info(msg)
     

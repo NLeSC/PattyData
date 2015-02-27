@@ -181,7 +181,8 @@ def getXMLAbsPath(absPath):
 
 def main(opts):
     # Set logging
-    start_logging(filename=os.path.basename(__file__) + '.log', level=opts.log)
+    logname = os.path.basename(__file__) + '.log'
+    start_logging(filename=logname, level=opts.log)
     # Establish connection with DB
     global cursor
     connection, cursor = connectToDB(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport) 
@@ -224,7 +225,7 @@ def main(opts):
 
     cursor.close()
     connection.close()
-    msg = 'Finished. Total elapsed time: %.02f seconds' % (time.time() - t0)
+    msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (time.time() - t0, logname)
     print msg
     logging.info(msg)
 
