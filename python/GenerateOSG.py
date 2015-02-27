@@ -193,7 +193,7 @@ def createOSG(opts, abOffsetX=None,
                     error('multiple XMLs file were generated (found in '
                                  + outFolder + '). Using ' + xmlPath, outFolder)
             # upate xml file
-            updateXMLDescription(xmlPath, os.path.relpath(mainOsgb, opts.osgDir))
+            updateXMLDescription(xmlPath, os.path.relpath(outFolder, opts.osgDir))
 
         txtfiles = glob.glob(os.path.join(outFolder, '*offset.txt'))
         if len(txtfiles):
