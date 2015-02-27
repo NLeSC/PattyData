@@ -5,7 +5,7 @@
 # Authors:          Oscar Martinez, NLeSC, o.rubi@esciencecenter.nl
 #                   Elena Ranguelova, NLeSc
 # Created:          16.02.2015
-# Last modified:    23.02.2015
+# Last modified:    27.02.2015
 #
 # Changes:
 #
@@ -27,7 +27,7 @@ def argument_parser():
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument('-i', '--itemid', help='Raw data item id (with ? the available raw data items are listed)',
                         action='store', required=True)
-    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name which should be updated with these footprints ' + utils.DEFAULT_DB + ']',type=str , required=False)
+    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name ' + utils.DEFAULT_DB + ']',type=str , required=False)
     parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
     parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
     parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
@@ -61,7 +61,7 @@ def fetch_abs_path(siteId):
     """ get the absolute data item path given the site ID"""
     abs_path = ""
     
-    fetch_abs_path_statement = 'select abs_path from raw_data_item natural join raw_data_item_pc where (raw_data_item_id = %s'
+    fetch_abs_path_statement = 'select abs_path from raw_data_item natural join item where item_id = %s'
     abs_path,num = utils.fetchDataFromDB(cursor, fetch_abs_path_statement, [siteId,],[], True)
         
     
