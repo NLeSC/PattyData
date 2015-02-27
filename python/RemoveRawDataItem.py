@@ -15,7 +15,7 @@
 #                   * All the previous data is deleted
 ##############################################################################
 import argparse
-import utils
+import utils, time
 
 
 logger = None
@@ -62,11 +62,20 @@ def fetch_abs_path(siteId):
     abs_path = ""
     
     fetch_abs_path_statement = 'select abs_path from raw_data_item natural join item where item_id = %s'
-    abs_path,num = utils.fetchDataFromDB(cursor, fetch_abs_path_statement, [siteId,],[], True)
+    abs_path,num = utils.fetchDataFromDB(cursor, fetch_abs_path_statement, [siteId,],[], False)
         
     
     return abs_path
     
+def fetch_potree_abs_paths(siteId):
+    """ get the absolute data item path for the potree converted data given the site ID"""
+    abs_paths = ""
+    
+    fetch_potree_abs_path_statement = 'select abs_path from potree_data_item_pc natural join raw_data_item_pc natural join item where item_id = %s'
+    abs_paths,num = utils.fetchDataFromDB(cursor, fetch_potree_abs_path_statement, [siteId,],[], False)
+        
+    
+    return abs_paths, num    
 #------------------------------------------------------------------------------        
 def run(args): 
     
@@ -91,10 +100,21 @@ def run(args):
     msg = 'Abs path fetched: %s', abs_path
     print msg
     logger.info(msg)
+    
+    # fetch the potree abs_path
+    abs_potree_paths, num = fetch_potree_abs_paths(args.itemid)        
+    msg = 'Abs potree path fetched %s paths: %s' %(num, abs_potree_paths)
+    print msg
+    logger.info(msg)
+    
     # copy the data to the target directory
     #remove_data(opts)
 
-
+    # measure elapsed time
+    elapsed_time = time.time() - t0    
+    msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, utils.LOG_FILENAME)
+    print(msg)
+    logger.info(msg)
 
     return
 
