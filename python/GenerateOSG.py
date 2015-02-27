@@ -18,22 +18,13 @@
 #                   * Unique identifier is created in xml config file
 ##############################################################################
 
-import shutil
-import os
-import utils
-import glob
-import subprocess
-import argparse
-import shlex
+import shutil, os, time, utils, glob, subprocess, argparse, shlex
 
 logger = None
-
 CONVERTER_COMMAND = 'ViaAppia'
-
 
 def getOSGFileFormat(inType):
     return 'osgb'
-
 
 def updateXMLDescription(xmlPath, relPath):
     # update description in xml file using unique identifier -> relative path
@@ -226,15 +217,17 @@ def extract_inType(abspath, site_id, osgDir):
     elif '/PC/' in abspath:
         inType = utils.PC_FT
     else:
-        logger.error('could not determine type from abspath')
-        raise Exception('Could not determine type from abspath')
+        msg = 'could not determine type from abspath'
+        logger.error(msg)
+        raise Exception(msg)
     if '/SITE/' in abspath:
         inKind = utils.SITE_FT
     elif '/BACK/' in abspath:
         inKind = utils.BG_FT
     else:
-        logger.error('could not determine kind from abspath')
-        raise Exception('Could not determine kind from abspath')
+        msg  = 'could not determine kind from abspath'
+        logger.error(msg)
+        raise Exception(msg)
     # Determine period CURR/ARCH_REC/HIST of MESH/PICT
     if any(substring in abspath for substring in ['/MESH/', 'PICT']):
         if '/CURR/' in abspath:
@@ -282,11 +275,20 @@ def error(errorMessage, outFolder):
 def main(opts):
     # Define logger and start logging
     global logger
-    logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
-    logger.info('#######################################')
-    logger.info('Starting script GenerateOSG.py')
-    logger.info('#######################################')
+    logname = str(opts.itemid) + '.log'
+    logger = utils.start_logging(filename=logname, level=opts.log)
+    localtime = utils.getCurrentTimeAsAscii()
+    t0 = time.time()
+    msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
+    print msg
+    logger.info(msg)
+
     createOSG(opts)
+
+    elapsed_time = time.time() - t0
+    msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
+    print(msg)
+    logger.info(msg)
 
 if __name__ == "__main__":
     # define argument menu
