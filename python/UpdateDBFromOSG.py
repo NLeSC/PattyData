@@ -213,18 +213,20 @@ def main(opts):
         auxs = []
         for i in range(len(names)):
             auxs.append('%s')
-        fill_OSG_LOCATION(names, values, auxs, cursor)
-        import pdb; pdb.set_trace()
-        #utils.dbExecute(cursor, 'INSERT INTO OSG_LOCATION (' + ','.join(names[2:]) +
-        #                ') VALUES (' + ','.join(auxs[2:]) + ') returning osg_location_id', values[2:])
-        #cursor.fetchone()[0]
-        #utils.dbExecute(cursor, 'INSERT INTO OSG_CAMERA (' + ','.join(names[0]) +
-        #                ') VALUES (' + ','.join(auxs[0]) + ')', values[0])            
-        #utils.dbExecute(cursor, 'INSERT INTO OSG_CAMERA (' + ','.join(names[0]) +
-        #                ') VALUES (' + ','.join(auxs[0]) + ')', values[0])            
-        
-        #utils.dbExecute(cursor, 'INSERT INTO OSG_ITEM_CAMERA (' + ','.join(names[0:2]) +
-        #                ') VALUES (' + ','.join(auxs[0:2]) + ')', values[0:2])
+        # fill OSG_LOCATION
+        OSG_LOCATION_list = ['srid', 'x', 'y', 'z', 'xs', 'ys', 'zs', 'h', 'p',
+                         'r', 'cast_shadow']
+        fill_DB_table(names, values, auxs, OSG_LOCATION_list, 'OSG_LOCATION', cursor)
+        osgLocationId = cursor.fetchone()[0]
+        names.append('osg_location_id')
+        values.append(osgLocationId)
+        auxs.append('%s')
+        # fill OSG_CAMERA
+        OSG_CAMERA_list = ['osg_camera_name', 'osg_location_id']
+        fill_DB_table(names, values, auxs, OSG_CAMERA_list, 'OSG_CAMERA', cursor)
+        # fill OSG_ITEM_CAMERA
+        OSG_ITEM_CAMERA_list = ['item_id', 'osg_camera_name'] 
+        fill_DB_table(names, values, auxs, OSG_ITEM_CAMERA_list, 'OSG_ITEM_CAMERA', cursor)
 
     # close DB connection
     utils.closeConnectionDB(connection, cursor)
@@ -245,23 +247,29 @@ def get_SRID(data, cursor):
     return offsetSRID
 
 
-def fill_OSG_LOCATION(itemList, valueList, auxList, cursor):
+def fill_DB_table(itemList, valueList, auxList, dbTable, dbTableName, cursor):
     '''
-    Fill the OSG_LOCATION DB table
+    Fill a DB table using dbTable and dbTableName and values provided as
+    argument to the function
     '''
-    OSG_LOCATION_list = ['srid', 'x', 'y', 'z', 'xs', 'ys', 'zs', 'h', 'p',
-                         'r', 'cast_shadow']
     # intersection of itemList with OSG_LOCATION_list
-    addItemNames = list(set(itemList) & set(OSG_LOCATION_list))
+    addItemNames = list(set(itemList) & set(dbTable))
     # index of addItemNames in itemList
     addIndex = [itemList.index(item) for item in addItemNames]
     # extract required values using the index
     addItemValues = nparray(valueList)[addIndex].tolist()
     addItemAuxs = nparray(auxList)[addIndex].tolist()
     # Add item to OSG_LOCATTION DB table
-    utils.dbExecute(cursor, 'INSERT INTO OSG_LOCATION (' + ','.join(addItemNames) +
-                    ') VALUES (' + ','.join(addItemAuxs) +
-                    ') returning osg_location_id', addItemValues)
+    if dbTableName == 'OSG_LOCATION':
+        utils.dbExecute(cursor, 'INSERT INTO ' + dbTableName + ' (' + 
+                        ','.join(addItemNames) +
+                        ') VALUES (' + ','.join(addItemAuxs) +
+                        ') returning osg_location_id', addItemValues)
+    else:
+        utils.dbExecute(cursor, 'INSERT INTO ' + dbTableName + ' (' +
+                        ','.join(addItemNames) +
+                        ') VALUES (' + ','.join(addItemAuxs) +
+                        ')', addItemValues) 
     return 1
 
 if __name__ == "__main__":
