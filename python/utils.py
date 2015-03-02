@@ -5,7 +5,7 @@
 ################################################################################
 import os, time, calendar, logging
 import psycopg2
-#from osgeo import osr
+from osgeo import osr
 
 # Python Module containing methods used in other scripts
 PROPERTIES = {'administrator':('initials', 'list_participants'),

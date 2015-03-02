@@ -8,7 +8,7 @@
 # Modifications:   
 # Notes:            
 ################################################################################
-import os, argparse, utils, psycopg2, time
+import os, argparse, utils, psycopg2, time, logging
 import GetItemLAS
 
 BUFFER = 2
@@ -38,7 +38,7 @@ def run(args):
     t0 = time.time()
     msg = os.path.basename(__file__) + ' script starts at %s.' %localtime
     print msg
-    logger.info(msg)
+    logging.info(msg)
     
     # connect to the DB
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport) 
@@ -62,7 +62,7 @@ def run(args):
             os.remove(outputFile)
         
         if returnOk:
-            dbExecute(cursor, "UPDATE ITEM SET (min_z,max_z) = (%s,%s) WHERE item_id = %s", 
+            utils.dbExecute(cursor, "UPDATE ITEM SET (min_z,max_z) = (%s,%s) WHERE item_id = %s", 
                                 [minZ, maxZ, itemId])
     
             
@@ -73,18 +73,7 @@ def run(args):
     elapsed_time = time.time() - t0    
     msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
     print(msg)
-    logger.info(msg)
-    
-    # end logging
-#    localtime = utils.getCurrentTimeAsAscii()  
-#    msg = 'UpdateFootprints script logging ends at %s'% localtime
-#    print(msg)
-#    logger.info(msg)
-    
-    return
-
-
-
+    logging.info(msg)
 
 if __name__ == '__main__':
     run(utils.apply_argument_parser(argument_parser()))

@@ -61,14 +61,14 @@ FROM (
             ST_ConcaveHull(geom, %s) as ch 
         FROM 
             ITEM 
-        WHERE item_id = %s 
+        WHERE item_id = %s AND geom is NOT null 
         ) A
     ) B"""
     queryArgs.extend([concave, itemid])
     logging.info(queryDescr)
     rows,num = utils.fetchDataFromDB(cursor, query, queryArgs)
     if num == 0:
-        logger.error('Wrong item ID: No item is found with specified ID')
+        logger.error('Wrong item ID: No item is found with specified ID or the geometry is NULL!')
         return (returnOk, vertices, minZ, maxZ, avgZ, numpoints)
     (concaveHull, minx, maxx, miny, maxy) = rows[0]
  
