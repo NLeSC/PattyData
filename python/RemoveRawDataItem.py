@@ -5,7 +5,7 @@
 # Authors:          Oscar Martinez, NLeSC, o.rubi@esciencecenter.nl
 #                   Elena Ranguelova, NLeSc
 # Created:          16.02.2015
-# Last modified:    27.02.2015
+# Last modified:    02.03.2015
 #
 # Changes:
 #
@@ -16,6 +16,7 @@
 ##############################################################################
 import argparse
 import utils, time
+import shutil
 
 
 logger = None
@@ -57,35 +58,66 @@ def apply_argument_parser(options=None):
 #   # logger.info("Finished copying data to " + TARGETDIR)
 
 
-def fetch_abs_path(siteId):
-    """ get the absolute data item path given the site ID"""
+def fetch_abs_path(rawDataItemId):
+    """ get the absolute data item path given the rawDataItemId"""
     abs_path = ""
     
-    fetch_abs_path_statement = 'select abs_path from raw_data_item natural join item where item_id = %s'
-    abs_path,num = utils.fetchDataFromDB(cursor, fetch_abs_path_statement, [siteId,],[], False)
+    fetch_abs_path_statement = 'select abs_path from raw_data_item where raw_data_item_id = %s'
+    abs_path,num = utils.fetchDataFromDB(cursor, fetch_abs_path_statement, [rawDataItemId,],[], False)
         
     
     return abs_path
     
-def fetch_potree_abs_paths(siteId):
-    """ get the absolute data item paths for the potree converted data given the site ID"""
+def fetch_potree_abs_paths(rawDataItemId):
+    """ get the absolute data item paths for the potree converted data given the rawDataItemId"""
     abs_paths = ""
     
-    fetch_potree_abs_path_statement = 'select abs_path from potree_data_item_pc natural join raw_data_item_pc natural join item where item_id = %s'
-    abs_paths,num = utils.fetchDataFromDB(cursor, fetch_potree_abs_path_statement, [siteId,],[], False)
+    fetch_potree_abs_path_statement = 'select abs_path from potree_data_item_pc natural join raw_data_item_pc where raw_data_item_id = %s'
+    abs_paths,num = utils.fetchDataFromDB(cursor, fetch_potree_abs_path_statement, [rawDataItemId,],[], False)
         
     
     return abs_paths, num   
     
-def fetch_osg_abs_paths_pc(siteId):
-    """ get the absolute data item paths for the osg PC data given the site ID"""
+def fetch_osg_abs_paths_pc(rawDataItemId):
+    """ get the absolute data item paths for the osg PC data given the rawDataItemId"""
     abs_paths = ""
     
-    fetch_osg_abs_path_statement = 'select abs_path from osg_data_item natural join osg_data_item_pc_site natural join  raw_data_item_pc natural join item where item_id = %s'
-    abs_paths,num = utils.fetchDataFromDB(cursor, fetch_osg_abs_path_statement, [siteId,],[], False)
+    fetch_osg_abs_path_statement = 'select abs_path from osg_data_item natural join osg_data_item_pc_site where raw_data_item_id = %s'
+    abs_paths,num = utils.fetchDataFromDB(cursor, fetch_osg_abs_path_statement, [rawDataItemId,],[], False)
         
     
-    return abs_paths, num       
+    return abs_paths, num   
+
+def fetch_osg_abs_paths_mesh(rawDataItemId):
+    """ get the absolute data item paths for the osg mesh data given the rawDataItemId"""
+    abs_paths = ""
+    
+    fetch_osg_abs_path_statement = 'select abs_path from osg_data_item natural join osg_data_item_mesh where raw_data_item_id = %s'
+    abs_paths,num = utils.fetchDataFromDB(cursor, fetch_osg_abs_path_statement, [rawDataItemId,],[], False)
+        
+    
+    return abs_paths, num   
+
+def fetch_osg_abs_paths_picture(rawDataItemId):
+    """ get the absolute data item paths for the osg picture data given the rawDataItemId"""
+    abs_paths = ""
+    
+    fetch_osg_abs_path_statement = 'select abs_path from osg_data_item natural join osg_data_item_picture where raw_data_item_id = %s'
+    abs_paths,num = utils.fetchDataFromDB(cursor, fetch_osg_abs_path_statement, [rawDataItemId,],[], False)
+        
+    
+    return abs_paths, num  
+    
+def fetch_osg_abs_paths_pc_bg(rawDataItemId):
+    """ get the absolute data item paths for the osg PC data (backgrounds) given the rawDataItemID"""
+    abs_paths = ""
+    
+    fetch_osg_abs_path_statement = 'select abs_path from osg_data_item_pc_background where raw_data_item_id = %s'
+    abs_paths,num = utils.fetchDataFromDB(cursor, fetch_osg_abs_path_statement, [rawDataItemId,],[], False)
+        
+    
+    return abs_paths, num 
+    
 #------------------------------------------------------------------------------        
 def run(args): 
     
@@ -117,20 +149,38 @@ def run(args):
     print msg
     logger.info(msg)
     
-    # fetch the OSG abs_paths
+    # fetch the OSG abs_paths PC
     abs_osg_pc_paths, num = fetch_osg_abs_paths_pc(args.itemid)        
     msg = '%s abs OSG paths for PC fetched: %s' %(num, abs_osg_pc_paths)
     print msg
     logger.info(msg)    
-    # copy the data to the target directory
-    #remove_data(opts)
 
+    # fetch the OSG abs_paths mesh
+    abs_osg_mesh_paths, num = fetch_osg_abs_paths_mesh(args.itemid)        
+    msg = '%s abs OSG paths for meshes fetched: %s' %(num, abs_osg_mesh_paths)
+    print msg
+    logger.info(msg)    
+    
+    # fetch the OSG abs_paths picture
+    abs_osg_picture_paths, num = fetch_osg_abs_paths_picture(args.itemid)        
+    msg = '%s abs OSG paths for pictures fetched: %s' %(num, abs_osg_picture_paths)
+    print msg
+    logger.info(msg)
+    
+    # fetch the OSG abs_paths PC BG
+    abs_osg_pc_bg_paths, num = fetch_osg_abs_paths_pc_bg(args.itemid)        
+    msg = '%s abs OSG paths for PC BG fetched: %s' %(num, abs_osg_pc_bg_paths)
+    print msg
+    logger.info(msg)
+    
+    # remove the files related to the above absolute paths
+    
     # measure elapsed time
     elapsed_time = time.time() - t0    
     msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, utils.LOG_FILENAME)
     print(msg)
     logger.info(msg)
-
+    
     return
 
 
