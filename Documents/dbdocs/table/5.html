@@ -103,7 +103,7 @@ function asd() {
 	<tr>
 	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#151">osg_data_item_id</a>&nbsp;</td>
+	<td><a href="#152">osg_data_item_id</a>&nbsp;</td>
 	<td>osg_data_item_id&nbsp;</td>
 	<td>serial&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -112,7 +112,7 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#168">osg_location_id</a>&nbsp;</td>
+	<td><a href="#169">osg_location_id</a>&nbsp;</td>
 	<td>osg_location_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -121,7 +121,7 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#169">abs_path</a>&nbsp;</td>
+	<td><a href="#170">abs_path</a>&nbsp;</td>
 	<td>abs_path&nbsp;</td>
 	<td>text&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -130,20 +130,11 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#170">xml_abs_path</a>&nbsp;</td>
+	<td><a href="#171">xml_abs_path</a>&nbsp;</td>
 	<td>xml_abs_path&nbsp;</td>
 	<td>text&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td><a href="#171">cast_shadow</a>&nbsp;</td>
-	<td>cast_shadow&nbsp;</td>
-	<td>boolean&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
@@ -186,9 +177,9 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#168">osg_location_id&nbsp;</a></td>
+	<td><a href="#169">osg_location_id&nbsp;</a></td>
 	<td><a href="../table/8.html">OSG_LOCATION&nbsp;</a></td>
-	<td><a href="../table/8.html#155">osg_location_id&nbsp;</a></td>
+	<td><a href="../table/8.html#156">osg_location_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
@@ -216,16 +207,7 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#151">osg_data_item_id&nbsp;</a></td>
-	<td><a href="../table/1.html">OSG_DATA_ITEM_PICTURE&nbsp;</a></td>
-	<td><a href="../table/1.html#149">osg_data_item_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">0..1&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#151">osg_data_item_id&nbsp;</a></td>
+	<td><a href="#152">osg_data_item_id&nbsp;</a></td>
 	<td><a href="../table/18.html">OSG_DATA_ITEM_PC_SITE&nbsp;</a></td>
 	<td><a href="../table/18.html#174">osg_data_item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
@@ -234,7 +216,16 @@ function asd() {
 	<td align="center">0..1&nbsp;</td>
 </tr>
 <tr>
-	<td><a href="#151">osg_data_item_id&nbsp;</a></td>
+	<td><a href="#152">osg_data_item_id&nbsp;</a></td>
+	<td><a href="../table/1.html">OSG_DATA_ITEM_PICTURE&nbsp;</a></td>
+	<td><a href="../table/1.html#150">osg_data_item_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">0..1&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#152">osg_data_item_id&nbsp;</a></td>
 	<td><a href="../table/10.html">OSG_DATA_ITEM_MESH&nbsp;</a></td>
 	<td><a href="../table/10.html#175">osg_data_item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
@@ -297,7 +288,7 @@ function asd() {
 	</tr>
 </table>
 
-<a name="151"></a>
+<a name="152"></a>
 <h3><img src="../image/icons/pkey.gif">  osg_data_item_id</h3>
 
 <dl>
@@ -318,7 +309,7 @@ function asd() {
 <p>
 
 <hr>
-<a name="168"></a>
+<a name="169"></a>
 <h3> <img src="../image/icons/foreign_key.gif"> osg_location_id</h3>
 
 <dl>
@@ -339,7 +330,7 @@ function asd() {
 <p>
 
 <hr>
-<a name="169"></a>
+<a name="170"></a>
 <h3>  abs_path</h3>
 
 <dl>
@@ -360,7 +351,7 @@ function asd() {
 <p>
 
 <hr>
-<a name="170"></a>
+<a name="171"></a>
 <h3>  xml_abs_path</h3>
 
 <dl>
@@ -372,27 +363,6 @@ function asd() {
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>TRUE<br></dt>
 		<dt><b>Type : </b>text<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
-<a name="171"></a>
-<h3>  cast_shadow</h3>
-
-<dl>
-	<dd>cast_shadow
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>boolean<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>

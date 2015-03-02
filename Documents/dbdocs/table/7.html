@@ -103,7 +103,7 @@ function asd() {
 	<tr>
 	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#158">item_id</a>&nbsp;</td>
+	<td><a href="#159">item_id</a>&nbsp;</td>
 	<td>item_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -126,6 +126,24 @@ function asd() {
 	<td>polygon&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#197">min_z</a>&nbsp;</td>
+	<td>min_z&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#198">max_z</a>&nbsp;</td>
+	<td>max_z&nbsp;</td>
+	<td>float&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 
 	</tr>
@@ -171,7 +189,16 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#158">item_id&nbsp;</a></td>
+	<td><a href="#159">item_id&nbsp;</a></td>
+	<td><a href="../table/3.html">OSG_ITEM_CAMERA&nbsp;</a></td>
+	<td><a href="../table/3.html#158">item_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">0..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#159">item_id&nbsp;</a></td>
 	<td><a href="../table/15.html">ITEM_OBJECT&nbsp;</a></td>
 	<td><a href="../table/15.html#189">item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
@@ -180,31 +207,22 @@ function asd() {
 	<td align="center">1..n&nbsp;</td>
 </tr>
 <tr>
-	<td><a href="#158">item_id&nbsp;</a></td>
-	<td><a href="../table/21.html">tbl1_site&nbsp;</a></td>
-	<td><a href="../table/21.html#148">site_id&nbsp;</a></td>
-	<td align="center">NO ACTION&nbsp;</td>
-	<td align="center">NO ACTION&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">0..1&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#158">item_id&nbsp;</a></td>
+	<td><a href="#159">item_id&nbsp;</a></td>
 	<td><a href="../table/12.html">RAW_DATA_ITEM&nbsp;</a></td>
-	<td><a href="../table/12.html#197">item_id&nbsp;</a></td>
+	<td><a href="../table/12.html#199">item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 	<td align="center">1..n&nbsp;</td>
 </tr>
 <tr>
-	<td><a href="#158">item_id&nbsp;</a></td>
-	<td><a href="../table/3.html">OSG_ITEM_CAMERA&nbsp;</a></td>
-	<td><a href="../table/3.html#157">item_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
+	<td><a href="#159">item_id&nbsp;</a></td>
+	<td><a href="../table/21.html">tbl1_site&nbsp;</a></td>
+	<td><a href="../table/21.html#149">site_id&nbsp;</a></td>
+	<td align="center">NO ACTION&nbsp;</td>
+	<td align="center">NO ACTION&nbsp;</td>
 	<td align="center">1&nbsp;</td>
-	<td align="center">0..n&nbsp;</td>
+	<td align="center">0..1&nbsp;</td>
 </tr>
 
 </table>
@@ -261,7 +279,7 @@ function asd() {
 	</tr>
 </table>
 
-<a name="158"></a>
+<a name="159"></a>
 <h3><img src="../image/icons/pkey.gif">  item_id</h3>
 
 <dl>
@@ -317,6 +335,48 @@ function asd() {
 		<dt><b>Type : </b>polygon<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="197"></a>
+<h3>  min_z</h3>
+
+<dl>
+	<dd>min_z
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b>0<br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="198"></a>
+<h3>  max_z</h3>
+
+<dl>
+	<dd>max_z
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>float<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b>0<br></dt>
 		<dt><b>Constraint : </b><br></dt>
 	</dl>
 </dl>
