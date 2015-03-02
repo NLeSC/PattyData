@@ -51,8 +51,6 @@ DOMES_OSG_RELATIVE = 'DOME/skydome.osg'
 ITEM_ID_BACKGROUND = -1
 ITEM_OBJECT_NUMBER_ITEM = -1
 DEFAULT_PROTO = 'Bounding Box'
-DEFAULT_Z = 0
-DEFAULT_ZS = 2
 DEFAULT_BACKGROUND = 'DRIVE_1_V3'
 DEFAULT_BACKGROUND_FOLDER = DEFAULT_RAW_DATA_DIR + '/' + PC_FT + '/' + BG_FT + '/' + DEFAULT_BACKGROUND
 SRID = 32633
@@ -80,6 +78,13 @@ POTREE_SERVER_DATA_ROOT = '/home/pattydat/DATA'
 POTREE_DATA_URL_PREFIX = 'http://148.251.106.132:8090'
 
 OSG_DATA_PREFIX = 'data'
+
+# ACTIVE OBJECT TYPES for OSG
+AO_TYPE_MESH = MESH_FT
+AO_TYPE_PC = PC_FT
+AO_TYPE_PIC = PIC_FT
+AO_TYPE_LAB = 'LAB'
+AO_TYPE_OBJ = 'OBJ'
 
 def getLastModification(absPath, initialLMTime = None):
     """
@@ -307,3 +312,53 @@ def load_sql_file(cursor, sqlFile):
     logging.debug(msg)
         
     return success
+
+def codeOSGActiveObjectUniqueName(cursor, aoType, rawDataItemId = None, itemId = None, objectId = None, labelName = None ):
+    """ This gets a unique name for a OSG Active Object.
+    OSG Active Objects are OSG PCs, OSG Meshes, OSG pics, OSG item objects (boundings) or OSG labels
+    aoType is the type of active objects. Please use AO_TYPE_MESH, AO_TYPE_PC, AO_TYPE_PIC, AO_TYPE_LAB and AO_TYPE_OBJ
+    For OSG PCs, Meshes and Pics provide rawDataItemId, 
+    For OSG items objects provide itemId and objectId
+    For OSG labels provide label name """
+    
+    if aoType not in (AO_TYPE_MESH, AO_TYPE_PC, AO_TYPE_PIC, AO_TYPE_LAB, AO_TYPE_OBJ):
+        raise Exception('Not valid OSG active object type!')
+     
+    uniqueName = ''
+    if aoType in (AO_TYPE_MESH, AO_TYPE_PC, AO_TYPE_PIC):
+        if rawDataItemId == None:
+            raise Exception('Raw Data item ID can not be None if Active Object Type is ' + ','.join((AO_TYPE_MESH, AO_TYPE_PC, AO_TYPE_PIC)))
+        rows, num = fetchDataFromDB(cursor, "SELECT item_id, abs_path FROM RAW_DATA_ITEM WHERE raw_data_item_id = %s", [rawDataItemId,])
+        if num == 1:
+            (itemId, absPath) = rows[0]
+            uniqueName = aoType + '_' + str(rawDataItemId) + '_' + str(itemId) + '_' + os.path.basename(absPath)
+        else:
+            raise Exception('Raw Data Item with ID %d is not in DB!' % rawDataItemId)
+    elif aoType == AO_TYPE_OBJ:
+        if objectId == None or itemId == None:
+            raise Exception('Item Id or Object ID can not be None if Active Object Type is ' + AO_TYPE_OBJ)
+        uniqueName = aoType + '_'  + str(objectId) + '_' + str(itemId)
+    else: #LAB
+        if labelName == None:
+            raise Exception('Label name ID can not be None if Active Object Type is ' + AO_TYPE_LAB)
+        uniqueName = aoType + '_' + str(labelName)
+    return uniqueName
+
+def decodeOSGActiveObjectUniqueName(uniqueName):
+    itemId = None
+    rawDataItemId = None
+    objectId = None
+    labelName = None
+    
+    fs = uniqueName.split('_')
+    aoType = fs[0]
+    
+    if aoType == AO_TYPE_OBJ:
+        objectId = int(fs[1])
+        itemId = int(fs[2])
+    elif aoType == AO_TYPE_LAB:
+        labelName = uniqueName[len(AO_TYPE_LAB + '_'):]
+    else:
+        rawDataItemId = int(fs[1])
+        itemId = int(fs[2])
+    return  (aoType, itemId, rawDataItemId, objectId, labelName)

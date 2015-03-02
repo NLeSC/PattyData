@@ -26,15 +26,16 @@ CONVERTER_COMMAND = 'ViaAppia'
 def getOSGFileFormat(inType):
     return 'osgb'
 
-def updateXMLDescription(xmlPath, relPath):
+def updateXMLDescription(xmlPath, cursor, aoType, rawDataItemId):
     # update description in xml file using unique identifier -> relative path
     tempFile = xmlPath + '_TEMP'
     ofile = open(tempFile, 'w')
     lines = open(xmlPath, 'r').readlines()
+    uniqueName = utils.codeOSGActiveObjectUniqueName(cursor, aoType, rawDataItemId)
     for line in lines:
         if line.count('<description>'):
             ofile.write('    <description>' +
-                        relPath + '</description>\n')
+                        uniqueName + '</description>\n')
         else:
             ofile.write(line)
     os.remove(xmlPath)
@@ -92,9 +93,6 @@ def createOSG(opts, abOffsetX=None,
     # Set offset if item is aligned
     if len(data_items) > 0:
         (abOffsetX, abOffsetY, abOffsetZ) = data_items[0]
-
-    # close DB connection
-    utils.closeConnectionDB(connection, cursor)
 
     if os.path.isfile(inFile):
         # input was a file -> raise IOError
@@ -161,18 +159,7 @@ def createOSG(opts, abOffsetX=None,
     logger.info("Moving files to " + outFolder)
     outputFiles = glob.glob(outputPrefix + '*')
     for filename in outputFiles:
-        shutil.move(os.path.abspath(filename), os.path.join(outFolder,filename)) # Move also with data
-#        if (inType == utils.PC_FT):
-#            shutil.move(os.path.abspath(filename),
-#                        os.path.join(outFolder,
-#                                     filename[len(outputPrefix)+1:]))
-#        else:
-#            # outputPrefix is appended slightly different for PC and MESH
-#            shutil.move(os.path.abspath(filename),
-#                        os.path.join(outFolder,
-#                                     filename[len(outputPrefix):]))
-
-    
+        shutil.move(os.path.abspath(filename), os.path.join(outFolder,filename))
 
     ofiles = sorted(glob.glob(os.path.join(outFolder, '*' + ofile)))
     if len(ofiles) == 0:
@@ -193,8 +180,7 @@ def createOSG(opts, abOffsetX=None,
                     error('multiple XMLs file were generated (found in '
                                  + outFolder + '). Using ' + xmlPath, outFolder)
             # upate xml file
-            updateXMLDescription(xmlPath, os.path.relpath(outFolder, opts.osgDir))
-
+            updateXMLDescription(xmlPath, cursor, inType, opts.itemid)
         txtfiles = glob.glob(os.path.join(outFolder, '*offset.txt'))
         if len(txtfiles):
             txtFile = txtfiles[0]
@@ -205,7 +191,10 @@ def createOSG(opts, abOffsetX=None,
         elif aligned:
             logger.warn('No offset file was found and it was expected!')
 
-
+    
+    # close DB connection
+    utils.closeConnectionDB(connection, cursor)
+    
 def extract_inType(abspath, site_id, osgDir):
     '''
     Checks the type of the input file using the file location

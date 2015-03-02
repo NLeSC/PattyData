@@ -463,28 +463,23 @@ def addOSGDataItem(absPath, itemId, dataItemType):
             if xmlAbsPath == None:
                 logging.error('Skipping ' + absPath + '. None XML file found')
                 return
-            (srid,x,y,z) = (None, 0, 0, DEFAULT_Z)
+            (srid,x,y,z) = (None, 0, 0, 0)
             # We try to get the SRID and position of this OSG object
             if rawSRID != None:
-                # Try to get it from OSG generated offsets
-                (bOffsetX, bOffsetY, bOffsetZ) = getBackgroundOffset(rawSRID)
-                if bOffsetX == None:
-                    logging.warn('OSG position of ' + absPath + ' could not be computed. None background found with same SRID')
-                else:
-                    (offsetX, offsetY, offsetZ) = readOffsets(absPath)
-                    if offsetX == None:
-                        logging.warn('OSG position of ' + absPath + ' could not be computed. None offsets found')
+                if dataItemType in (PC_FT, MESH_FT): # Only meshes and point clouds have offsets provided by OSG converter
+                    # Try to get it from OSG generated offsets
+                    (bOffsetX, bOffsetY, bOffsetZ) = getBackgroundOffset(rawSRID)
+                    if bOffsetX == None:
+                        logging.warn('OSG position of ' + absPath + ' could not be computed. None background found with same SRID')
                     else:
-                        srid = rawSRID
-                        (x, y, z) = (offsetX + bOffsetX, offsetY + bOffsetY, offsetZ + bOffsetZ)
-            
-            if srid == None: 
-                # We can get position from the raw data items
-                if dataItemType in (PC_FT, PIC_FT):                    
-                    if dataItemType == PC_FT:
-                        dbExecute(cursor, 'SELECT minx + ((maxx - minx) / 2), miny + ((maxy - miny) / 2), minz + ((maxz - minz) / 2) FROM RAW_DATA_ITEM_PC WHERE raw_data_item_id = %s', [rawDataItemId,])
-                    else:
-                        dbExecute(cursor, 'SELECT x, y, z FROM RAW_DATA_ITEM_PICTURE WHERE raw_data_item_id = %s', [rawDataItemId,])
+                        (offsetX, offsetY, offsetZ) = readOffsets(absPath)
+                        if offsetX == None:
+                            logging.warn('OSG position of ' + absPath + ' could not be computed. None offsets found')
+                        else:
+                            srid = rawSRID
+                            (x, y, z) = (offsetX + bOffsetX, offsetY + bOffsetY, offsetZ + bOffsetZ)
+                else: #PICTURE can use position from the RAW data item (if srid is not null it means a JSON was provided along with the pic)
+                    dbExecute(cursor, 'SELECT x, y, z FROM RAW_DATA_ITEM_PICTURE WHERE raw_data_item_id = %s', [rawDataItemId,])
                     row = cursor.fetchone()
                     if row == None:
                         logging.critical('Skipping ' + absPath + '. None related raw data item ' + dataItemType + ' found')
@@ -492,12 +487,11 @@ def addOSGDataItem(absPath, itemId, dataItemType):
                     srid = rawSRID
                     (x, y, z) = row
                     
-            if srid == None: #If it is a Mesh or the values from point clouds and pictures are null
-                # we can get from the item geometry
+            if srid == None: # If SRID of raw data item is null or the previous method did not work we can get from the item geometry
                 try:
-                    dbExecute(cursor, "select Find_SRID('public', 'ITEM', 'geom'), st_x(g), st_y(g) from (select st_centroid(geometry(geom)) AS g from ITEM where item_id = %s) A", [itemId,])
+                    dbExecute(cursor, "SELECT Find_SRID('public', 'ITEM', 'geom'), st_x(st_centroid(geometry(geom))), st_y(st_centroid(geometry(geom))), min_z + ((max_z - min_z) / 2) FROM ITEM WHERE item_id = %s AND geom is NOT %s", [itemId,None])
                     if cursor.rowcount:
-                        (srid, x, y) = cursor.fetchone()
+                        (srid, x, y, z) = cursor.fetchone()
                     else:
                         logging.warn('Not possible to get position from footprint: footprint not found for ' + absPath)
                 except Exception ,e:
@@ -566,26 +560,13 @@ def addOSGItemObjects():
     if num_objects:
         for (itemId, objectNumber) in objects:
             srid = None
-            (x,y,z) = (0,0,DEFAULT_Z)
-            (xs,ys,zs) = (1,1,DEFAULT_ZS)
-            query = 'select A.srid, B.minx, B.miny, B.minz, B.maxx, B.maxy, B.maxz FROM raw_data_item A, raw_data_item_pc B where A.raw_data_item_id = B.raw_data_item_id and A.item_id = %s ORDER BY A.srid'
-            queryArgs = [itemId,]
-            pcs, num_pcs = fetchDataFromDB(cursor, query, queryArgs)
-            if num_pcs:
-                (srid, minx, miny, minz, maxx, maxy, maxz) = pcs[0]
-                x = minx + ((maxx - minx) / 2.)
-                xs = maxx-minx
-                y = miny + ((maxy - miny) / 2.)
-                ys = maxy-miny
-                z = minz + ((maxz - minz) / 2.)
-                zs = maxz-minz
-            else:
-                query = 'select ST_SRID(geom), st_x(st_centroid(geom)), st_y(st_centroid(geom)), st_xmax(geom)-st_xmin(geom) as dx, st_ymax(geom)-st_ymin(geom) as dy FROM item WHERE item_id = %s'
-                queryArgs = [itemId,]
-                footprints, num_footprints = fetchDataFromDB(cursor, query, queryArgs)
-                if num_footprints:
-                    (srid, x, y, xs, ys) = footprints[0]
-            
+            (x,y,z) = (0,0,0)
+            (xs,ys,zs) = (1,1,1)
+            query = 'select ST_SRID(geom), st_x(st_centroid(geom)), st_y(st_centroid(geom)), min_z + ((max_z - min_z) / 2), st_xmax(geom)-st_xmin(geom) as dx, st_ymax(geom)-st_ymin(geom) as dy, (max_z - min_z) as dz FROM item WHERE item_id = %s and geom is not %s'
+            queryArgs = [itemId,None]
+            footprints, num_footprints = fetchDataFromDB(cursor, query, queryArgs)
+            if num_footprints:
+                (srid, x, y, z, xs, ys, zs) = footprints[0]
             dbExecute(cursor, "INSERT INTO OSG_LOCATION (osg_location_id, srid, x, y, z, xs, ys, zs) VALUES (DEFAULT,%s,%s,%s,%s,%s,%s,%s) RETURNING osg_location_id", 
                     [srid, x, y, z, xs, ys, zs])
             osgLocationId = cursor.fetchone()[0]

@@ -94,14 +94,17 @@ def main(opts):
     for (name, x, y, z, h, p, r) in cursor:
         cameras.add_camera(viewer_conf_api.camera
                            (name=name, x=x, y=y, z=z, h=h, p=p, r=r))
-    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT DISTINCT item_id,' +
-                    ' x, y, z, h, p, r, srid FROM OSG_LOCATION INNER JOIN ' +
-                    'OSG_ITEM_OBJECT ON OSG_LOCATION.osg_location_id=' +
-                    'OSG_ITEM_OBJECT.osg_location_id WHERE item_id NOT IN ' +
-                    '(SELECT DISTINCT item_id FROM OSG_ITEM_CAMERA WHERE ' +
-                    'item_id IS NOT null) AND object_number = %s ORDER BY ' +
-                    'item_id', [utils.ITEM_OBJECT_NUMBER_ITEM])
-    for (siteId, x, y, z, h, p, r, srid) in rows:
+    
+    query = """
+SELECT 
+    item_id, ST_SRID(geom), st_x(st_centroid(geom)), st_y(st_centroid(geom)), min_z + ((max_z - min_z) / 2) 
+FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
+    SELECT DISTINCT item_id FROM OSG_ITEM_CAMERA
+) ORDER BY item_id"""
+    
+    rows, numitems = utils.fetchDataFromDB(cursor, query)
+        
+    for (siteId, srid, x, y, z) in rows:
         # only call getOSGPosition if [x,y,z] are not None
         # should item_id = -1 be added? 
         if all(position is not None for position in [x,y,z]) and siteId>0:
@@ -111,7 +114,7 @@ def main(opts):
                 x, y, z = getOSGPosition(x, y, z)
             cameras.add_camera(viewer_conf_api.camera
                                (name=utils.DEFAULT_CAMERA_PREFIX + str(siteId),
-                                x=x, y=y, z=z, h=h, p=p, r=r))
+                                x=x, y=y, z=z))
     rootObject.set_cameras(cameras)
     # Add the XML content of the preferences
     # cursor.execute('select xml_content from preferences')
@@ -168,32 +171,25 @@ def main(opts):
     activeObjects = viewer_conf_api.activeObjects()
     # First we add points, meshes and pcitures which are related to
     # the active_objects_sites
-    layersData = [('points', 'OSG_DATA_ITEM_PC_SITE', 'pc'),
-                  ('photos', 'OSG_DATA_ITEM_PICTURE', 'pic'),
-                  ('meshes', 'OSG_DATA_ITEM_MESH', 'mesh')]
+    layersData = [('points', 'OSG_DATA_ITEM_PC_SITE', AO_TYPE_PC),
+                  ('photos', 'OSG_DATA_ITEM_PICTURE', AO_TYPE_PIC),
+                  ('meshes', 'OSG_DATA_ITEM_MESH', AO_TYPE_MESH)]
+    
     for (layerName, tableName, inType) in layersData:
         layer = viewer_conf_api.layer(name=layerName)
-        rows, numitems = utils.fetchDataFromDB(
-            cursor, 'SELECT ' +
-            'osg_data_item_id, abs_path, x, y, z, xs, ys, zs, h, p, r, ' +
-            'OSG_LOCATION.cast_shadow, srid FROM ' +
-            'OSG_DATA_ITEM INNER JOIN ' +
-            'OSG_LOCATION ON OSG_DATA_ITEM.osg_location_id=' +
-            'OSG_LOCATION.osg_location_id WHERE osg_data_item_id ' +
-            'IN (SELECT osg_data_item_id FROM ' +
-            tableName + ') ORDER BY osg_data_item_id')
-        for (activeObjectId, osgPath, x, y, z, xs, ys, zs, h, p, r,
-             castShadow, srid) in rows:
+        
+        query = 'SELECT item_id, raw_data_item_id, OSG_LOCATION.srid, x, y, z, xs, ys, zs, h, p, r, cast_shadow FROM ' + tableName + ' JOIN OSG_DATA_ITEM USING (osg_data_item_id) JOIN OSG_LOCATION USING (osg_location_id) JOIN RAW_DATA_ITEM USING (raw_data_item_id) ORDER BY item_id'
+        rows, numitems = utils.fetchDataFromDB(query)
+        for (itemId, rawDataItemId, srid, x, y, z, xs, ys, zs, h, p, r, castShadow) in rows:
             # only call getOSGPosition if [x,y,z] are not None            
             if all(position is not None for position in [x,y,z]):
                 if (srid is not None):
                     x, y, z  = getOSGPosition(x, y, z, srid)
                 else:
                     x, y, z = getOSGPosition(x, y, z)
-            fname = os.path.basename(os.path.dirname(osgPath))
-            uname = os.path.relpath(osgPath, opts.osg)
-            activeObject = viewer_conf_api.activeObject(prototype=uname,
-                                                        uniqueName=uname)
+            uniqueName = utils.codeOSGActiveObjectUniqueName(cursor, inType, rawDataItemId)
+            activeObject = viewer_conf_api.activeObject(prototype=uniqueName,
+                                                        uniqueName=uniqueName)
             setting = viewer_conf_api.setting(
                 x=x, y=y, z=z, xs=xs, ys=ys, zs=zs, h=h, p=p, r=r,
                 castShadow=(1 if castShadow else 0))
@@ -217,10 +213,10 @@ def main(opts):
                 x, y, z  = getOSGPosition(x, y, z, srid)
             else:
                 x, y, z = getOSGPosition(x, y, z)                
-            uname = 'OBJECT_' + str(siteId) + '_' + str(objectNumber)
+            uniqueName = utils.codeOSGActiveObjectUniqueName(cursor, inType, itemId = siteId, objectId = objectNumber)
             proto = "Bounding Box"
             activeObject = viewer_conf_api.activeObject(prototype=proto,
-                                                        uniqueName=uname)
+                                                        uniqueName=uniqueName)
             setting = viewer_conf_api.setting(
                 x=x, y=y, z=z, xs=xs, ys=ys, zs=zs, h=h, p=p, r=r,
             castShadow=(1 if castShadow else 0))
@@ -236,11 +232,12 @@ def main(opts):
                     'OSG_LOCATION ON OSG_LABEL.osg_location_id=' +
                     'OSG_LOCATION.osg_location_id')
     rows = cursor.fetchall()
-    for (uname, text, red, green, blue, rotatescreen, outline, font, x, y, z,
+    for (name, text, red, green, blue, rotatescreen, outline, font, x, y, z,
          xs, ys, zs, h, p, r, castShadow) in rows:
         proto = "labelPrototype"
+        uniqueName = utils.codeOSGActiveObjectUniqueName(cursor, inType, labelName = name)
         activeObject = viewer_conf_api.activeObject(
-            prototype=proto, uniqueName=uname, labelText=text,
+            prototype=proto, uniqueName=uniqueName, labelText=text,
             labelColorRed=red, labelColorGreen=green, labelColorBlue=blue,
             labelRotateScreen=rotatescreen, outline=outline, Font=font)
         setting = viewer_conf_api.setting(

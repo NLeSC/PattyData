@@ -35,6 +35,8 @@ def create_cut_out(cursor, inputLAS, output, itemid, buffer, concave):
     
     returnOk = False
     vertices = None
+    minZ = None
+    maxZ = None
     avgZ = None
     numpoints = None
     
@@ -67,7 +69,7 @@ FROM (
     rows,num = utils.fetchDataFromDB(cursor, query, queryArgs)
     if num == 0:
         logger.error('Wrong item ID: No item is found with specified ID')
-        return (returnOk, vertices, avgZ, numpoints)
+        return (returnOk, vertices, minZ, maxZ, avgZ, numpoints)
     (concaveHull, minx, maxx, miny, maxy) = rows[0]
  
     # If it is found we also extract the individual 2D points of the vertices of the concave hull
@@ -81,7 +83,7 @@ FROM (
     listPCFiles = glob.glob(inputLAS + '/*las') + glob.glob(inputLAS + '/*laz')
     if len(listPCFiles) == 0:
         logging.error('%s does not contain any LAS/LAZ file' % inputLAS)
-        return (returnOk, vertices, avgZ, numpoints)
+        return (returnOk, vertices, minZ, maxZ, avgZ, numpoints)
     
     # Create list of files for lasmerge
     tfilename = output + '.list' 
@@ -95,7 +97,7 @@ FROM (
     os.system('rm ' + tfilename)
     if not os.path.isfile(output):
         logging.error('Output file has not been generated. Is LAStools/lasmerge installed and in PATH?')
-        return (returnOk, vertices, avgZ, numpoints)
+        return (returnOk, vertices, minZ, maxZ, avgZ, numpoints)
     
     logging.info('Getting average elevation and number of points from %s' % output)
     statcommand = "lasinfo -i " + output + " -nv -nmm -histo z 10000000"
@@ -103,16 +105,20 @@ FROM (
     
     for line in lines:
         if line.count('average z'):
-             avgZ = float(line.split()[-1])
+            avgZ = float(line.split()[-1])
         if line.count('number of point records:'):
-             numpoints = int(line.split()[-1])
-    
+            numpoints = int(line.split()[-1])
+        if line.count('min x y z:'):
+            minZ = float(line.split()[-1])
+        if line.count('max x y z:'):
+            maxZ = float(line.split()[-1])
+            
     if numpoints == None:
         logging.error("Could not extract average elevation and number of points. Is LAStools/lasinfo installed and in PATH? Check that lasinfo in PATH is from LAStools and not libLAS!")
-        return (returnOk, vertices, avgZ, numpoints)
+        return (returnOk, vertices, minZ, maxZ, avgZ, numpoints)
     
     returnOk = True
-    return (returnOk, vertices, avgZ, numpoints)
+    return (returnOk, vertices, minZ, maxZ, avgZ, numpoints)
 
 def run(args):
     utils.start_logging(filename=args.output + '.log', level=args.log)
@@ -120,14 +126,14 @@ def run(args):
 
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport) 
     
-    (returnOk, vertices, avgZ, numpoints) = create_cut_out(cursor, args.las, args.output, args.itemid, args.buffer, args.concave)
+    (returnOk, vertices, minZ, maxZ, avgZ, numpoints) = create_cut_out(cursor, args.las, args.output, args.itemid, args.buffer, args.concave)
     
     if returnOk:
         # Create CSV with vertices of footprint
         footoutput = args.output + '_footprint.csv'
         logging.info('Creating CSV %s with vertices of concave hull of footprint' % footoutput)
         fpOutput = open(footoutput, 'w')
-        for point in points:
+        for point in vertices:
             point.append(str(avgZ))
             fpOutput.write(','.join(point) + '\n')
         fpOutput.close()

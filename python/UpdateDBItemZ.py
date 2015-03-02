@@ -17,7 +17,7 @@ CONCAVE = 0.9
 def argument_parser():
     """ Define the arguments and return the parser object"""
     parser = argparse.ArgumentParser(
-    description="Script to update the sites footprints from an SQL file to the DB")
+    description="Script to minimum and maximum Z of the items")
     parser.add_argument('-i','--itemid',default='',help='Comma-separated list of item ids to update their avg. Z from cutouts [default all]',type=str, required=False)
     parser.add_argument('-l','--las',default=utils.DEFAULT_BACKGROUND_FOLDER,help='Folder that contains the LAS/LAZ files [default ' + utils.DEFAULT_BACKGROUND_FOLDER + ']',type=str, required=False)
     parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name [default ' + utils.DEFAULT_DB + ']',type=str , required=False)
@@ -55,15 +55,15 @@ def run(args):
     for itemId in itemIds:
         logging.info('Getting average Z for item %d' % itemId)
         outputFile = 'temp_%03d.las' % itemId 
-        (returnOk, vertices, avgZ, numpoints) = GetItemLAS.create_cut_out(cursor, args.las, outputFile, itemId, BUFFER, CONCAVE)
+        (returnOk, vertices, minZ, maxZ, avgZ, numpoints) = GetItemLAS.create_cut_out(cursor, args.las, outputFile, itemId, BUFFER, CONCAVE)
         
         # We do not need the cutout
         if os.path.isfile(outputFile):
             os.remove(outputFile)
         
         if returnOk:
-            dbExecute(cursor, "UPDATE ITEM SET avg_z = %s WHERE item_id = %s", 
-                                [avgZ, itemId])
+            dbExecute(cursor, "UPDATE ITEM SET (min_z,max_z) = (%s,%s) WHERE item_id = %s", 
+                                [minZ, maxZ, itemId])
     
             
     # close the conection to the DB
