@@ -144,37 +144,55 @@ def run(args):
     logger.info(msg)
     
     # fetch the potree abs_paths
-    abs_potree_paths, num = fetch_potree_abs_paths(args.itemid)        
-    msg = '%s abs potree paths fetched %s' %(num, abs_potree_paths)
+    abs_potree_paths, num_potree = fetch_potree_abs_paths(args.itemid)        
+    msg = '%s abs potree paths fetched %s' %(num_potree, abs_potree_paths)
     print msg
     logger.info(msg)
     
     # fetch the OSG abs_paths PC
-    abs_osg_pc_paths, num = fetch_osg_abs_paths_pc(args.itemid)        
-    msg = '%s abs OSG paths for PC fetched: %s' %(num, abs_osg_pc_paths)
+    abs_osg_pc_paths, num_osg_pc = fetch_osg_abs_paths_pc(args.itemid)        
+    msg = '%s abs OSG paths for PC fetched: %s' %(num_osg_pc, abs_osg_pc_paths)
     print msg
     logger.info(msg)    
 
     # fetch the OSG abs_paths mesh
-    abs_osg_mesh_paths, num = fetch_osg_abs_paths_mesh(args.itemid)        
-    msg = '%s abs OSG paths for meshes fetched: %s' %(num, abs_osg_mesh_paths)
+    abs_osg_mesh_paths, num_osg_mesh = fetch_osg_abs_paths_mesh(args.itemid)        
+    msg = '%s abs OSG paths for meshes fetched: %s' %(num_osg_mesh, abs_osg_mesh_paths)
     print msg
     logger.info(msg)    
     
     # fetch the OSG abs_paths picture
-    abs_osg_picture_paths, num = fetch_osg_abs_paths_picture(args.itemid)        
-    msg = '%s abs OSG paths for pictures fetched: %s' %(num, abs_osg_picture_paths)
+    abs_osg_picture_paths, num_osg_picture = fetch_osg_abs_paths_picture(args.itemid)        
+    msg = '%s abs OSG paths for pictures fetched: %s' %(num_osg_picture, abs_osg_picture_paths)
     print msg
     logger.info(msg)
     
     # fetch the OSG abs_paths PC BG
-    abs_osg_pc_bg_paths, num = fetch_osg_abs_paths_pc_bg(args.itemid)        
-    msg = '%s abs OSG paths for PC BG fetched: %s' %(num, abs_osg_pc_bg_paths)
+    abs_osg_pc_bg_paths, num_osg_pc_bg = fetch_osg_abs_paths_pc_bg(args.itemid)        
+    msg = '%s abs OSG paths for PC BG fetched: %s' %(num_osg_pc_bg, abs_osg_pc_bg_paths)
     print msg
     logger.info(msg)
     
     # remove the files related to the above absolute paths
+    shutil.rmtree(abs_path)
+   
+    for abs_potree_path in abs_potree_paths:
+        shutil.rmtree(abs_potree_path)
+   
+    for abs_osg_pc_path in abs_osg_pc_paths:
+        shutil.rmtree(abs_osg_pc_path)
+    for abs_osg_mesh_path in abs_osg_mesh_paths:
+        shutil.rmtree(abs_osg_mesh_path)
+    for abs_osg_picture_path in abs_osg_picture_paths:
+        shutil.rmtree(abs_osg_picture_path)
+        
+    for abs_osg_pc_bg_path in abs_osg_pc_bg_paths:
+        shutil.rmtree(abs_osg_pc_bg_path)
     
+    msg = 'Files in found abs_path locations removed!'
+    print msg
+    logger.info(msg)    
+
     # measure elapsed time
     elapsed_time = time.time() - t0    
     msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, utils.LOG_FILENAME)
