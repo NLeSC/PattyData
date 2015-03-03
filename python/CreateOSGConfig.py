@@ -85,7 +85,7 @@ def main(opts):
     # Add all the different XML of the active objects
     # (we add distinct since the boundings will share XMLs)
     # cursor.execute('SELECT DISTINCT xml_path FROM active_objects_sites')
-    utils.dbExecute(cursor, 'SELECT DISTINCT xml_abs_path FROM OSG_DATA_ITEM')
+    utils.dbExecute(cursor, 'SELECT DISTINCT xml_abs_path FROM OSG_DATA_ITEM ORDER BY xml_abs_path')
     for (xmlPath,) in cursor:
         if xmlPath.count(opts.osg) == 0:
             logger.error('Mismatch between given OSG data directory ' +
