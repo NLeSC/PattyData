@@ -333,7 +333,7 @@ def codeOSGActiveObjectUniqueName(cursor, aoType, rawDataItemId = None, itemId =
             (itemId, absPath) = rows[0]
             if aoType == AO_TYPE_MESH:
                 aux = 'mesh'
-            if aoType == AO_TYPE_PC:
+            elif aoType == AO_TYPE_PC:
                 aux = 'pc'
             else:
                 aux  = 'pic'

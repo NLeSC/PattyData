@@ -567,6 +567,9 @@ def addOSGItemObjects():
             footprints, num_footprints = fetchDataFromDB(cursor, query, queryArgs)
             if num_footprints:
                 (srid, x, y, z, xs, ys, zs) = footprints[0]
+                if xs == 0: xs = 1
+                if ys == 0: ys = 1
+                if zs == 0: zs = 1
             dbExecute(cursor, "INSERT INTO OSG_LOCATION (osg_location_id, srid, x, y, z, xs, ys, zs) VALUES (DEFAULT,%s,%s,%s,%s,%s,%s,%s) RETURNING osg_location_id", 
                     [srid, x, y, z, xs, ys, zs])
             osgLocationId = cursor.fetchone()[0]
