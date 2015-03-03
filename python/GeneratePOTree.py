@@ -20,7 +20,7 @@
 #                   * Unique identifier is created in xml config file
 ##############################################################################
 
-import shutil, time, os, utils, glob, subprocess, argparse, shlex
+import shutil, time, os, utils, glob, subprocess, argparse, shlex, logging
 
 CONVERTER_COMMAND = 'PotreeConverter'
 outputFormat = 'LAS'
@@ -91,13 +91,13 @@ def extract_inType(abspath, site_id, potreeDir, levels):
                                  inKind, 'S'+str(site_id),
                                  os.path.basename(os.path.normpath(abspath)),
                                  os.path.basename(os.path.normpath(abspath)) +
-                                 '_levels_' + levels)
+                                 '_levels_' + str(levels))
     elif (inType == utils.PC_FT and inKind == utils.BG_FT):
         outFolder = os.path.join(os.path.abspath(potreeDir), utils.PC_FT,
                                  inKind,
                                  os.path.basename(os.path.normpath(abspath)),
                                  os.path.basename(os.path.normpath(abspath)) +
-                                 '_levels_' + levels)
+                                 '_levels_' + str(levels))
     else:
         logging.error("POTree converter should one be used on PC's")
         raise Exception("POTree converter should one be used on PC's")
@@ -125,6 +125,7 @@ def getNumLevels(opts, isBackground):
             levels = 4
     else:
         levels = int(opts.levels)
+    return levels
 
 def main(opts):
     # Start logging
@@ -150,7 +151,7 @@ FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) JOIN RAW_DATA_ITEM_PC USING (raw_da
 WHERE raw_data_item_id NOT IN (
           SELECT raw_data_item_id FROM POTREE_DATA_ITEM_PC)"""
         # Get the list of items that are not converted yet (we sort by background to have the background converted first)
-        raw_data_items, num_raw_data_items = utils.fetchDataFromDB(query)
+        raw_data_items, num_raw_data_items = utils.fetchDataFromDB(cursor, query)
         for (rawDataItemId,isBackground) in raw_data_items:
             levels = getNumLevels(opts, isBackground)
             createPOTree(cursor, rawDataItemId, opts.potreeDir, levels)

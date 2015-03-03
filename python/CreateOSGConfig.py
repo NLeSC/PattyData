@@ -171,15 +171,15 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
     activeObjects = viewer_conf_api.activeObjects()
     # First we add points, meshes and pcitures which are related to
     # the active_objects_sites
-    layersData = [('points', 'OSG_DATA_ITEM_PC_SITE', AO_TYPE_PC),
-                  ('photos', 'OSG_DATA_ITEM_PICTURE', AO_TYPE_PIC),
-                  ('meshes', 'OSG_DATA_ITEM_MESH', AO_TYPE_MESH)]
+    layersData = [('points', 'OSG_DATA_ITEM_PC_SITE', utils.AO_TYPE_PC),
+                  ('photos', 'OSG_DATA_ITEM_PICTURE', utils.AO_TYPE_PIC),
+                  ('meshes', 'OSG_DATA_ITEM_MESH', utils.AO_TYPE_MESH)]
     
     for (layerName, tableName, inType) in layersData:
         layer = viewer_conf_api.layer(name=layerName)
         
         query = 'SELECT item_id, raw_data_item_id, OSG_LOCATION.srid, x, y, z, xs, ys, zs, h, p, r, cast_shadow FROM ' + tableName + ' JOIN OSG_DATA_ITEM USING (osg_data_item_id) JOIN OSG_LOCATION USING (osg_location_id) JOIN RAW_DATA_ITEM USING (raw_data_item_id) ORDER BY item_id'
-        rows, numitems = utils.fetchDataFromDB(query)
+        rows, numitems = utils.fetchDataFromDB(cursor, query)
         for (itemId, rawDataItemId, srid, x, y, z, xs, ys, zs, h, p, r, castShadow) in rows:
             # only call getOSGPosition if [x,y,z] are not None            
             if all(position is not None for position in [x,y,z]):
@@ -213,7 +213,7 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
                 x, y, z  = getOSGPosition(x, y, z, srid)
             else:
                 x, y, z = getOSGPosition(x, y, z)                
-            uniqueName = utils.codeOSGActiveObjectUniqueName(cursor, inType, itemId = siteId, objectId = objectNumber)
+            uniqueName = utils.codeOSGActiveObjectUniqueName(cursor, utils.AO_TYPE_OBJ, itemId = siteId, objectId = objectNumber)
             proto = "Bounding Box"
             activeObject = viewer_conf_api.activeObject(prototype=proto,
                                                         uniqueName=uniqueName)
@@ -235,7 +235,7 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
     for (name, text, red, green, blue, rotatescreen, outline, font, x, y, z,
          xs, ys, zs, h, p, r, castShadow) in rows:
         proto = "labelPrototype"
-        uniqueName = utils.codeOSGActiveObjectUniqueName(cursor, inType, labelName = name)
+        uniqueName = utils.codeOSGActiveObjectUniqueName(cursor, utils.AO_TYPE_LAB, labelName = name)
         activeObject = viewer_conf_api.activeObject(
             prototype=proto, uniqueName=uniqueName, labelText=text,
             labelColorRed=red, labelColorGreen=green, labelColorBlue=blue,
