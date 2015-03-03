@@ -8,11 +8,47 @@
 # Modifications:   
 # Notes:            
 ################################################################################
-import os, argparse, utils, psycopg2, time, logging
+import os, argparse, utils, psycopg2, time, logging, multiprocessing
 import GetItemLAS
 
 BUFFER = 2
 CONCAVE = 0.9
+
+def runChild(procIndex, itemsQueue, resultsQueue, lasFolder, dbname, dbuser, dbpass, dbhost, dbport):
+    connection, cursor = utils.connectToDB(dbname, dbuser, dbpass, dbhost, dbport) 
+    kill_received = False
+    while not kill_received:
+        itemId = None
+        try:
+            # This call will patiently wait until new job is available
+            itemId = itemsQueue.get()
+        except:
+            # if there is an error we will quit the generation
+            kill_received = True
+        if itemId == None:
+            # If we receive a None job, it means we can stop this workers 
+            # (all the create-image jobs are done)
+            kill_received = True
+        else:            
+            logging.info('PROC%d: Getting minimum and maximum Z for item %d' % (procIndex,itemId))
+            outputFile = 'temp_%03d.las' % itemId 
+            try:
+                (returnOk, vertices, minZ, maxZ, avgZ, numpoints) = GetItemLAS.create_cut_out(cursor, lasFolder, outputFile, itemId, BUFFER, CONCAVE)
+            
+                # We do not need the cutout
+                if os.path.isfile(outputFile):
+                    os.remove(outputFile)
+            
+                if returnOk:
+                    logging.info('PROC%d: Updating DB minimum and maximum Z for item %d' % (procIndex,itemId))
+                    utils.dbExecute(cursor, "UPDATE ITEM SET (min_z,max_z) = (%s,%s) WHERE item_id = %s", 
+                                    [minZ, maxZ, itemId])
+            except Exception, e:
+                connection.rollback()
+                logging.error('PROC%d: Can not update minimum and maximum Z for item %d' % (procIndex,itemId))
+                logging.error(e)
+            resultsQueue.put((procIndex, itemId))   
+    utils.closeConnectionDB(connection, cursor)
 
 def argument_parser():
     """ Define the arguments and return the parser object"""
@@ -25,11 +61,10 @@ def argument_parser():
     parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
     parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
     parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
-        
+    parser.add_argument('-c','--cores',default=1,help='Number of cores to use [default 1]',type=int, required=False)    
     return parser
 
 
-#------------------------------------------------------------------------------        
 def run(args): 
     # start logging
     logname = os.path.basename(__file__) + '.log'
@@ -51,29 +86,31 @@ def run(args):
             itemIds.append(itemId)
     else:
         itemIds = args.itemid.split(',')
-    
-    for itemId in itemIds:
-        itemId = int(itemId)
-        logging.info('Getting minimum and maximum Z for item %d' % itemId)
-        outputFile = 'temp_%03d.las' % itemId 
         
-        try:
-            (returnOk, vertices, minZ, maxZ, avgZ, numpoints) = GetItemLAS.create_cut_out(cursor, args.las, outputFile, itemId, BUFFER, CONCAVE)
-        
-            # We do not need the cutout
-            if os.path.isfile(outputFile):
-                os.remove(outputFile)
-        
-            if returnOk:
-                utils.dbExecute(cursor, "UPDATE ITEM SET (min_z,max_z) = (%s,%s) WHERE item_id = %s", 
-                                [minZ, maxZ, itemId])
-        except Exception, e:
-            connection.rollback()
-            logging.error('Can not update minimum and maximum Z for item %d' % itemId)
-            logging.error(e)
-            
     # close the conection to the DB
     utils.closeConnectionDB(connection, cursor)
+    
+    # Create queues
+    itemsQueue = multiprocessing.Queue() # The queue of tasks (queries)
+    resultsQueue = multiprocessing.Queue() # The queue of results
+    
+    for itemId in itemIds:
+        itemsQueue.put(int(itemId))
+    for i in range(args.cores): #we add as many None jobs as numUsers to tell them to terminate (queue is FIFO)
+        itemsQueue.put(None)
+    
+    procs = []
+    # We start numUsers users processes
+    for i in range(numUsers):
+        procs.append(multiprocessing.Process(target=self.runChild, 
+            args=(i, itemsQueue, resultsQueue, args.las, args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport)))
+        procs[-1].start()
+    
+    for i in range(len(itemIds)):
+        [procIndex, itemId] = resultsQueue.get()
+    # wait for all users to finish their execution
+    for i in range(args.cores):
+        procs[i].join()
     
     # measure elapsed time
     elapsed_time = time.time() - t0    
