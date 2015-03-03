@@ -331,17 +331,23 @@ def codeOSGActiveObjectUniqueName(cursor, aoType, rawDataItemId = None, itemId =
         rows, num = fetchDataFromDB(cursor, "SELECT item_id, abs_path FROM RAW_DATA_ITEM WHERE raw_data_item_id = %s", [rawDataItemId,])
         if num == 1:
             (itemId, absPath) = rows[0]
-            uniqueName = aoType + '_' + str(rawDataItemId) + '_' + str(itemId) + '_' + os.path.basename(absPath)
+            if aoType == AO_TYPE_MESH:
+                aux = 'mesh'
+            if aoType == AO_TYPE_PC:
+                aux = 'pc'
+            else:
+                aux  = 'pic'
+            uniqueName = str(itemId) + '_' + aux + '_' + str(rawDataItemId) + '_' + os.path.basename(absPath)
         else:
             raise Exception('Raw Data Item with ID %d is not in DB!' % rawDataItemId)
     elif aoType == AO_TYPE_OBJ:
         if objectId == None or itemId == None:
             raise Exception('Item Id or Object ID can not be None if Active Object Type is ' + AO_TYPE_OBJ)
-        uniqueName = aoType + '_'  + str(objectId) + '_' + str(itemId)
+        uniqueName = str(itemId) + '_obj_'  + str(objectId)
     else: #LAB
         if labelName == None:
             raise Exception('Label name ID can not be None if Active Object Type is ' + AO_TYPE_LAB)
-        uniqueName = aoType + '_' + str(labelName)
+        uniqueName = 'lab_' + str(labelName)
     return uniqueName
 
 def decodeOSGActiveObjectUniqueName(uniqueName):
@@ -351,14 +357,25 @@ def decodeOSGActiveObjectUniqueName(uniqueName):
     labelName = None
     
     fs = uniqueName.split('_')
-    aoType = fs[0]
+    aux = fs[1]
     
-    if aoType == AO_TYPE_OBJ:
-        objectId = int(fs[1])
-        itemId = int(fs[2])
-    elif aoType == AO_TYPE_LAB:
-        labelName = uniqueName[len(AO_TYPE_LAB + '_'):]
+    if aux == 'mesh':
+        aoType = AO_TYPE_MESH
+    elif aux == 'pc':
+        aoType = AO_TYPE_PC
+    elif aux == 'pic':
+        aoType = AO_TYPE_PIC    
+    elif aux == 'obj':
+        aoType = AO_TYPE_OBJ
     else:
-        rawDataItemId = int(fs[1])
-        itemId = int(fs[2])
+        aoType = AO_TYPE_LAB
+            
+    if aoType == AO_TYPE_OBJ:
+        objectId = int(fs[2])
+        itemId = int(fs[0])
+    elif aoType == AO_TYPE_LAB:
+        labelName = uniqueName[len('lab_'):]
+    else:
+        itemId = int(fs[0])
+        rawDataItemId = int(fs[2])
     return  (aoType, itemId, rawDataItemId, objectId, labelName)
