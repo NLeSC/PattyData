@@ -82,7 +82,9 @@ def createOSG(cursor, itemId, osgDir):
         '%s )', (itemId,))
 
     # Set offset if item is aligned
+    aligned = False
     if len(data_items) > 0:
+        aligned = True
         (abOffsetX, abOffsetY, abOffsetZ) = data_items[0]
 
     if os.path.isfile(inFile):
@@ -95,7 +97,6 @@ def createOSG(cursor, itemId, osgDir):
         os.chdir(inFile)
 
     outputPrefix = utils.OSG_DATA_PREFIX
-    aligned = (abOffsetX is not None)
     ofile = getOSGFileFormat(inType)
 
     # A PC SITE
@@ -280,7 +281,7 @@ WHERE raw_data_item_id NOT IN (
           SELECT raw_data_item_id FROM OSG_DATA_ITEM_PICTURE)
 ORDER BY BACKGROUND DESC"""
         # Get the list of items that are not converted yet (we sort by background to have the background converted first)
-        raw_data_items, num_raw_data_items = utils.fetchDataFromDB(query)
+        raw_data_items, num_raw_data_items = utils.fetchDataFromDB(cursor, query)
         for (rawDataItemId,) in raw_data_items:
             createOSG(cursor, rawDataItemId, opts.osgDir)
     else:
