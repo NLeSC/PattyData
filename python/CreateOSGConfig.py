@@ -63,7 +63,20 @@ def main(opts):
     connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser,
                                            opts.dbpass, opts.dbhost,
                                            opts.dbport)
-
+    
+    # Check that provided background is in DB
+    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT abs_path,srid FROM OSG_DATA_ITEM_PC_BACKGROUND JOIN RAW_DATA_ITEM USING (raw_data_item_id)')
+    backGroundAbsPath = None
+    backgroundSRID = None
+    for (bgAbsPath,bgSRID) in rows:
+        if opts.background == os.path.basename(bgAbsPath):
+            backGroundAbsPath = bgAbsPath
+            backgroundSRID = bgSRID
+    if backGroundAbsPath:
+        errorMsg = 'Background ' + opts.background + ' is not found'
+        logger.error(errorMsg)
+        raise Exception(errorMsg)
+    
     # Get the root object: the OSG configuration
     rootObject = viewer_conf_api.osgRCconfiguration()
     # set version
@@ -108,7 +121,7 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
         # only call getOSGPosition if [x,y,z] are not None
         # should item_id = -1 be added? 
         if all(position is not None for position in [x,y,z]) and siteId>0:
-            if (srid is not None):
+            if (srid is not None) and (srid == bgSRID):
                 x, y, z  = getOSGPosition(x, y, z, srid)
             else:
                 x, y, z = getOSGPosition(x, y, z)
@@ -143,13 +156,8 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
 
     rootObject.set_attributes(attributes)
     # Add all the static objects, i.e. the OSG from the background
-    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT abs_path FROM ' +
-                                           'OSG_DATA_ITEM_PC_BACKGROUND')
-    staticObjects = viewer_conf_api.staticObjects()
 
-    if opts.background not in [os.path.basename(bg[0]) for bg in rows]:
-        raise Exception('Background ' + opts.background + ' is not found')
-        logger.error('Background ' + opts.background + ' is not found')
+    staticObjects = viewer_conf_api.staticObjects()
 
     for (osgPath,) in rows:
         if osgPath.count(opts.osg) == 0:
@@ -183,7 +191,7 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
         for (itemId, rawDataItemId, srid, x, y, z, xs, ys, zs, h, p, r, castShadow) in rows:
             # only call getOSGPosition if [x,y,z] are not None            
             if all(position is not None for position in [x,y,z]):
-                if (srid is not None):
+                if (srid is not None) and (srid == bgSRID):
                     x, y, z  = getOSGPosition(x, y, z, srid)
                 else:
                     x, y, z = getOSGPosition(x, y, z)
@@ -209,7 +217,7 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
          castShadow, srid) in rows:
         # only call getOSGPosition if [x,y,z] are not None
         if all(position is not None for position in [x,y,z]) and siteId>0:        
-            if (srid is not None):
+            if (srid is not None) and (srid == bgSRID):
                 x, y, z  = getOSGPosition(x, y, z, srid)
             else:
                 x, y, z = getOSGPosition(x, y, z)                
