@@ -271,15 +271,12 @@ def main(opts):
         query = """
 SELECT raw_data_item_id 
 FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) 
-WHERE raw_data_item_id NOT IN (
+WHERE NOT background AND raw_data_item_id NOT IN (
           SELECT raw_data_item_id FROM OSG_DATA_ITEM_PC_SITE 
-          UNION 
-          SELECT raw_data_item_id FROM OSG_DATA_ITEM_PC_BACKGROUND
           UNION 
           SELECT raw_data_item_id FROM OSG_DATA_ITEM_MESH 
           UNION 
-          SELECT raw_data_item_id FROM OSG_DATA_ITEM_PICTURE)
-ORDER BY BACKGROUND DESC"""
+          SELECT raw_data_item_id FROM OSG_DATA_ITEM_PICTURE)"""
         # Get the list of items that are not converted yet (we sort by background to have the background converted first)
         raw_data_items, num_raw_data_items = utils.fetchDataFromDB(cursor, query)
         for (rawDataItemId,) in raw_data_items:
@@ -303,7 +300,7 @@ if __name__ == "__main__":
 
     # fill argument groups
     parser.add_argument('-i','--itemid',default='',
-                       help='Comma-separated list of Raw Data Item Ids [default is to convert all raw data items that do not have a related OSG data item] (with ? the available raw data items are listed)',
+                       help='Comma-separated list of Raw Data Item Ids [default is to convert all raw data items related to sites that do not have a related OSG data item] (with ? the available raw data items are listed)',
                        type=str, required=False)
     parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
                         help='Postgres DB name [default ' + utils.DEFAULT_DB +
