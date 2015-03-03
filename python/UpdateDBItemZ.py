@@ -53,18 +53,24 @@ def run(args):
         itemIds = args.itemid.split(',')
     
     for itemId in itemIds:
-        logging.info('Getting average Z for item %d' % itemId)
+        itemId = int(itemId)
+        logging.info('Getting minimum and maximum Z for item %d' % itemId)
         outputFile = 'temp_%03d.las' % itemId 
-        (returnOk, vertices, minZ, maxZ, avgZ, numpoints) = GetItemLAS.create_cut_out(cursor, args.las, outputFile, itemId, BUFFER, CONCAVE)
         
-        # We do not need the cutout
-        if os.path.isfile(outputFile):
-            os.remove(outputFile)
+        try:
+            (returnOk, vertices, minZ, maxZ, avgZ, numpoints) = GetItemLAS.create_cut_out(cursor, args.las, outputFile, itemId, BUFFER, CONCAVE)
         
-        if returnOk:
-            utils.dbExecute(cursor, "UPDATE ITEM SET (min_z,max_z) = (%s,%s) WHERE item_id = %s", 
+            # We do not need the cutout
+            if os.path.isfile(outputFile):
+                os.remove(outputFile)
+        
+            if returnOk:
+                utils.dbExecute(cursor, "UPDATE ITEM SET (min_z,max_z) = (%s,%s) WHERE item_id = %s", 
                                 [minZ, maxZ, itemId])
-    
+        except Exception, e:
+            connection.rollback()
+            logging.error('Can not update minimum and maximum Z for item %d' % itemId)
+            logging.error(e)
             
     # close the conection to the DB
     utils.closeConnectionDB(connection, cursor)

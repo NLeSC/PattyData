@@ -68,7 +68,7 @@ FROM (
     logging.info(queryDescr)
     rows,num = utils.fetchDataFromDB(cursor, query, queryArgs)
     if num == 0:
-        logger.error('Wrong item ID: No item is found with specified ID or the geometry is NULL!')
+        logging.error('Wrong item ID: No item is found with specified ID or the geometry is NULL!')
         return (returnOk, vertices, minZ, maxZ, avgZ, numpoints)
     (concaveHull, minx, maxx, miny, maxy) = rows[0]
  
@@ -116,7 +116,8 @@ FROM (
     if numpoints == None:
         logging.error("Could not extract average elevation and number of points. Is LAStools/lasinfo installed and in PATH? Check that lasinfo in PATH is from LAStools and not libLAS!")
         return (returnOk, vertices, minZ, maxZ, avgZ, numpoints)
-    
+
+    logging.info('Extracted cutout for item %d has %d points with minimum z = %s, maximum z = %s, average z = %s' % (itemid, numpoints, str(minZ), str(maxZ), str(avgZ))) 
     returnOk = True
     return (returnOk, vertices, minZ, maxZ, avgZ, numpoints)
 
