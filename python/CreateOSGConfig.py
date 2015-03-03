@@ -65,14 +65,14 @@ def main(opts):
                                            opts.dbport)
     
     # Check that provided background is in DB
-    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT abs_path,srid FROM OSG_DATA_ITEM_PC_BACKGROUND JOIN RAW_DATA_ITEM USING (raw_data_item_id)')
+    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT OSG_DATA_ITEM_PC_BACKGROUND.abs_path,srid FROM OSG_DATA_ITEM_PC_BACKGROUND JOIN RAW_DATA_ITEM USING (raw_data_item_id)')
     backGroundAbsPath = None
     backgroundSRID = None
     for (bgAbsPath,bgSRID) in rows:
         if opts.background == os.path.basename(bgAbsPath):
             backGroundAbsPath = bgAbsPath
             backgroundSRID = bgSRID
-    if backGroundAbsPath:
+    if backGroundAbsPath == None:
         errorMsg = 'Background ' + opts.background + ' is not found'
         logger.error(errorMsg)
         raise Exception(errorMsg)
@@ -159,14 +159,9 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
 
     staticObjects = viewer_conf_api.staticObjects()
 
-    for (osgPath,) in rows:
-        if osgPath.count(opts.osg) == 0:
-            logger.error('Mismatch between given OSG ' +
-                         'data directory and DB content')
-        if opts.background == os.path.basename(osgPath):
-            staticObjects.add_staticObject(viewer_conf_api.staticObject
+    staticObjects.add_staticObject(viewer_conf_api.staticObject
                                            (url=os.path.relpath(
-                                           glob.glob(osgPath + '/' + utils.OSG_DATA_PREFIX + '.osgb')[0],
+                                           glob.glob(backGroundAbsPath + '/' + utils.OSG_DATA_PREFIX + '.osgb')[0],
                                            opts.osg)))
 
     # Add hardcoded DOME

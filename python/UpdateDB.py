@@ -489,7 +489,7 @@ def addOSGDataItem(absPath, itemId, dataItemType):
                     
             if srid == None: # If SRID of raw data item is null or the previous method did not work we can get from the item geometry
                 try:
-                    dbExecute(cursor, "SELECT Find_SRID('public', 'ITEM', 'geom'), st_x(st_centroid(geometry(geom))), st_y(st_centroid(geometry(geom))), min_z + ((max_z - min_z) / 2) FROM ITEM WHERE item_id = %s AND geom is NOT %s", [itemId,None])
+                    dbExecute(cursor, "SELECT ST_SRID(geom), st_x(st_centroid(geometry(geom))), st_y(st_centroid(geometry(geom))), min_z + ((max_z - min_z) / 2) FROM ITEM WHERE item_id = %s AND geom is NOT %s", [itemId,None])
                     if cursor.rowcount:
                         (srid, x, y, z) = cursor.fetchone()
                     else:
