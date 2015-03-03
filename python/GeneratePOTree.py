@@ -20,38 +20,25 @@
 #                   * Unique identifier is created in xml config file
 ##############################################################################
 
-import shutil, time, os, utils, glob, subprocess, argparse, shlex,
-
-logger = None
+import shutil, time, os, utils, glob, subprocess, argparse, shlex
 
 CONVERTER_COMMAND = 'PotreeConverter'
 outputFormat = 'LAS'
 
-def createPOTree(opts, abOffsetX=None,
-              abOffsetY=None, abOffsetZ=None, color8Bit=False):
+def createPOTree(cursor, itemId, potreeDir, levels):
+    
     (mainOsgb, xmlPath, offsets) = (None, None, (0, 0, 0))
 
-    # database connection
-    connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser,
-                                           opts.dbpass, opts.dbhost,
-                                           opts.dbport)
-    if opts.itemid == '?':
-        utils.listRawDataItems(cursor)
-        return
-    
     # extract abspath using raw_data_item_id
     data_items, num_items = utils.fetchDataFromDB(
         cursor, "SELECT abs_path, item_id FROM RAW_DATA_ITEM WHERE " +
-        "raw_data_item_id = %s", (opts.itemid,))
+        "raw_data_item_id = %s", (itemId,))
     abspath, site_id = data_items[0]
 
     # extract inType & outFolder, create outFolder in non-existent
     inType, inKind, outFolder = extract_inType(abspath, site_id,
-                                               opts.potreeDir)
+                                               potreeDir, levels)
     inFile = abspath
-
-    # close DB connection
-    utils.closeConnectionDB(connection, cursor)
 
     if os.path.isfile(inFile):
         # input was a file -> raise IOError
@@ -63,15 +50,14 @@ def createPOTree(opts, abOffsetX=None,
         os.chdir(inFile)
 
     outputPrefix = 'data'
-    aligned = (abOffsetX is not None)
 
     logFile = os.path.join(outFolder, outputPrefix + '.log')
     
     command = CONVERTER_COMMAND + ' -o ' + outFolder + ' -l ' + \
-        opts.levels + ' --output-format ' + outputFormat + ' --source ' + \
+        str(levels) + ' --output-format ' + outputFormat + ' --source ' + \
             inFile
     command += ' &> ' + logFile
-    logger.info(command)
+    logging.info(command)
     args = shlex.split(command)
     subprocess.Popen(args, stdout=subprocess.PIPE,
                      stderr=subprocess.PIPE).communicate()
@@ -81,14 +67,14 @@ def createPOTree(opts, abOffsetX=None,
         error('none POTree file was generated (found in ' + outFolder +
                      '). Check log: ' + logFile, outFolder)
 
-def extract_inType(abspath, site_id, potreeDir):
+def extract_inType(abspath, site_id, potreeDir, levels):
     '''
     Checks the type of the input file using the file location
     '''
     if any(substring in abspath for substring in ['/PC/']):
         inType = utils.PC_FT
     else:
-        logger.error("POTree converter should one be used on PC's")
+        logging.error("POTree converter should one be used on PC's")
         raise Exception("POTree converter should one be used on PC's")
     
     if '/SITE/' in abspath:
@@ -96,7 +82,7 @@ def extract_inType(abspath, site_id, potreeDir):
     elif '/BACK/' in abspath:
         inKind = utils.BG_FT
     else:
-        logger.error('could not determine kind from abspath')
+        logging.error('could not determine kind from abspath')
         raise Exception('Could not determine kind from abspath')
     
     # define outFolder from potreeDir and inType
@@ -105,15 +91,15 @@ def extract_inType(abspath, site_id, potreeDir):
                                  inKind, 'S'+str(site_id),
                                  os.path.basename(os.path.normpath(abspath)),
                                  os.path.basename(os.path.normpath(abspath)) +
-                                 '_levels_' + opts.levels)
+                                 '_levels_' + levels)
     elif (inType == utils.PC_FT and inKind == utils.BG_FT):
         outFolder = os.path.join(os.path.abspath(potreeDir), utils.PC_FT,
                                  inKind,
                                  os.path.basename(os.path.normpath(abspath)),
                                  os.path.basename(os.path.normpath(abspath)) +
-                                 '_levels_' + opts.levels)
+                                 '_levels_' + levels)
     else:
-        logger.error("POTree converter should one be used on PC's")
+        logging.error("POTree converter should one be used on PC's")
         raise Exception("POTree converter should one be used on PC's")
         
     # create outFolder if it does not exist yet
@@ -126,27 +112,65 @@ def extract_inType(abspath, site_id, potreeDir):
     return inType, inKind, outFolder
 
 def error(errorMessage, outFolder):
-     logger.error(errorMessage)
-     logger.info('Removing %s ' % outFolder)
+     logging.error(errorMessage)
+     logging.info('Removing %s ' % outFolder)
      shutil.rmtree(outFolder)
      raise Exception(errorMessage)
 
+def getNumLevels(opts, isBackground):
+    if opts.levels == '':
+        if isBackground:
+            levels = 8
+        else:
+            levels = 4
+    else:
+        levels = int(opts.levels)
+
 def main(opts):
-    # Define logger and start logging
-    logname = os.path.basename(__file__).split('.')[0] + '_' + str(opts.itemid) + '.log'
-    logger = utils.start_logging(filename=logname, level=opts.log)
+    # Start logging
+    logname = os.path.basename(__file__).split('.')[0] + '.log'
+    utils.start_logging(filename=logname, level=opts.log)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
     msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
     print msg
-    logger.info(msg)
+    logging.info(msg)
+    # database connection
+    connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser,
+                                           opts.dbpass, opts.dbhost,
+                                           opts.dbport)
+    
+    if opts.itemid == '?':
+        utils.listRawDataItems(cursor)
+        return
+    elif opts.itemid == '':
+        query = """
+SELECT raw_data_item_id,background 
+FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) JOIN RAW_DATA_ITEM_PC USING (raw_data_item_id) 
+WHERE raw_data_item_id NOT IN (
+          SELECT raw_data_item_id FROM POTREE_DATA_ITEM_PC)"""
+        # Get the list of items that are not converted yet (we sort by background to have the background converted first)
+        raw_data_items, num_raw_data_items = utils.fetchDataFromDB(query)
+        for (rawDataItemId,isBackground) in raw_data_items:
+            levels = getNumLevels(opts, isBackground)
+            createPOTree(cursor, rawDataItemId, opts.potreeDir, levels)
+    else:
+        for rawDataItemId in opts.itemid.split(','):
+            rows,num_rows = utils.fetchDataFromDB('SELECT background FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) WHERE raw_data_item_id = %s', [int(rawDataItemId)])
+            if num_rows == 0:
+                logging.error('There is not a raw data item with id %d' % int(rawDataItemId))
+                return
+            isBackground = rows[0][0]
+            levels = getNumLevels(opts, isBackground)    
+            createPOTree(cursor, int(rawDataItemId), opts.potreeDir, levels)
 
-    createPOTree(opts)
+    # close DB connection
+    utils.closeConnectionDB(connection, cursor)
 
     elapsed_time = time.time() - t0
     msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
     print(msg)
-    logger.info(msg)
+    logging.info(msg)
 
 if __name__ == "__main__":
     # define argument menu
@@ -154,8 +178,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=description)
 
     # fill argument groups
-    parser.add_argument('-i', '--itemid', help='Raw data item id (with ? the list of raw data items are listed)',
-                        action='store', required=True)
+    parser.add_argument('-i','--itemid',default='',
+                       help='Comma-separated list of Raw Data Item Ids [default is to convert all raw data items that do not have a related POtree data item] (with ? the available raw data items are listed)',
+                       type=str, required=False)
     parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
                         help='Postgres DB name [default ' + utils.DEFAULT_DB +
                         ']', action='store')
@@ -168,7 +193,7 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--potreeDir', default=utils.DEFAULT_POTREE_DATA_DIR,
                         help='POTREE data directory [default ' +
                         utils.DEFAULT_POTREE_DATA_DIR + ']', action='store')
-    parser.add_argument('--levels',default='',help='Number of levels of the Octree, parameter for PotreeConverter.',action='store', required=True)
+    parser.add_argument('--levels',default='',help='Number of levels of the Octree, parameter for PotreeConverter. [default is 4 for Sites and 8 for Backgrounds]',action='store', required=False)
     
     parser.add_argument('-l', '--log', help='Log level',
                         choices=['debug', 'info', 'warning', 'error',

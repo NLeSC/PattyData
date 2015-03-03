@@ -18,9 +18,8 @@
 #                   * Unique identifier is created in xml config file
 ##############################################################################
 
-import shutil, os, time, utils, glob, subprocess, argparse, shlex
+import shutil, os, time, utils, glob, subprocess, argparse, shlex, logging
 
-logger = None
 CONVERTER_COMMAND = 'ViaAppia'
 
 def getOSGFileFormat(inType):
@@ -42,26 +41,18 @@ def updateXMLDescription(xmlPath, cursor, aoType, rawDataItemId):
     shutil.move(tempFile, xmlPath)
 
 
-def createOSG(opts, abOffsetX=None,
-              abOffsetY=None, abOffsetZ=None, color8Bit=False):
+def createOSG(cursor, itemId, osgDir):
+    
     (mainOsgb, xmlPath, offsets) = (None, None, (0, 0, 0))
-
-    # database connection
-    connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser,
-                                           opts.dbpass, opts.dbhost,
-                                           opts.dbport)
-    if opts.itemid == '?':
-        utils.listRawDataItems(cursor)
-        return
     
     # extract abspath using raw_data_item_id
     data_items, num_items = utils.fetchDataFromDB(
         cursor, "SELECT abs_path, item_id FROM RAW_DATA_ITEM WHERE " +
-        "raw_data_item_id = %s", (opts.itemid,))
+        "raw_data_item_id = %s", (itemId,))
     abspath, site_id = data_items[0]
 
     # extract inType & outFolder, create outFolder in non-existent
-    inType, inKind, outFolder = extract_inType(abspath, site_id, opts.osgDir)
+    inType, inKind, outFolder = extract_inType(abspath, site_id, osgDir)
     inFile = abspath  # CORRECT ?
 
     # Get 8bitcolor information from DB
@@ -72,7 +63,7 @@ def createOSG(opts, abOffsetX=None,
         'RAW_DATA_ITEM_PC.raw_data_item_id LEFT JOIN RAW_DATA_ITEM_MESH ON ' +
         'RAW_DATA_ITEM.raw_data_item_id=RAW_DATA_ITEM_MESH.raw_data_item_id ' +
         'WHERE ' +
-        'RAW_DATA_ITEM.raw_data_item_id = %s', (opts.itemid,))
+        'RAW_DATA_ITEM.raw_data_item_id = %s', (itemId,))
     try:
         if (True in data_items[0]):
             color8Bit = True
@@ -88,7 +79,7 @@ def createOSG(opts, abOffsetX=None,
         'OSG_DATA_ITEM_PC_BACKGROUND.raw_data_item_id=' +
         'RAW_DATA_ITEM.raw_data_item_id WHERE RAW_DATA_ITEM.srid = ' +
         '(SELECT srid from RAW_DATA_ITEM WHERE raw_data_item_id=' +
-        '%s )', (opts.itemid,))
+        '%s )', (itemId,))
 
     # Set offset if item is aligned
     if len(data_items) > 0:
@@ -150,13 +141,13 @@ def createOSG(opts, abOffsetX=None,
         command += ' --translate ' + str(abOffsetX) + ' ' + str(abOffsetY) + \
             ' ' + str(abOffsetZ)
     command += ' &> ' + logFile
-    logger.info(command)
+    logging.info(command)
     args = shlex.split(command)
     subprocess.Popen(args, stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE).communicate()
 
     # move files to outFolder; drop outputPrefix from filename
-    logger.info("Moving files to " + outFolder)
+    logging.info("Moving files to " + outFolder)
     outputFiles = glob.glob(outputPrefix + '*')
     for filename in outputFiles:
         shutil.move(os.path.abspath(filename), os.path.join(outFolder,filename))
@@ -180,7 +171,7 @@ def createOSG(opts, abOffsetX=None,
                     error('multiple XMLs file were generated (found in '
                                  + outFolder + '). Using ' + xmlPath, outFolder)
             # upate xml file
-            updateXMLDescription(xmlPath, cursor, inType, opts.itemid)
+            updateXMLDescription(xmlPath, cursor, inType, itemId)
         txtfiles = glob.glob(os.path.join(outFolder, '*offset.txt'))
         if len(txtfiles):
             txtFile = txtfiles[0]
@@ -189,11 +180,7 @@ def createOSG(opts, abOffsetX=None,
             for i in range(len(offsets)):
                 offsets[i] = float(offsets[i])
         elif aligned:
-            logger.warn('No offset file was found and it was expected!')
-
-    
-    # close DB connection
-    utils.closeConnectionDB(connection, cursor)
+            logging.warn('No offset file was found and it was expected!')
     
 def extract_inType(abspath, site_id, osgDir):
     '''
@@ -207,7 +194,7 @@ def extract_inType(abspath, site_id, osgDir):
         inType = utils.PC_FT
     else:
         msg = 'could not determine type from abspath'
-        logger.error(msg)
+        logging.error(msg)
         raise Exception(msg)
     if '/SITE/' in abspath:
         inKind = utils.SITE_FT
@@ -215,7 +202,7 @@ def extract_inType(abspath, site_id, osgDir):
         inKind = utils.BG_FT
     else:
         msg  = 'could not determine kind from abspath'
-        logger.error(msg)
+        logging.error(msg)
         raise Exception(msg)
     # Determine period CURR/ARCH_REC/HIST of MESH/PICT
     if any(substring in abspath for substring in ['/MESH/', 'PICT']):
@@ -255,29 +242,58 @@ def extract_inType(abspath, site_id, osgDir):
     return inType, inKind, outFolder
 
 def error(errorMessage, outFolder):
-     logger.error(errorMessage)
-     logger.info('Removing %s ' % outFolder)
+     logging.error(errorMessage)
+     logging.info('Removing %s ' % outFolder)
      shutil.rmtree(outFolder)
      raise Exception(errorMessage)
 
 
 def main(opts):
-    # Define logger and start logging
-    global logger
-    logname = os.path.basename(__file__).split('.')[0] + '_' + str(opts.itemid) + '.log'
-    logger = utils.start_logging(filename=logname, level=opts.log)
+    # Start logging
+    logname = os.path.basename(__file__).split('.')[0] + '.log'
+    utils.start_logging(filename=logname, level=opts.log)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
     msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
     print msg
-    logger.info(msg)
+    logging.info(msg)
 
-    createOSG(opts)
+    # database connection
+    connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser,
+                                           opts.dbpass, opts.dbhost,
+                                           opts.dbport)
+    
+    if opts.itemid == '?':
+        utils.listRawDataItems(cursor)
+        return
+    elif opts.itemid == '':
+        query = """
+SELECT raw_data_item_id 
+FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) 
+WHERE raw_data_item_id NOT IN (
+          SELECT raw_data_item_id FROM OSG_DATA_ITEM_PC_SITE 
+          UNION 
+          SELECT raw_data_item_id FROM OSG_DATA_ITEM_PC_BACKGROUND
+          UNION 
+          SELECT raw_data_item_id FROM OSG_DATA_ITEM_MESH 
+          UNION 
+          SELECT raw_data_item_id FROM OSG_DATA_ITEM_PICTURE)
+ORDER BY BACKGROUND DESC"""
+        # Get the list of items that are not converted yet (we sort by background to have the background converted first)
+        raw_data_items, num_raw_data_items = utils.fetchDataFromDB(query)
+        for (rawDataItemId,) in raw_data_items:
+            createOSG(cursor, rawDataItemId, opts.osgDir)
+    else:
+        for rawDataItemId in opts.itemid.split(','):
+            createOSG(cursor, int(rawDataItemId), opts.osgDir)    
 
+    # close DB connection
+    utils.closeConnectionDB(connection, cursor)
+    
     elapsed_time = time.time() - t0
     msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
     print(msg)
-    logger.info(msg)
+    logging.info(msg)
 
 if __name__ == "__main__":
     # define argument menu
@@ -285,8 +301,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=description)
 
     # fill argument groups
-    parser.add_argument('-i', '--itemid', help='Raw data item id (with ? the list of raw data items are listed)',
-                        action='store', required=True)
+    parser.add_argument('-i','--itemid',default='',
+                       help='Comma-separated list of Raw Data Item Ids [default is to convert all raw data items that do not have a related OSG data item] (with ? the available raw data items are listed)',
+                       type=str, required=False)
     parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
                         help='Postgres DB name [default ' + utils.DEFAULT_DB +
                         ']', action='store')
