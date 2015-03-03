@@ -101,8 +101,8 @@ def run(args):
     
     procs = []
     # We start numUsers users processes
-    for i in range(numUsers):
-        procs.append(multiprocessing.Process(target=self.runChild, 
+    for i in range(args.cores):
+        procs.append(multiprocessing.Process(target=runChild, 
             args=(i, itemsQueue, resultsQueue, args.las, args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport)))
         procs[-1].start()
     
