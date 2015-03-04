@@ -1,64 +1,64 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<xs:schema version="0.1" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" version="0.1">
 
 <!-- definition of attributes -->
-<xs:attribute type="xs:string" name="version"/>
-<xs:attribute type="xs:string" name="url" />
-<xs:attribute type="xs:string" name="name" />
-<xs:attribute type="xs:float"  name="x" />
-<xs:attribute type="xs:float"  name="y" />
-<xs:attribute type="xs:float"  name="z" />
-<xs:attribute type="xs:float"  name="h" />
-<xs:attribute type="xs:float"  name="p" />
-<xs:attribute type="xs:float"  name="r" />
-<xs:attribute type="xs:float"  name="degrees"/>
-<xs:attribute type="xs:float"  name="pixels"/>
-<xs:attribute type="xs:byte"   name="touch"/>
-<xs:attribute type="xs:float"  name="accel"/>
-<xs:attribute type="xs:float"  name="friction"/>
-<xs:attribute type="xs:float"  name="steerFriction"/>
-<xs:attribute type="xs:byte"   name="on"/>
-<xs:attribute type="xs:string" name="type"/>
-<xs:attribute type="xs:float"  name="height"/>
-<xs:attribute type="xs:byte"   name="near_2exp"/>
-<xs:attribute type="xs:byte"   name="far_2exp"/>
-<xs:attribute type="xs:byte"   name="maxCars"/>
-<xs:attribute type="xs:float"  name="personDensity"/>
-<xs:attribute type="xs:string" name="roads"/>
-<xs:attribute type="xs:string" name="rooms"/>
-<xs:attribute type="xs:float"  name="value"/>
-<xs:attribute type="xs:float"  name="diffuse"/>
-<xs:attribute type="xs:float"  name="ambient"/>
-<xs:attribute type="xs:float"  name="sun_altitude"/>
-<xs:attribute type="xs:float"  name="sun_azimuth"/>
-<xs:attribute type="xs:float"  name="position_latitude"/>
-<xs:attribute type="xs:float"  name="position_longitude"/>
-<xs:attribute type="xs:float"  name="shadowIntensity"/>
-<xs:attribute type="xs:float"  name="ssaoIntensity"/>
-<xs:attribute type="xs:byte"   name="nearplane"/>
-<xs:attribute type="xs:byte"   name="farplane"/>
-<xs:attribute type="xs:byte"   name="mapcount"/>
-<xs:attribute type="xs:byte"   name="mapsize"/>
-<xs:attribute type="xs:byte"   name="polyoffsetfactor"/>
-<xs:attribute type="xs:short"  name="polyoffsetunits"/>
-<xs:attribute type="xs:byte"   name="update_shadowmap"/>
-<xs:attribute type="xs:byte"   name="vizible" />
-<xs:attribute type="xs:byte"   name="frozen" />
-<xs:attribute type="xs:string" name="layer"/>
-<xs:attribute type="xs:float"  name="xs" />
-<xs:attribute type="xs:float"  name="ys" />
-<xs:attribute type="xs:float"  name="zs" />
-<xs:attribute type="xs:byte"   name="castShadow" />
-<xs:attribute type="xs:string" name="status" />
-<xs:attribute type="xs:string" name="prototype" />
-<xs:attribute type="xs:string" name="uniqueName" />
-<xs:attribute type="xs:string" name="labelText" />
-<xs:attribute type="xs:float" name="labelColorRed" />
-<xs:attribute type="xs:float" name="labelColorGreen" />
-<xs:attribute type="xs:float" name="labelColorBlue" />
-<xs:attribute type="xs:byte" name="labelRotateScreen" />
-<xs:attribute type="xs:byte" name="outline" />
-<xs:attribute type="xs:string" name="Font" />
+<xs:attribute name="version" type="xs:string"/>
+<xs:attribute name="url" type="xs:string"/>
+<xs:attribute name="name" type="xs:string"/>
+<xs:attribute name="x" type="xs:float"/>
+<xs:attribute name="y" type="xs:float"/>
+<xs:attribute name="z" type="xs:float"/>
+<xs:attribute name="h" type="xs:float"/>
+<xs:attribute name="p" type="xs:float"/>
+<xs:attribute name="r" type="xs:float"/>
+<xs:attribute name="degrees" type="xs:float"/>
+<xs:attribute name="pixels" type="xs:float"/>
+<xs:attribute name="touch" type="xs:byte"/>
+<xs:attribute name="accel" type="xs:float"/>
+<xs:attribute name="friction" type="xs:float"/>
+<xs:attribute name="steerFriction" type="xs:float"/>
+<xs:attribute name="on" type="xs:byte"/>
+<xs:attribute name="type" type="xs:string"/>
+<xs:attribute name="height" type="xs:float"/>
+<xs:attribute name="near_2exp" type="xs:byte"/>
+<xs:attribute name="far_2exp" type="xs:byte"/>
+<xs:attribute name="maxCars" type="xs:byte"/>
+<xs:attribute name="personDensity" type="xs:float"/>
+<xs:attribute name="roads" type="xs:string"/>
+<xs:attribute name="rooms" type="xs:string"/>
+<xs:attribute name="value" type="xs:float"/>
+<xs:attribute name="diffuse" type="xs:float"/>
+<xs:attribute name="ambient" type="xs:float"/>
+<xs:attribute name="sun_altitude" type="xs:float"/>
+<xs:attribute name="sun_azimuth" type="xs:float"/>
+<xs:attribute name="position_latitude" type="xs:float"/>
+<xs:attribute name="position_longitude" type="xs:float"/>
+<xs:attribute name="shadowIntensity" type="xs:float"/>
+<xs:attribute name="ssaoIntensity" type="xs:float"/>
+<xs:attribute name="nearplane" type="xs:byte"/>
+<xs:attribute name="farplane" type="xs:byte"/>
+<xs:attribute name="mapcount" type="xs:byte"/>
+<xs:attribute name="mapsize" type="xs:byte"/>
+<xs:attribute name="polyoffsetfactor" type="xs:byte"/>
+<xs:attribute name="polyoffsetunits" type="xs:short"/>
+<xs:attribute name="update_shadowmap" type="xs:byte"/>
+<xs:attribute name="vizible" type="xs:byte"/>
+<xs:attribute name="frozen" type="xs:byte"/>
+<xs:attribute name="layer" type="xs:string"/>
+<xs:attribute name="xs" type="xs:float"/>
+<xs:attribute name="ys" type="xs:float"/>
+<xs:attribute name="zs" type="xs:float"/>
+<xs:attribute name="castShadow" type="xs:byte"/>
+<xs:attribute name="status" type="xs:string"/>
+<xs:attribute name="prototype" type="xs:string"/>
+<xs:attribute name="uniqueName" type="xs:string"/>
+<xs:attribute name="labelText" type="xs:string"/>
+<xs:attribute name="labelColorRed" type="xs:float"/>
+<xs:attribute name="labelColorGreen" type="xs:float"/>
+<xs:attribute name="labelColorBlue" type="xs:float"/>
+<xs:attribute name="labelRotateScreen" type="xs:byte"/>
+<xs:attribute name="outline" type="xs:byte"/>
+<xs:attribute name="Font" type="xs:string"/>
 
 
 <!-- definition of simple elements -->
@@ -85,7 +85,7 @@
 <xs:element name="cameras">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="camera" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="camera"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -154,14 +154,14 @@
 <xs:element name="cameraParameters">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="screen" />
+            <xs:element ref="screen"/>
             <xs:element ref="mouse"/>
-            <xs:element ref="softBrake" />
-            <xs:element ref="keysLeftRight" />
+            <xs:element ref="softBrake"/>
+            <xs:element ref="keysLeftRight"/>
             <xs:element ref="keysForwardBackward"/>
             <xs:element ref="keysVerticalUpDown"/>
             <xs:element ref="flySmoothlyToCameras"/>
-            <xs:element ref="walkMode" />
+            <xs:element ref="walkMode"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -229,9 +229,9 @@
     <xs:complexType>
         <xs:sequence>
             <xs:element ref="objectRotationSnap"/>
-            <xs:element ref="cameraParameters" />
+            <xs:element ref="cameraParameters"/>
             <xs:element ref="slaveViewClearPitch"/>
-            <xs:element ref="clip" />
+            <xs:element ref="clip"/>
             <xs:element ref="simulation"/>
             <xs:element ref="LODscale"/>
             <xs:element ref="light"/>
@@ -255,9 +255,9 @@
 		  <xs:element ref="depression_types"/>
 		  <xs:element ref="decoration_types"/>
 		  <xs:element ref="depictions"/>
-		  <xs:element ref="material_types"/>
-		  <xs:element ref="material_subtypes"/>
-		  <xs:element ref="material_techniques"/>
+		  <xs:element ref="types"/>
+		  <xs:element ref="subtypes"/>
+		  <xs:element ref="techniques"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -271,7 +271,7 @@
 <xs:element name="administrators">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="administrator" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="administrator"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -285,7 +285,7 @@
 <xs:element name="site_contexts">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="site_context" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="site_context"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -299,7 +299,7 @@
 <xs:element name="site_interpretations">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="site_interpretation" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="site_interpretation"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -313,7 +313,7 @@
 <xs:element name="conditions">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="condition" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="condition"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -327,7 +327,7 @@
 <xs:element name="object_types">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="object_type" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="object_type"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -341,7 +341,7 @@
 <xs:element name="object_interpretations">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="object_interpretation" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="object_interpretation"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -355,7 +355,7 @@
 <xs:element name="periods">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="period" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="period"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -369,7 +369,7 @@
 <xs:element name="reliabilitys">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="reliability" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="reliability"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -383,7 +383,7 @@
 <xs:element name="depression_types">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="depression_type" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="depression_type"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -397,7 +397,7 @@
 <xs:element name="decoration_types">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="decoration_type" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="decoration_type"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -411,49 +411,49 @@
 <xs:element name="depictions">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="depiction" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="depiction"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
 
-<xs:element name="material_type">
+<xs:element name="type">
     <xs:complexType>
         <xs:attribute ref="name" use="required"/>
     </xs:complexType>
 </xs:element>
 
-<xs:element name="material_types">
+<xs:element name="types">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="material_type" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="type"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
 
-<xs:element name="material_subtype">
+<xs:element name="subtype">
     <xs:complexType>
         <xs:attribute ref="name" use="required"/>
     </xs:complexType>
 </xs:element>
 
-<xs:element name="material_subtypes">
+<xs:element name="subtypes">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="material_subtype" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="subtype"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
 
-<xs:element name="material_technique">
+<xs:element name="technique">
     <xs:complexType>
         <xs:attribute ref="name" use="required"/>
     </xs:complexType>
 </xs:element>
 
-<xs:element name="material_techniques">
+<xs:element name="techniques">
     <xs:complexType>
         <xs:sequence>
-            <xs:element ref="material_technique" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="technique"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -467,7 +467,7 @@
 <xs:element name="staticObjects">
   <xs:complexType>
     <xs:sequence>
-      <xs:element ref="staticObject" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" ref="staticObject"/>
     </xs:sequence>
   </xs:complexType>
 </xs:element>
@@ -490,7 +490,7 @@
 <xs:element name="activeObject">
     <xs:complexType>
         <xs:sequence>
-           <xs:element ref="setting" maxOccurs="1" minOccurs="1"/>
+           <xs:element maxOccurs="1" minOccurs="1" ref="setting"/>
     	</xs:sequence>
         <xs:attribute ref="prototype" use="required"/>
         <xs:attribute ref="uniqueName" use="required"/>
@@ -507,7 +507,7 @@
 <xs:element name="layer">
   <xs:complexType>
     <xs:sequence>
-      <xs:element ref="activeObject" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" ref="activeObject"/>
     </xs:sequence>
     <xs:attribute ref="name" use="required"/>
   </xs:complexType>
@@ -516,7 +516,7 @@
 <xs:element name="activeObjects">
   <xs:complexType>
     <xs:sequence>
-      <xs:element ref="layer" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" ref="layer"/>
     </xs:sequence>
   </xs:complexType>
 </xs:element>
@@ -526,9 +526,9 @@
 <xs:element name="osgRCconfiguration">
   <xs:complexType>
     <xs:sequence>
-      <xs:element ref="objectLibrary" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:element maxOccurs="unbounded" minOccurs="0" ref="objectLibrary"/>
       <xs:element ref="cameras"/>
-      <xs:element ref="preferences" minOccurs="0"/>
+      <xs:element minOccurs="0" ref="preferences"/>
       <xs:element ref="attributes"/>
       <xs:element ref="staticObjects"/>
       <xs:element ref="activeObjects"/>

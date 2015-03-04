@@ -143,8 +143,8 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
     # Use generic method to fill all properties.
     # We need the name in the XML, the column name in the DB and
     # the table name in the DB
-    for property in utils.PROPERTIES_ORDER:
-        (cName, tName) = utils.PROPERTIES[property]
+    for property in utils.ATTRIBUTES_ORDER:
+        (cName, tName) = utils.ATTRIBUTES[property]
         elements = getattr(viewer_conf_api, property + 's')()
         # We need to call the columns and tables with extra "" because
         # they were created from the Access DB

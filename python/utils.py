@@ -9,7 +9,7 @@ from osgeo import osr
 
 # Python Module containing methods used in other scripts
 # key is atrribute column name in main attribute tables (tbl1_site,...) and values are column name and table name of column and table listing the different attribute values)
-PROPERTIES = {'administrator':('initials', 'list_participants'),
+ATTRIBUTES = {'administrator':('initials', 'list_participants'),
 'site_context':('context', 'list_site_context'),
 'site_interpretation':('interpretation', 'list_site_interpretation'),
 'condition':('condition', 'list_object_condition'),
@@ -24,7 +24,7 @@ PROPERTIES = {'administrator':('initials', 'list_participants'),
 'subtype':('material_subtype', 'list_object_material_subtype'),
 'technique':('technique', 'list_object_material_technique')}
 
-PROPERTIES_ORDER = ['administrator', 'site_context', 'site_interpretation', 'condition', 'object_type',  
+ATTRIBUTES_ORDER = ['administrator', 'site_context', 'site_interpretation', 'condition', 'object_type',  
                     'object_interpretation', 'period', 'reliability', 'depression_type', 'decoration_type',
                     'depiction', 'type', 'subtype', 'technique']
 

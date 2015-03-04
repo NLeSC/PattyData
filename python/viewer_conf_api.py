@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #
-# Generated Fri Sep 19 15:42:53 2014 by generateDS.py version 2.13b.
+# Generated Wed Mar  4 09:58:04 2015 by generateDS.py version 2.12e.
 #
 # Command line options:
 #   ('-f', '')
@@ -10,13 +10,13 @@
 #   ('-o', 'viewer_conf_api.py')
 #
 # Command line arguments:
-#   ../../viewer_conf.xsd
+#   viewer_conf.xsd
 #
 # Command line:
-#   /usr/local/bin/generateDS.py -f --silence -o "viewer_conf_api.py" ../../viewer_conf.xsd
+#   /usr/local/bin/generateDS.py -f --silence -o "viewer_conf_api.py" viewer_conf.xsd
 #
 # Current working directory (os.getcwd()):
-#   viaappia
+#   python
 #
 
 import sys
@@ -119,7 +119,7 @@ except ImportError, exp:
         def gds_validate_integer(self, input_data, node, input_name=''):
             return input_data
         def gds_format_integer_list(self, input_data, input_name=''):
-            return '%s' % ' '.join(input_data)
+            return '%s' % input_data
         def gds_validate_integer_list(self, input_data, node, input_name=''):
             values = input_data.split()
             for value in values:
@@ -127,13 +127,13 @@ except ImportError, exp:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of integers')
-            return values
+            return input_data
         def gds_format_float(self, input_data, input_name=''):
             return ('%.15f' % input_data).rstrip('0')
         def gds_validate_float(self, input_data, node, input_name=''):
             return input_data
         def gds_format_float_list(self, input_data, input_name=''):
-            return '%s' % ' '.join(input_data)
+            return '%s' % input_data
         def gds_validate_float_list(self, input_data, node, input_name=''):
             values = input_data.split()
             for value in values:
@@ -141,13 +141,13 @@ except ImportError, exp:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of floats')
-            return values
+            return input_data
         def gds_format_double(self, input_data, input_name=''):
             return '%e' % input_data
         def gds_validate_double(self, input_data, node, input_name=''):
             return input_data
         def gds_format_double_list(self, input_data, input_name=''):
-            return '%s' % ' '.join(input_data)
+            return '%s' % input_data
         def gds_validate_double_list(self, input_data, node, input_name=''):
             values = input_data.split()
             for value in values:
@@ -155,13 +155,13 @@ except ImportError, exp:
                     float(value)
                 except (TypeError, ValueError):
                     raise_parse_error(node, 'Requires sequence of doubles')
-            return values
+            return input_data
         def gds_format_boolean(self, input_data, input_name=''):
             return ('%s' % input_data).lower()
         def gds_validate_boolean(self, input_data, node, input_name=''):
             return input_data
         def gds_format_boolean_list(self, input_data, input_name=''):
-            return '%s' % ' '.join(input_data)
+            return '%s' % input_data
         def gds_validate_boolean_list(self, input_data, node, input_name=''):
             values = input_data.split()
             for value in values:
@@ -170,7 +170,7 @@ except ImportError, exp:
                         node,
                         'Requires sequence of booleans '
                         '("true", "1", "false", "0")')
-            return values
+            return input_data
         def gds_validate_datetime(self, input_data, node, input_name=''):
             return input_data
         def gds_format_datetime(self, input_data, input_name=''):
@@ -2893,7 +2893,7 @@ class preferences(GeneratedsSuper):
 class attributes(GeneratedsSuper):
     subclass = None
     superclass = None
-    def __init__(self, administrators=None, site_contexts=None, site_interpretations=None, conditions=None, object_types=None, object_interpretations=None, periods=None, reliabilitys=None, depression_types=None, decoration_types=None, depictions=None, material_types=None, material_subtypes=None, material_techniques=None):
+    def __init__(self, administrators=None, site_contexts=None, site_interpretations=None, conditions=None, object_types=None, object_interpretations=None, periods=None, reliabilitys=None, depression_types=None, decoration_types=None, depictions=None, types=None, subtypes=None, techniques=None):
         self.original_tagname_ = None
         self.administrators = administrators
         self.site_contexts = site_contexts
@@ -2906,9 +2906,9 @@ class attributes(GeneratedsSuper):
         self.depression_types = depression_types
         self.decoration_types = decoration_types
         self.depictions = depictions
-        self.material_types = material_types
-        self.material_subtypes = material_subtypes
-        self.material_techniques = material_techniques
+        self.types = types
+        self.subtypes = subtypes
+        self.techniques = techniques
     def factory(*args_, **kwargs_):
         if attributes.subclass:
             return attributes.subclass(*args_, **kwargs_)
@@ -2937,12 +2937,12 @@ class attributes(GeneratedsSuper):
     def set_decoration_types(self, decoration_types): self.decoration_types = decoration_types
     def get_depictions(self): return self.depictions
     def set_depictions(self, depictions): self.depictions = depictions
-    def get_material_types(self): return self.material_types
-    def set_material_types(self, material_types): self.material_types = material_types
-    def get_material_subtypes(self): return self.material_subtypes
-    def set_material_subtypes(self, material_subtypes): self.material_subtypes = material_subtypes
-    def get_material_techniques(self): return self.material_techniques
-    def set_material_techniques(self, material_techniques): self.material_techniques = material_techniques
+    def get_types(self): return self.types
+    def set_types(self, types): self.types = types
+    def get_subtypes(self): return self.subtypes
+    def set_subtypes(self, subtypes): self.subtypes = subtypes
+    def get_techniques(self): return self.techniques
+    def set_techniques(self, techniques): self.techniques = techniques
     def hasContent_(self):
         if (
             self.administrators is not None or
@@ -2956,9 +2956,9 @@ class attributes(GeneratedsSuper):
             self.depression_types is not None or
             self.decoration_types is not None or
             self.depictions is not None or
-            self.material_types is not None or
-            self.material_subtypes is not None or
-            self.material_techniques is not None
+            self.types is not None or
+            self.subtypes is not None or
+            self.techniques is not None
         ):
             return True
         else:
@@ -3010,12 +3010,12 @@ class attributes(GeneratedsSuper):
             self.decoration_types.export(outfile, level, namespace_, name_='decoration_types', pretty_print=pretty_print)
         if self.depictions is not None:
             self.depictions.export(outfile, level, namespace_, name_='depictions', pretty_print=pretty_print)
-        if self.material_types is not None:
-            self.material_types.export(outfile, level, namespace_, name_='material_types', pretty_print=pretty_print)
-        if self.material_subtypes is not None:
-            self.material_subtypes.export(outfile, level, namespace_, name_='material_subtypes', pretty_print=pretty_print)
-        if self.material_techniques is not None:
-            self.material_techniques.export(outfile, level, namespace_, name_='material_techniques', pretty_print=pretty_print)
+        if self.types is not None:
+            self.types.export(outfile, level, namespace_, name_='types', pretty_print=pretty_print)
+        if self.subtypes is not None:
+            self.subtypes.export(outfile, level, namespace_, name_='subtypes', pretty_print=pretty_print)
+        if self.techniques is not None:
+            self.techniques.export(outfile, level, namespace_, name_='techniques', pretty_print=pretty_print)
     def exportLiteral(self, outfile, level, name_='attributes'):
         level += 1
         already_processed = set()
@@ -3091,22 +3091,22 @@ class attributes(GeneratedsSuper):
             self.depictions.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
-        if self.material_types is not None:
+        if self.types is not None:
             showIndent(outfile, level)
-            outfile.write('material_types=model_.material_types(\n')
-            self.material_types.exportLiteral(outfile, level)
-            showIndent(outfile, level)
-            outfile.write('),\n')
-        if self.material_subtypes is not None:
-            showIndent(outfile, level)
-            outfile.write('material_subtypes=model_.material_subtypes(\n')
-            self.material_subtypes.exportLiteral(outfile, level)
+            outfile.write('types=model_.types(\n')
+            self.types.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
-        if self.material_techniques is not None:
+        if self.subtypes is not None:
             showIndent(outfile, level)
-            outfile.write('material_techniques=model_.material_techniques(\n')
-            self.material_techniques.exportLiteral(outfile, level)
+            outfile.write('subtypes=model_.subtypes(\n')
+            self.subtypes.exportLiteral(outfile, level)
+            showIndent(outfile, level)
+            outfile.write('),\n')
+        if self.techniques is not None:
+            showIndent(outfile, level)
+            outfile.write('techniques=model_.techniques(\n')
+            self.techniques.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
     def build(self, node):
@@ -3174,21 +3174,21 @@ class attributes(GeneratedsSuper):
             obj_.build(child_)
             self.depictions = obj_
             obj_.original_tagname_ = 'depictions'
-        elif nodeName_ == 'material_types':
-            obj_ = material_types.factory()
+        elif nodeName_ == 'types':
+            obj_ = types.factory()
             obj_.build(child_)
-            self.material_types = obj_
-            obj_.original_tagname_ = 'material_types'
-        elif nodeName_ == 'material_subtypes':
-            obj_ = material_subtypes.factory()
+            self.types = obj_
+            obj_.original_tagname_ = 'types'
+        elif nodeName_ == 'subtypes':
+            obj_ = subtypes.factory()
             obj_.build(child_)
-            self.material_subtypes = obj_
-            obj_.original_tagname_ = 'material_subtypes'
-        elif nodeName_ == 'material_techniques':
-            obj_ = material_techniques.factory()
+            self.subtypes = obj_
+            obj_.original_tagname_ = 'subtypes'
+        elif nodeName_ == 'techniques':
+            obj_ = techniques.factory()
             obj_.build(child_)
-            self.material_techniques = obj_
-            obj_.original_tagname_ = 'material_techniques'
+            self.techniques = obj_
+            obj_.original_tagname_ = 'techniques'
 # end class attributes
 
 
@@ -5029,17 +5029,17 @@ class depictions(GeneratedsSuper):
 # end class depictions
 
 
-class material_type(GeneratedsSuper):
+class type_(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, name=None):
         self.original_tagname_ = None
         self.name = _cast(None, name)
     def factory(*args_, **kwargs_):
-        if material_type.subclass:
-            return material_type.subclass(*args_, **kwargs_)
+        if type_.subclass:
+            return type_.subclass(*args_, **kwargs_)
         else:
-            return material_type(*args_, **kwargs_)
+            return type_(*args_, **kwargs_)
     factory = staticmethod(factory)
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
@@ -5050,7 +5050,7 @@ class material_type(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='material_type', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='type', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -5060,20 +5060,20 @@ class material_type(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='material_type')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='type')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='material_type', pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='type', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='material_type'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='type'):
         if self.name is not None and 'name' not in already_processed:
             already_processed.add('name')
             outfile.write(' name=%s' % (self.gds_format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='material_type', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='type', fromsubclass_=False, pretty_print=True):
         pass
-    def exportLiteral(self, outfile, level, name_='material_type'):
+    def exportLiteral(self, outfile, level, name_='type'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -5100,37 +5100,37 @@ class material_type(GeneratedsSuper):
             self.name = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
-# end class material_type
+# end class type_
 
 
-class material_types(GeneratedsSuper):
+class types(GeneratedsSuper):
     subclass = None
     superclass = None
-    def __init__(self, material_type=None):
+    def __init__(self, type_=None):
         self.original_tagname_ = None
-        if material_type is None:
-            self.material_type = []
+        if type_ is None:
+            self.type_ = []
         else:
-            self.material_type = material_type
+            self.type_ = type_
     def factory(*args_, **kwargs_):
-        if material_types.subclass:
-            return material_types.subclass(*args_, **kwargs_)
+        if types.subclass:
+            return types.subclass(*args_, **kwargs_)
         else:
-            return material_types(*args_, **kwargs_)
+            return types(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_material_type(self): return self.material_type
-    def set_material_type(self, material_type): self.material_type = material_type
-    def add_material_type(self, value): self.material_type.append(value)
-    def insert_material_type_at(self, index, value): self.material_type.insert(index, value)
-    def replace_material_type_at(self, index, value): self.material_type[index] = value
+    def get_type(self): return self.type_
+    def set_type(self, type_): self.type_ = type_
+    def add_type(self, value): self.type_.append(value)
+    def insert_type_at(self, index, value): self.type_.insert(index, value)
+    def replace_type_at(self, index, value): self.type_[index] = value
     def hasContent_(self):
         if (
-            self.material_type
+            self.type_
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='material_types', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='types', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -5140,24 +5140,24 @@ class material_types(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='material_types')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='types')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='material_types', pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='types', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='material_types'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='types'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='material_types', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='types', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
-        for material_type_ in self.material_type:
-            material_type_.export(outfile, level, namespace_, name_='material_type', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='material_types'):
+        for type_ in self.type_:
+            type_.export(outfile, level, namespace_, name_='type', pretty_print=pretty_print)
+    def exportLiteral(self, outfile, level, name_='types'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -5167,12 +5167,12 @@ class material_types(GeneratedsSuper):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
-        outfile.write('material_type=[\n')
+        outfile.write('type_=[\n')
         level += 1
-        for material_type_ in self.material_type:
+        for type_ in self.type_:
             showIndent(outfile, level)
-            outfile.write('model_.material_type(\n')
-            material_type_.exportLiteral(outfile, level)
+            outfile.write('model_.type_(\n')
+            type_.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -5188,25 +5188,25 @@ class material_types(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'material_type':
-            obj_ = material_type.factory()
+        if nodeName_ == 'type':
+            obj_ = type_.factory()
             obj_.build(child_)
-            self.material_type.append(obj_)
-            obj_.original_tagname_ = 'material_type'
-# end class material_types
+            self.type_.append(obj_)
+            obj_.original_tagname_ = 'type'
+# end class types
 
 
-class material_subtype(GeneratedsSuper):
+class subtype(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, name=None):
         self.original_tagname_ = None
         self.name = _cast(None, name)
     def factory(*args_, **kwargs_):
-        if material_subtype.subclass:
-            return material_subtype.subclass(*args_, **kwargs_)
+        if subtype.subclass:
+            return subtype.subclass(*args_, **kwargs_)
         else:
-            return material_subtype(*args_, **kwargs_)
+            return subtype(*args_, **kwargs_)
     factory = staticmethod(factory)
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
@@ -5217,7 +5217,7 @@ class material_subtype(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='material_subtype', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='subtype', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -5227,20 +5227,20 @@ class material_subtype(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='material_subtype')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='subtype')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='material_subtype', pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='subtype', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='material_subtype'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='subtype'):
         if self.name is not None and 'name' not in already_processed:
             already_processed.add('name')
             outfile.write(' name=%s' % (self.gds_format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='material_subtype', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='subtype', fromsubclass_=False, pretty_print=True):
         pass
-    def exportLiteral(self, outfile, level, name_='material_subtype'):
+    def exportLiteral(self, outfile, level, name_='subtype'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -5267,37 +5267,37 @@ class material_subtype(GeneratedsSuper):
             self.name = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
-# end class material_subtype
+# end class subtype
 
 
-class material_subtypes(GeneratedsSuper):
+class subtypes(GeneratedsSuper):
     subclass = None
     superclass = None
-    def __init__(self, material_subtype=None):
+    def __init__(self, subtype=None):
         self.original_tagname_ = None
-        if material_subtype is None:
-            self.material_subtype = []
+        if subtype is None:
+            self.subtype = []
         else:
-            self.material_subtype = material_subtype
+            self.subtype = subtype
     def factory(*args_, **kwargs_):
-        if material_subtypes.subclass:
-            return material_subtypes.subclass(*args_, **kwargs_)
+        if subtypes.subclass:
+            return subtypes.subclass(*args_, **kwargs_)
         else:
-            return material_subtypes(*args_, **kwargs_)
+            return subtypes(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_material_subtype(self): return self.material_subtype
-    def set_material_subtype(self, material_subtype): self.material_subtype = material_subtype
-    def add_material_subtype(self, value): self.material_subtype.append(value)
-    def insert_material_subtype_at(self, index, value): self.material_subtype.insert(index, value)
-    def replace_material_subtype_at(self, index, value): self.material_subtype[index] = value
+    def get_subtype(self): return self.subtype
+    def set_subtype(self, subtype): self.subtype = subtype
+    def add_subtype(self, value): self.subtype.append(value)
+    def insert_subtype_at(self, index, value): self.subtype.insert(index, value)
+    def replace_subtype_at(self, index, value): self.subtype[index] = value
     def hasContent_(self):
         if (
-            self.material_subtype
+            self.subtype
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='material_subtypes', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='subtypes', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -5307,24 +5307,24 @@ class material_subtypes(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='material_subtypes')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='subtypes')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='material_subtypes', pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='subtypes', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='material_subtypes'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='subtypes'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='material_subtypes', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='subtypes', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
-        for material_subtype_ in self.material_subtype:
-            material_subtype_.export(outfile, level, namespace_, name_='material_subtype', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='material_subtypes'):
+        for subtype_ in self.subtype:
+            subtype_.export(outfile, level, namespace_, name_='subtype', pretty_print=pretty_print)
+    def exportLiteral(self, outfile, level, name_='subtypes'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -5334,12 +5334,12 @@ class material_subtypes(GeneratedsSuper):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
-        outfile.write('material_subtype=[\n')
+        outfile.write('subtype=[\n')
         level += 1
-        for material_subtype_ in self.material_subtype:
+        for subtype_ in self.subtype:
             showIndent(outfile, level)
-            outfile.write('model_.material_subtype(\n')
-            material_subtype_.exportLiteral(outfile, level)
+            outfile.write('model_.subtype(\n')
+            subtype_.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -5355,25 +5355,25 @@ class material_subtypes(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'material_subtype':
-            obj_ = material_subtype.factory()
+        if nodeName_ == 'subtype':
+            obj_ = subtype.factory()
             obj_.build(child_)
-            self.material_subtype.append(obj_)
-            obj_.original_tagname_ = 'material_subtype'
-# end class material_subtypes
+            self.subtype.append(obj_)
+            obj_.original_tagname_ = 'subtype'
+# end class subtypes
 
 
-class material_technique(GeneratedsSuper):
+class technique(GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, name=None):
         self.original_tagname_ = None
         self.name = _cast(None, name)
     def factory(*args_, **kwargs_):
-        if material_technique.subclass:
-            return material_technique.subclass(*args_, **kwargs_)
+        if technique.subclass:
+            return technique.subclass(*args_, **kwargs_)
         else:
-            return material_technique(*args_, **kwargs_)
+            return technique(*args_, **kwargs_)
     factory = staticmethod(factory)
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
@@ -5384,7 +5384,7 @@ class material_technique(GeneratedsSuper):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='material_technique', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='technique', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -5394,20 +5394,20 @@ class material_technique(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='material_technique')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='technique')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='material_technique', pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='technique', pretty_print=pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='material_technique'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='technique'):
         if self.name is not None and 'name' not in already_processed:
             already_processed.add('name')
             outfile.write(' name=%s' % (self.gds_format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
-    def exportChildren(self, outfile, level, namespace_='', name_='material_technique', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='technique', fromsubclass_=False, pretty_print=True):
         pass
-    def exportLiteral(self, outfile, level, name_='material_technique'):
+    def exportLiteral(self, outfile, level, name_='technique'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -5434,37 +5434,37 @@ class material_technique(GeneratedsSuper):
             self.name = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
-# end class material_technique
+# end class technique
 
 
-class material_techniques(GeneratedsSuper):
+class techniques(GeneratedsSuper):
     subclass = None
     superclass = None
-    def __init__(self, material_technique=None):
+    def __init__(self, technique=None):
         self.original_tagname_ = None
-        if material_technique is None:
-            self.material_technique = []
+        if technique is None:
+            self.technique = []
         else:
-            self.material_technique = material_technique
+            self.technique = technique
     def factory(*args_, **kwargs_):
-        if material_techniques.subclass:
-            return material_techniques.subclass(*args_, **kwargs_)
+        if techniques.subclass:
+            return techniques.subclass(*args_, **kwargs_)
         else:
-            return material_techniques(*args_, **kwargs_)
+            return techniques(*args_, **kwargs_)
     factory = staticmethod(factory)
-    def get_material_technique(self): return self.material_technique
-    def set_material_technique(self, material_technique): self.material_technique = material_technique
-    def add_material_technique(self, value): self.material_technique.append(value)
-    def insert_material_technique_at(self, index, value): self.material_technique.insert(index, value)
-    def replace_material_technique_at(self, index, value): self.material_technique[index] = value
+    def get_technique(self): return self.technique
+    def set_technique(self, technique): self.technique = technique
+    def add_technique(self, value): self.technique.append(value)
+    def insert_technique_at(self, index, value): self.technique.insert(index, value)
+    def replace_technique_at(self, index, value): self.technique[index] = value
     def hasContent_(self):
         if (
-            self.material_technique
+            self.technique
         ):
             return True
         else:
             return False
-    def export(self, outfile, level, namespace_='', name_='material_techniques', namespacedef_='', pretty_print=True):
+    def export(self, outfile, level, namespace_='', name_='techniques', namespacedef_='', pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
@@ -5474,24 +5474,24 @@ class material_techniques(GeneratedsSuper):
         showIndent(outfile, level, pretty_print)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
         already_processed = set()
-        self.exportAttributes(outfile, level, already_processed, namespace_, name_='material_techniques')
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='techniques')
         if self.hasContent_():
             outfile.write('>%s' % (eol_, ))
-            self.exportChildren(outfile, level + 1, namespace_='', name_='material_techniques', pretty_print=pretty_print)
+            self.exportChildren(outfile, level + 1, namespace_='', name_='techniques', pretty_print=pretty_print)
             showIndent(outfile, level, pretty_print)
             outfile.write('</%s%s>%s' % (namespace_, name_, eol_))
         else:
             outfile.write('/>%s' % (eol_, ))
-    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='material_techniques'):
+    def exportAttributes(self, outfile, level, already_processed, namespace_='', name_='techniques'):
         pass
-    def exportChildren(self, outfile, level, namespace_='', name_='material_techniques', fromsubclass_=False, pretty_print=True):
+    def exportChildren(self, outfile, level, namespace_='', name_='techniques', fromsubclass_=False, pretty_print=True):
         if pretty_print:
             eol_ = '\n'
         else:
             eol_ = ''
-        for material_technique_ in self.material_technique:
-            material_technique_.export(outfile, level, namespace_, name_='material_technique', pretty_print=pretty_print)
-    def exportLiteral(self, outfile, level, name_='material_techniques'):
+        for technique_ in self.technique:
+            technique_.export(outfile, level, namespace_, name_='technique', pretty_print=pretty_print)
+    def exportLiteral(self, outfile, level, name_='techniques'):
         level += 1
         already_processed = set()
         self.exportLiteralAttributes(outfile, level, already_processed, name_)
@@ -5501,12 +5501,12 @@ class material_techniques(GeneratedsSuper):
         pass
     def exportLiteralChildren(self, outfile, level, name_):
         showIndent(outfile, level)
-        outfile.write('material_technique=[\n')
+        outfile.write('technique=[\n')
         level += 1
-        for material_technique_ in self.material_technique:
+        for technique_ in self.technique:
             showIndent(outfile, level)
-            outfile.write('model_.material_technique(\n')
-            material_technique_.exportLiteral(outfile, level)
+            outfile.write('model_.technique(\n')
+            technique_.exportLiteral(outfile, level)
             showIndent(outfile, level)
             outfile.write('),\n')
         level -= 1
@@ -5522,12 +5522,12 @@ class material_techniques(GeneratedsSuper):
     def buildAttributes(self, node, attrs, already_processed):
         pass
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
-        if nodeName_ == 'material_technique':
-            obj_ = material_technique.factory()
+        if nodeName_ == 'technique':
+            obj_ = technique.factory()
             obj_.build(child_)
-            self.material_technique.append(obj_)
-            obj_.original_tagname_ = 'material_technique'
-# end class material_techniques
+            self.technique.append(obj_)
+            obj_.original_tagname_ = 'technique'
+# end class techniques
 
 
 class staticObject(GeneratedsSuper):
@@ -6631,12 +6631,6 @@ __all__ = [
     "keysVerticalUpDown",
     "layer",
     "light",
-    "material_subtype",
-    "material_subtypes",
-    "material_technique",
-    "material_techniques",
-    "material_type",
-    "material_types",
     "mouse",
     "objectLibrary",
     "objectRotationSnap",
@@ -6662,5 +6656,11 @@ __all__ = [
     "softBrake",
     "staticObject",
     "staticObjects",
+    "subtype",
+    "subtypes",
+    "technique",
+    "techniques",
+    "type_",
+    "types",
     "walkMode"
 ]
