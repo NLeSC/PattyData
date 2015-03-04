@@ -56,8 +56,10 @@ def run(args):
         msg ='You must remove any double quote (")'
         print msg
         logging.error(msg)
-
-        return
+        for word in open(args.input,'r').read().split():
+            if word.count('"') == 1:
+                msg = 'Also take care of table and column names that would be incorrect as ' + word
+                return
     
     # Establish connection with DB
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport) 
