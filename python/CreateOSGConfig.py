@@ -148,7 +148,9 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
         elements = getattr(viewer_conf_api, property + 's')()
         # We need to call the columns and tables with extra "" because
         # they were created from the Access DB
-        utils.dbExecute(cursor, 'SELECT "' + cName + '" FROM "' + tName + '"')
+#        utils.dbExecute(cursor, 'SELECT "' + cName + '" FROM "' + tName + '"')
+        utils.dbExecute(cursor, 'SELECT ' + cName + ' FROM ' + tName)
+
         for (element,) in cursor:
             getattr(elements, 'add_' + property)(getattr(
                 viewer_conf_api, property)(name=element))
