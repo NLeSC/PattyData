@@ -20,13 +20,20 @@ ATTRIBUTES = {'administrator':('initials', 'list_participants'),
 'depression_type':('depression_type', 'list_depression_type'),
 'decoration_type':('decoration_type', 'list_object_decoration_type'),
 'depiction':('depiction', 'list_object_depiction'),
-'type':('type', 'list_object_material_type'),
-'subtype':('material_subtype', 'list_object_material_subtype'),
+#'type':('type', 'list_object_material_type'),
+#'subtype':('material_subtype', 'list_object_material_subtype'),
 'technique':('technique', 'list_object_material_technique')}
 
-ATTRIBUTES_ORDER = ['administrator', 'site_context', 'site_interpretation', 'condition', 'object_type',  
+#ATTRIBUTES_ORDER = ['administrator', 'site_context', 'site_interpretation', 'condition', 'object_type',  
+#                    'object_interpretation', 'period', 'reliability', 'depression_type', 'decoration_type',
+#                    'depiction', 'type', 'subtype', 'technique']
+
+# We remove type until the Access DB schema changes to something not reserved by python
+# We also remove subtype since it is actually not in tbl2_object_material anymore
+ATTRIBUTES_ORDER = ['administrator', 'site_context', 'site_interpretation', 'condition', 'object_type',
                     'object_interpretation', 'period', 'reliability', 'depression_type', 'decoration_type',
-                    'depiction', 'type', 'subtype', 'technique']
+                    'depiction', 'technique']
+
 
 DEFAULT_DB = 'vadb'
 USERNAME = os.popen('whoami').read().replace('\n','')
