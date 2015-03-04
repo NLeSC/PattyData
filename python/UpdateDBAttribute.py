@@ -60,10 +60,11 @@ def run(args):
             if not line.startswith('--'):
                 for word in line.split():
                     if word.count('"') == 1:
-                        msg = 'Also take care of table and column names that would be incorrect as ' + word
+                        msg = 'Also, before removing all ", take care of table and column names that would be incorrect as ' + word
                         print msg
                         logging.error(msg)
                         return
+        return
     
     # Establish connection with DB
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport) 
