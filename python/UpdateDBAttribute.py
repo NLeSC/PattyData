@@ -59,6 +59,8 @@ def run(args):
         for word in open(args.input,'r').read().split():
             if word.count('"') == 1:
                 msg = 'Also take care of table and column names that would be incorrect as ' + word
+                print msg
+                logging.error(msg)
                 return
     
     # Establish connection with DB
