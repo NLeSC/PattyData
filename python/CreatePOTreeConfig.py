@@ -187,7 +187,7 @@ def addObjectsMetaData(cursor, itemId, jsonSite, srid):
                 objectMaterialData = {}
                 objectMaterialData["id"] = len(objectsMaterialData) + 1
                 objectMaterialData["material_type"] = material_type
-                objectMaterialData["material_subtype"] = ''
+                #objectMaterialData["material_subtype"] = ''
                 objectMaterialData["material_technique"] = material_technique
                 objectsMaterialData.append(objectMaterialData)
             objectData["object_material"] = objectsMaterialData
@@ -218,17 +218,18 @@ def run(args):
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost)
         
     # get all items         
-    query = 'SELECT item_id, ST_ASGEOJSON(geom) FROM item WHERE NOT background ORDER BY item_id'
+    query = 'SELECT item_id, ST_ASGEOJSON(geom), min_z, max_z FROM item WHERE NOT background ORDER BY item_id'
     sites, num_sites = utils.fetchDataFromDB(cursor, query)
     
     data = []
     
-    for (itemId, itemGeom) in sites:
+    for (itemId, itemGeom, minz, maxz) in sites:
         # Generate the JSON data for this item
         dataSite = {}
         dataSite["id"] = itemId
         if itemGeom != None:
             dataSite["footprint"] = json.loads(itemGeom)['coordinates']
+            dataSite["footprint_altitude"] = [minz,maxz]
         
         addThumbnail(cursor, itemId, dataSite)
         addSiteMetaData(cursor, itemId, dataSite)
