@@ -56,14 +56,17 @@ def run(args):
         msg ='You must remove any double quote (")'
         print msg
         logging.error(msg)
+        dangerousWords = []
         for line in open(args.input,'r').read().split('\n'):
             if not line.startswith('--'):
                 for word in line.split():
                     if word.count('"') == 1:
-                        msg = 'Also, before removing all ", take care of table and column names that would be incorrect as ' + word
-                        print msg
-                        logging.error(msg)
-                        return
+                        dangerousWords.append(word)
+        if len(dangerousWords):
+            msg = 'Also, before removing all ", take care of table and column names that would be incorrect when removing ".\n If any of the following is a table or column name please be sure that it does not have white spaces: ' + ','.join(dangerousWords)
+            print msg
+            logging.error(msg)
+            return
         return
     
     # Establish connection with DB
