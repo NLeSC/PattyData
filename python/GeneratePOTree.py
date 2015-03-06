@@ -157,7 +157,7 @@ WHERE raw_data_item_id NOT IN (
             createPOTree(cursor, rawDataItemId, opts.potreeDir, levels)
     else:
         for rawDataItemId in opts.itemid.split(','):
-            rows,num_rows = utils.fetchDataFromDB('SELECT background FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) WHERE raw_data_item_id = %s', [int(rawDataItemId)])
+            rows,num_rows = utils.fetchDataFromDB(cursor, 'SELECT background FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) WHERE raw_data_item_id = %s', [int(rawDataItemId)])
             if num_rows == 0:
                 logging.error('There is not a raw data item with id %d' % int(rawDataItemId))
                 return
