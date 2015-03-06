@@ -372,13 +372,13 @@ def cleanOSG(dataItemTypes):
 def cleanPOT(dataItemTypes):
     logging.info('Cleaning POTREE data items...') 
     if PC_FT in dataItemTypes:
-        dbExecute(cursor, 'SELECT potree_data_item_pc_id FROM POTREE_DATA_ITEM_PC WHERE last_check < %s', [initialTime,])
+        dbExecute(cursor, 'SELECT potree_data_item_pc_id, abs_path FROM POTREE_DATA_ITEM_PC WHERE last_check < %s', [initialTime,])
         rows = cursor.fetchall()
         for (potreeDataItemPCId, absPath) in rows:
             if os.path.isfile(absPath) or os.path.isdir(absPath):
                 logging.error('POTREE data item in ' + absPath + ' has not been checked!')
             else: # There is not any file or folder in that location -> we can delete this entry
-                dbExecute(cursor, 'DELETE FROM POTREE_DATA_ITEM_PC WHERE osg_data_item_id = %s', [potreeDataItemPCId,])
+                dbExecute(cursor, 'DELETE FROM POTREE_DATA_ITEM_PC WHERE potree_data_item_pc_id = %s', [potreeDataItemPCId,])
                 
     #if MESH_FT in dataItemTypes:
     #    pass
