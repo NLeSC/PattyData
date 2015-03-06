@@ -206,15 +206,16 @@ ORDER BY item_id"""
     query = """
 SELECT item_id, object_number, x, y, z, xs, ys, zs, h, p, r, OSG_LOCATION.cast_shadow, srid 
 FROM OSG_ITEM_OBJECT JOIN OSG_LOCATION USING (osg_location_id) 
-ORDER BY item_id"""
+ORDER BY item_id,object_number"""
     osgItemObjects, numOsgItemObjects = utils.fetchDataFromDB(cursor, query)
     # osgItemObjects is (itemId, objectNumber, x, y, z, xs, ys, zs, h, p, r, castShadow, srid)
     # Now we add Default OSG data items for the objects that are not in OSG_ITEM_OBJECT table
     query = """
 SELECT item_id,object_number 
 FROM item_object 
-WHERE (item_id,object_number) NOT IN (SELECT item_id,object_number FROM OSG_ITEM_OBJECT)"""
-    objects, num_objects = fetchDataFromDB(cursor, query)
+WHERE (item_id,object_number) NOT IN (SELECT item_id,object_number FROM OSG_ITEM_OBJECT)
+ORDER BY item_id,object_number"""
+    objects, num_objects = utils.fetchDataFromDB(cursor, query)
     for (itemId, objectNumber) in objects:
         srid = None
         (x,y,z) = (0,0,0)
@@ -225,7 +226,7 @@ SELECT ST_SRID(geom), st_x(st_centroid(geom)), st_y(st_centroid(geom)), min_z + 
 FROM ITEM 
 WHERE item_id = %s and geom is not %s"""
         queryArgs = [itemId, None]
-        footprints, num_footprints = fetchDataFromDB(cursor, query, queryArgs)
+        footprints, num_footprints = utils.fetchDataFromDB(cursor, query, queryArgs)
         if num_footprints:
             (srid, x, y, z, xs, ys, zs) = footprints[0]
             if xs == 0: xs = 1
