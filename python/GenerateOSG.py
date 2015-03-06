@@ -313,7 +313,7 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--dbport', help='DB port', action='store')
     parser.add_argument('-o', '--osgDir', default=utils.DEFAULT_OSG_DATA_DIR,
                         help='OSG data directory [default ' +
-                        utils.DEFAULT_POTREE_DATA_DIR + ']', action='store')
+                        utils.DEFAULT_OSG_DATA_DIR + ']', action='store')
     parser.add_argument('-l', '--log', help='Log level',
                         choices=['debug', 'info', 'warning', 'error',
                                  'critical'],
