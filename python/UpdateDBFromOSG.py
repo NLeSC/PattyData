@@ -19,88 +19,69 @@ from numpy import array as nparray
 
 logger = None
 cursor = None
-
-def getDetails(ao):
-    proto = ao.get('prototype')
-    uniqueName = ao.get('uniqueName')
-    fs = uniqueName.split('_')
-    siteId = None
-    objectNumber = None
-    activeObjectId = None
-    if len(fs) > 1 and (fs[1] in ('pc', 'mesh', 'pic', 'OBJECT')):
-        siteId = int(fs[0])
-        aoType = fs[1]
-        if aoType == 'obj':
-            objectNumber = int(fs[2])
-        else:
-            activeObjectId = int(fs[2])
-    else:
-        aoType = 'lab'
-    return (aoType, proto, uniqueName, siteId, activeObjectId, objectNumber)
+offsetSRID = None
 
 
-def deleteSiteObject(cursor, ao, aoType, uniqueName, siteId, activeObjectId,
-                     objectNumber):
+def deleteSiteObject(cursor, ao, aoType, labelName, itemId, ObjectId):
     '''
     Function to delete a site object
     '''
-    if aoType == 'obj':
+    if aoType == utils.AO_TYPE_OBJ:
         # extract osg_location_id of the object
         data,rows = utils.fetchDataFromDB(
             cursor, 'SELECT osg_location_id FROM ' +
             'OSG_ITEM_OBJECT WHERE item_id = %s AND object_number = %s',
-            [siteId, objectNumber])        
+            [itemId, ObjectId])        
         utils.dbExecute(cursor, 'DELETE FROM OSG_ITEM_OBJECT ' +
                         'WHERE item_id = %s AND object_number = %s',
-                        [siteId, objectNumber])
+                        [itemId, ObjectId])
         # delete from OSG_LOCATION
         utils.dbExecute(cursor, 'DELETE FROM OSG_LOCATION WHERE ' +
-                        'osg_location_id=%s', [data[0])
+                        'osg_location_id=%s', [data[0]])
         
-    elif aoType == 'lab':
+    elif aoType == utils.AO_TYPE_LAB:
         # extract osg_location_id of the label
         data, rows = utils.fetchDataFromDB(
             cursor, 'SELECT osg_location_id FROM OSG_LABEL WHERE ' +
-            'osg_label_name = %s', [uniqueName])
+            'osg_label_name = %s', [labelName])
         # delete from OSG_LABEL
         utils.dbExecute(cursor,
                         'DELETE FROM OSG_LABEL WHERE osg_label_name = %s',
-                        [uniqueName])
+                        [labelName])
         # delete from OSG_LOCATION
         utils.dbExecute(cursor, 'DELETE FROM OSG_LOCATION WHERE ' +
-                        'osg_location_id=%s', [data[0])        
+                        'osg_location_id=%s', [data[0]])        
     else:
-        raise Exception('Not possible to delete object ' + uniqueName)
+        raise Exception('Not possible to delete object ' + labelName)
 
-
-def checkActiveObject(cursor, ao, aoType, uniqueName, siteId,
-                      activeObjectId, objectNumber):
+def checkActiveObject(cursor, ao, aoType, labelName, itemId,
+                      ObjectId):
     ''' 
     Function to check if the object exists in the DB 
     '''
-    if aoType == 'obj':
-        utils.fetch(cursor, 'SELECT * FROM OSG_ITEM_OBJECT ' +
-                        'WHERE item_id = %s AND object_number = %s',
-                        [siteId, objectNumber])
-    elif aoType == 'lab':
+    if aoType == utils.AO_TYPE_OBJ:
+        utils.fetchDataFromDB(cursor, 'SELECT * FROM OSG_ITEM_OBJECT ' +
+                              'WHERE item_id = %s AND object_number = %s',
+                              [itemId, ObjectId])
+    elif aoType == utils.AO_TYPE_LAB:
         utils.dbExecute(cursor, 'SELECT * FROM OSG_LABEL ' +
-                        'WHERE osg_label_name = %s', [uniqueName])
+                        'WHERE osg_label_name = %s', [labelName])
     else:
         utils.dbExecute(cursor, 'SELECT * FROM OSG_DATA_ITEM ' +
-                        'WHERE item_id = %s', [activeObjectId, ])
+                        'WHERE osg_data_item_id = %s', [itemId, ])
     if not cursor.rowcount:
         return False
     return True
 
 
-def updateSetting(cursor, ao, aoType, uniqueName, siteId, activeObjectId,
-                  objectNumber):
+def updateSetting(cursor, ao, aoType, labelName, itemId, ObjectId):
     s = ao.getchildren()[0]
     names = []
     auxs = []
     values = []
     # add srid
     names.append('srid')
+    auxs.append('%s')
     values.append(offsetSRID[0][-1])
     # add location
     for c in ('x', 'y', 'z', 'xs', 'ys', 'zs', 'h', 'p', 'r'):
@@ -113,17 +94,18 @@ def updateSetting(cursor, ao, aoType, uniqueName, siteId, activeObjectId,
         names.append('cast_shadow')
         auxs.append('%s')
         values.append(False if (s.get('castShadow') == '0') else 1)
+    try:
+        values[values.index('x')] += offsetSRID[0]
+        values[values.index('y')] += offsetSRID[1]
+        values[values.index('z')] += offsetSRID[2]
+    except ValueError:
+        logger.error('No location x,y,z found')
     
     # update the position of the object in OSG_LOCATION table
     OSG_LOCATION_list = ['srid', 'x', 'y', 'z', 'xs', 'ys', 'zs', 'h', 'p',
                          'r', 'cast_shadow']
     update_DB_table(names, values, auxs, OSG_LOCATION_list, 'OSG_LOCATION',
                       cursor)
-    ## extract osg_location_id and append
-    #osgLocationId = cursor.fetchone()[0]
-    #names.append('osg_location_id')
-    #values.append(osgLocationId)
-    #auxs.append('%s')    
     return 1
 
 
@@ -146,91 +128,141 @@ def main(opts):
                                            opts.dbport)
 
     # get offset and srid of the background defined in the conf file
+    global offsetSRID
     offsetSRID = get_SRID(data, cursor)
-    
     # Process updates
     updateAOS = data.xpath('//*[@status="updated"]')
     # loop over all updates found in the xml config file
     for ao in updateAOS:
-        (aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) = \
-        getDetails(ao)
-        # check if the object is in the DB
-        inDB = checkActiveObject(cursor, ao, aoType, uniqueName, siteId,
-                                 activeObjectId, objectNumber)
-        if inDB:
-            # update the DB with the information in the xml config file
-            updateSetting(cursor, ao, aoType, uniqueName, siteId,
-                          activeObjectId, objectNumber)
+        #(aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) = \
+        #getDetails(ao)
+        uniqueName = ao.get('uniqueName')
+        (aoType, itemId, rawDataItemId, objectId, labelName) = \
+            utils.decodeOSGActiveObjectUniqueName(uniqueName)
+        if aoType==None:
+            logger.warning('warning')
         else:
-            # log error if object is not found in DB
-            logger.error('Update not possible. OSG_ITEM_OBJECT ' +
-                         str(uniqueName) + ' not found in DB')
+            # check if the object is in the DB
+            inDB = checkActiveObject(cursor, ao, aoType, labelName, itemId,
+                                    objectId)
+            if inDB:
+                # update the DB with the information in the xml config file
+                updateSetting(cursor, ao, aoType, labelName, itemId, objectId)
+            else:
+                # log error if object is not found in DB
+                logger.error('Update not possible. OSG_ITEM_OBJECT ' +
+                            str(uniqueName) + ' not found in DB')
 
     # Process deletes (only possible for site objects)
     deleteAOS = data.xpath('//*[@status="deleted"]')
     # loop over all deletes found in the xml config file
     for ao in deleteAOS:
-        (aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) = \
-        getDetails(ao)
-        if aoType in ('obj', 'lab'):
-            # check if the object is in the DB
-            inDB = checkActiveObject(cursor, ao, aoType, uniqueName, siteId,
-                                     activeObjectId, objectNumber)
-            if inDB:
-                # update the DB with the information in the xml config file
-                deleteSiteObject(cursor, ao, aoType, uniqueName, siteId,
-                                 activeObjectId, objectNumber)
-            else:
-                # log error if object is not found in DB
-                logger.warn('Not possible to delete.. OSG_ITEM_OBJECT ' +
-                            str(uniqueName) +
-                            ' not found in DB. Maybe already deleted?')
+        #(aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) = \
+        #getDetails(ao)
+        uniqueName = ao.get('uniqueName')
+        (aoType, itemId, rawDataItemId, objectId, labelName) = \
+            utils.decodeOSGActiveObjectUniqueName(uniqueName)
+        if aoType==None:
+            logger.warning('add warning')
         else:
-            # log error if trying to delete a non-site object
-            logger.error('Ignoring delete in ' + uniqueName +
-                         ': Meshes, pictures and PCs can not be deleted')
+            if aoType in (utils.AO_TYPE_OBJ, utils.AO_TYPE_LAB):
+                # check if the object is in the DB
+                inDB = checkActiveObject(cursor, ao, aoType, labelName, itemId,
+                                        objectId)
+                if inDB:
+                    # update the DB with the information in the xml config file
+                    deleteSiteObject(cursor, ao, aoType, labelName, itemId,
+                                    objectId)
+                else:
+                    # log error if object is not found in DB
+                    logger.warn('Not possible to delete.. OSG_ITEM_OBJECT ' +
+                                str(uniqueName) +
+                                ' not found in DB. Maybe already deleted?')
+            else:
+                # log error if trying to delete a non-site object
+                logger.error('Ignoring delete in ' + uniqueName +
+                            ': Meshes, pictures and PCs can not be deleted')
 
     # Process new objects (only possible for site objects)
     newAOS = data.xpath('//*[@status="new"]')
     # loop over all new objects found in the xml config file
     for ao in newAOS:
-        (aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) = \
-        getDetails(ao)
-        if aoType in ('obj', 'lab'):
-            # check if the object is in the DBbesafe i
-            inDB = checkActiveObject(cursor, ao, aoType, uniqueName, siteId,
-                                     activeObjectId, objectNumber)
-            if inDB:
-                # log error if the new object is already in the DB
-                logger.warning('OSG_ITEM_OBJECT ' + str(uniqueName) +
-                               ' already in DB. Ignoring add ' + uniqueName)
-            else:
-                if aoType == 'obj':
-                    # add object to the DB
-                    utils.addSiteObject(cursor, siteId, objectNumber, proto)
-                else:
-                    # add label to the DB
-                    utils.dbExecute(cursor, 'INSERT INTO OSG_LABEL ' +
-                                    '(osg_label_name, text, red, green, ' +
-                                    'blue, rotatescreen, outline, font) ' +
-                                    'VALUES (%s,%s,%s,%s,%s,%s,%s,%s)',
-                                    [uniqueName, ao.get('labelText'),
-                                     ao.get('labelColorRed'),
-                                     ao.get('labelColorGreen'),
-                                     ao.get('labelColorBlue'),
-                                     ao.get('labelRotateScreen'),
-                                     ao.get('outline'), ao.get('Font'), ])
-                # update the information in the DB
-                updateSetting(cursor, ao, aoType, uniqueName, siteId,
-                              activeObjectId, objectNumber)
+        #(aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) = \
+        #getDetails(ao)
+        uniqueName = ao.get('uniqueName')
+        (aoType, itemId, rawDataItemId, ObjectId, labelName) = \
+            utils.decodeOSGActiveObjectUniqueName(uniqueName)
+        if aoType==None:
+            logger.warning('warning')
         else:
-            # log error if trying to add a non-site object
-            logger.error('Ignoring new in ' + uniqueName +
-                         ': Meshes, pictures and PCs can not be added')
+            if aoType in (utils.AO_TYPE_OBJ, utils.AO_TYPE_LAB):
+                # check if the object is in the DBbesafe i
+                inDB = checkActiveObject(cursor, ao, aoType, labelName, itemId,
+                                        ObjectId)
+                if inDB:
+                    # log error if the new object is already in the DB
+                    logger.warning('OSG_ITEM_OBJECT ' + str(uniqueName) +
+                                ' already in DB. Ignoring add ' + uniqueName)
+                else:
+                    # add label to osg_location
+                    # add srid
+                    names, values, auxs = [],[],[]
+                    names.append('srid')
+                    values.append(offsetSRID[0][-1])
+                    # add location
+                    for c in ('x', 'y', 'z', 'h', 'p', 'r'):
+                        if c in ao.keys():
+                            names.append(c)
+                            values.append(ao.get(c))
+                    auxs = []
+                    try:
+                        values[values.index('x')] += offsetSRID[0]
+                        values[values.index('y')] += offsetSRID[1]
+                        values[values.index('z')] += offsetSRID[2]
+                    except ValueError:
+                        logger.error('No location x,y,z found')
+                    
+                    for i in range(len(names)):
+                        auxs.append('%s')
+                    # fill OSG_LOCATION
+                    OSG_LOCATION_list = ['srid', 'x', 'y', 'z', 'xs', 'ys', 'zs', 'h', 'p',
+                                    'r', 'cast_shadow']
+                    fill_DB_table(names, values, auxs, OSG_LOCATION_list, 'OSG_LOCATION',
+                                cursor)
+                    osgLocationId = cursor.fetchone()[0]
+                    
+                    if aoType == utils.AO_TYPE_OBJ:
+                        # add object to the DB
+                        #utils.addSiteObject(cursor, itemId, ObjectId, proto)
+                        auxs = ['%s', '%s', '%s']
+                        names = ['item_id', 'object_number', 'osg_location_id']
+                        ITEM_OBJECT_list = ['item_id', 'object_number']
+                        OSG_ITEM_OBJECT_list = ['item_id', 'object_number', 'osg_location_id']
+                        values = [itemId, ObjectId, osgLocationId]
+                        fill_DB_table(names, values, auxs, ITEM_OBJECT_list, 'ITEM_OBJECT', cursor)                        
+                        fill_DB_table(names, values, auxs, OSG_ITEM_OBJECT_list, 'OSG_ITEM_OBJECT', cursor)
+
+                    else:                        
+                        # add label to the DB
+                        utils.dbExecute(cursor, 'INSERT INTO OSG_LABEL ' +
+                                        '(osg_label_name, osg_location_id, text, red, green, ' +
+                                        'blue, rotate_screen, outline, font) ' +
+                                        'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)',
+                                        [uniqueName, osgLocationId, ao.get('labelText'),
+                                        ao.get('labelColorRed'),
+                                        ao.get('labelColorGreen'),
+                                        ao.get('labelColorBlue'),
+                                        ao.get('labelRotateScreen'),
+                                        ao.get('outline'), ao.get('Font'), ])
+                    ## update the information in the DB
+                    #updateSetting(cursor, ao, aoType, labelName, itemId, ObjectId)
+            else:
+                # log error if trying to add a non-site object
+                logger.error('Ignoring new in ' + uniqueName +
+                            ': Meshes, pictures and PCs can not be added')
 
     # Process the cameras (the DEF CAMs are added for all objects
     # and can not be deleted or updated)
-    # TODO?: get a list of updated items -> delete/re-add them
     cameras = data.xpath('//camera[not(starts-with(@name,"' +
                          utils.DEFAULT_CAMERA_PREFIX + '"))]')
     # get a list of cameras from the db
@@ -238,37 +270,21 @@ def main(opts):
         cursor, 'SELECT osg_camera_name, osg_location_id FROM OSG_CAMERA')
     # only execute if there are non default cameras in the DB
     if len(data) > 0:
+    # remove all cameras that are in DB
         # convert list of tuples into two lists
         camerasInDB,camerasInDBId = map(list, zip(*data))
-        # cameras in DB that are not conf file need to be removed
-        camerasInConf = [camera.get('name') for camera in cameras]
-        camerasRemove = list(set(camerasInDB) - set(camerasInConf))
-        # index of camerasRemove in camerasInDB
-        delIndex = [camerasInDB.index(item) for item in camerasRemove]
-        # extract matching osg_location_id for camera names
-        camerasRemoveId = nparray(camerasInDBId)[delIndex].tolist()
-        # loop over all the cameras that need to be deleted
-        for i in range(0,len(camerasRemove)):
+        for i in range(0,len(camerasInDB)):
             # delete from osg_item_camera
             utils.dbExecute(cursor, 'DELETE FROM OSG_ITEM_CAMERA WHERE ' +
-                            'osg_camera_name=%s', [camerasRemove[i]])                                                                                         
+                                'osg_camera_name=%s', [camerasInDB[i]])                                                                                         
             # delete from osg_camera
             utils.dbExecute(cursor, 'DELETE FROM OSG_CAMERA WHERE ' +
-                            'osg_camera_name=%s', [camerasRemove[i]])
+                                'osg_camera_name=%s', [camerasInDB[i]])
             # delete from osg_location
             utils.dbExecute(cursor, 'DELETE FROM OSG_LOCATION WHERE ' +
-                            'osg_location_id=%s', [camerasRemoveId[i]])
-        # Add all new cameras to the DB
-        # list of cameras to add
-        camerasAdd = list(set(camerasInConf) - set(camerasInDB))
-        # index of camerasRemove in camerasInDB
-        AddIndex = [camerasInDB.index(item) for item in camerasAdd]
-        camerasToAdd = nparray(cameras)[AddIndex].tolist()
-    else: 
-        # all cameras in config are new and need to be added
-        camerasToAdd = cameras
-        
-    for camera in camerasToAdd:
+                                'osg_location_id=%s', [camerasInDBId[i]])
+    # add all cameras
+    for camera in cameras:
         name = camera.get('name')
         names = ['osg_camera_name', ]
         values = [name, ]
@@ -279,7 +295,7 @@ def main(opts):
                 names.append('item_id')
                 values.append(siteId)
             except:
-                logger.warn('Incorrect camera name:' + name)
+                logger.warn('Incorrect e name:' + name)
         # add srid
         names.append('srid')
         values.append(offsetSRID[0][-1])
@@ -289,6 +305,12 @@ def main(opts):
                 names.append(c)
                 values.append(camera.get(c))
         auxs = []
+        try:
+            values[values.index('x')] += offsetSRID[0]
+            values[values.index('y')] += offsetSRID[1]
+            values[values.index('z')] += offsetSRID[2]
+        except ValueError:
+            logger.error('No location x,y,z found')
         for i in range(len(names)):
             auxs.append('%s')
         # fill OSG_LOCATION
@@ -365,15 +387,9 @@ def update_DB_table(itemList, valueList, auxList, dbTable, dbTableName, cursor):
     addItemValues = nparray(valueList)[addIndex].tolist()
     addItemAuxs = nparray(auxList)[addIndex].tolist()
     # Add item to OSG_LOCATTION DB table
-    if dbTableName == 'OSG_LOCATION':
-        utils.dbExecute(cursor, 'UPDATE ' + dbTableName + ' (' + 
+    utils.dbExecute(cursor, 'UPDATE ' + dbTableName + ' SET (' +
                         ','.join(addItemNames) +
-                        ') VALUES (' + ','.join(addItemAuxs) +
-                        ') returning osg_location_id', addItemValues)
-    else:
-        utils.dbExecute(cursor, 'UPDATE ' + dbTableName + ' (' +
-                        ','.join(addItemNames) +
-                        ') VALUES (' + ','.join(addItemAuxs) +
+                        ') = (' + ','.join(addItemAuxs) +
                         ')', addItemValues) 
     return 1
 
