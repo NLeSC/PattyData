@@ -251,13 +251,12 @@
 		  <xs:element ref="object_types"/>
 		  <xs:element ref="object_interpretations"/>
 		  <xs:element ref="periods"/>
-		  <xs:element ref="reliabilitys"/>
 		  <xs:element ref="depression_types"/>
 		  <xs:element ref="decoration_types"/>
 		  <xs:element ref="depictions"/>
-		  <xs:element ref="types"/>
-		  <xs:element ref="subtypes"/>
-		  <xs:element ref="techniques"/>
+		  <xs:element ref="material_types"/>
+		  <xs:element ref="material_subtypes"/>
+		  <xs:element ref="material_techniques"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
@@ -360,20 +359,6 @@
     </xs:complexType>
 </xs:element>
 
-<xs:element name="reliability">
-    <xs:complexType>
-        <xs:attribute ref="name" use="required"/>
-    </xs:complexType>
-</xs:element>
-
-<xs:element name="reliabilitys">
-    <xs:complexType>
-        <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" ref="reliability"/>
-        </xs:sequence>
-    </xs:complexType>
-</xs:element>
-
 <xs:element name="depression_type">
     <xs:complexType>
         <xs:attribute ref="name" use="required"/>
@@ -416,44 +401,44 @@
     </xs:complexType>
 </xs:element>
 
-<xs:element name="type">
+<xs:element name="material_type">
     <xs:complexType>
         <xs:attribute ref="name" use="required"/>
     </xs:complexType>
 </xs:element>
 
-<xs:element name="types">
+<xs:element name="material_types">
     <xs:complexType>
         <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" ref="type"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="material_type"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
 
-<xs:element name="subtype">
+<xs:element name="material_subtype">
     <xs:complexType>
         <xs:attribute ref="name" use="required"/>
     </xs:complexType>
 </xs:element>
 
-<xs:element name="subtypes">
+<xs:element name="material_subtypes">
     <xs:complexType>
         <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" ref="subtype"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="material_subtype"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>
 
-<xs:element name="technique">
+<xs:element name="material_technique">
     <xs:complexType>
         <xs:attribute ref="name" use="required"/>
     </xs:complexType>
 </xs:element>
 
-<xs:element name="techniques">
+<xs:element name="material_techniques">
     <xs:complexType>
         <xs:sequence>
-            <xs:element maxOccurs="unbounded" minOccurs="0" ref="technique"/>
+            <xs:element maxOccurs="unbounded" minOccurs="0" ref="material_technique"/>
         </xs:sequence>
     </xs:complexType>
 </xs:element>

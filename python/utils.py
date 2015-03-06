@@ -8,31 +8,26 @@ import psycopg2
 from osgeo import osr
 
 # Python Module containing methods used in other scripts
-# key is atrribute column name in main attribute tables (tbl1_site,...) and values are column name and table name of column and table listing the different attribute values)
+
+# key is attribute column name in main attribute tables (tbl1_site,...) 
+# and values are column name and table name of column and table listing the different attribute values)
 ATTRIBUTES = {'administrator':('initials', 'list_participants'),
-'site_context':('context', 'list_site_context'),
-'site_interpretation':('interpretation', 'list_site_interpretation'),
+'site_context':('site_context', 'list_site_context'),
+'site_interpretation':('site_interpretation', 'list_site_interpretation'),
 'condition':('condition', 'list_object_condition'),
-'object_type':('type', 'list_object_type'),
+'object_type':('object_type', 'list_object_type'),
 'object_interpretation':('interpretation', 'list_object_interpretation'),
 'period':('period', 'list_object_period'),
-'reliability':('reliability', 'list_reliability'),
 'depression_type':('depression_type', 'list_depression_type'),
 'decoration_type':('decoration_type', 'list_object_decoration_type'),
 'depiction':('depiction', 'list_object_depiction'),
-#'type':('type', 'list_object_material_type'),
-#'subtype':('material_subtype', 'list_object_material_subtype'),
-'technique':('technique', 'list_object_material_technique')}
+'material_type':('material_type', 'list_object_material_type'),
+'material_subtype':('material_subtype', 'list_object_material_subtype'),
+'material_technique':('material_technique', 'list_object_material_technique')}
 
-#ATTRIBUTES_ORDER = ['administrator', 'site_context', 'site_interpretation', 'condition', 'object_type',  
-#                    'object_interpretation', 'period', 'reliability', 'depression_type', 'decoration_type',
-#                    'depiction', 'type', 'subtype', 'technique']
-
-# We remove type until the Access DB schema changes to something not reserved by python
-# We also remove subtype since it is actually not in tbl2_object_material anymore
-ATTRIBUTES_ORDER = ['administrator', 'site_context', 'site_interpretation', 'condition', 'object_type',
-                    'object_interpretation', 'period', 'reliability', 'depression_type', 'decoration_type',
-                    'depiction', 'technique']
+ATTRIBUTES_ORDER = ['administrator', 'site_context', 'site_interpretation', 'condition', 'object_type',  
+                    'object_interpretation', 'period', 'depression_type', 'decoration_type',
+                    'depiction', 'material_type', 'material_subtype', 'material_technique']
 
 
 DEFAULT_DB = 'vadb'
