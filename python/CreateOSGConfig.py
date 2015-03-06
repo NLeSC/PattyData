@@ -65,7 +65,10 @@ def main(opts):
                                            opts.dbport)
     
     # Check that provided background is in DB
-    rows, numitems = utils.fetchDataFromDB(cursor, 'SELECT OSG_DATA_ITEM_PC_BACKGROUND.abs_path,srid FROM OSG_DATA_ITEM_PC_BACKGROUND JOIN RAW_DATA_ITEM USING (raw_data_item_id)')
+    query = """
+SELECT OSG_DATA_ITEM_PC_BACKGROUND.abs_path,srid 
+FROM OSG_DATA_ITEM_PC_BACKGROUND JOIN RAW_DATA_ITEM USING (raw_data_item_id)"""
+    rows, num_rows = utils.fetchDataFromDB(cursor, query)
     backGroundAbsPath = None
     backgroundSRID = None
     for (bgAbsPath,bgSRID) in rows:
@@ -84,9 +87,11 @@ def main(opts):
 
     # Add all the different XML of the active objects
     # (we add distinct since the boundings will share XMLs)
-    # cursor.execute('SELECT DISTINCT xml_path FROM active_objects_sites')
-    utils.dbExecute(cursor, 'SELECT DISTINCT xml_abs_path FROM OSG_DATA_ITEM ORDER BY xml_abs_path')
-    for (xmlPath,) in cursor:
+    query = """
+SELECT DISTINCT xml_abs_path 
+FROM OSG_DATA_ITEM ORDER BY xml_abs_path"""
+    rows, num_rows = utils.fetchDataFromDB(cursor, query)
+    for (xmlPath,) in rows:
         if xmlPath.count(opts.osg) == 0:
             logger.error('Mismatch between given OSG data directory ' +
                          'and DB content')
@@ -97,49 +102,40 @@ def main(opts):
     rootObject.add_objectLibrary(viewer_conf_api.objectLibrary
                                  (url=utils.BOUNDINGS_XML_RELATIVE))
 
-    # Add the cameras
-    # cursor.execute('SELECT camera_name, x, y, z, h, p, r FROM cameras')
-    utils.dbExecute(cursor, 'SELECT osg_camera_name, x, y, z, h, p, r FROM ' +
-                    'OSG_CAMERA INNER JOIN OSG_LOCATION ON ' +
-                    'OSG_CAMERA.osg_location_id=OSG_LOCATION.osg_location_id')
-
+    # Add the cameras that are in the DB
     cameras = viewer_conf_api.cameras()
-    for (name, x, y, z, h, p, r) in cursor:
+    query = """
+SELECT osg_camera_name, x, y, z, h, p, r 
+FROM OSG_CAMERA JOIN OSG_LOCATION USING (osg_location_id)"""
+    rows, num_rows = utils.fetchDataFromDB(cursor, query)
+    for (name, x, y, z, h, p, r) in rows:
         cameras.add_camera(viewer_conf_api.camera
                            (name=name, x=x, y=y, z=z, h=h, p=p, r=r))
-    
+    # Add Default cameras for the items that have no camera in the DB
     query = """
 SELECT 
     item_id, ST_SRID(geom), st_x(st_centroid(geom)), st_y(st_centroid(geom)), min_z + ((max_z - min_z) / 2) 
 FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
     SELECT DISTINCT item_id FROM OSG_ITEM_CAMERA
 ) ORDER BY item_id"""
-    
     rows, numitems = utils.fetchDataFromDB(cursor, query)
-        
-    for (siteId, srid, x, y, z) in rows:
+    for (itemId, srid, x, y, z) in rows:
         # only call getOSGPosition if [x,y,z] are not None
         # should item_id = -1 be added? 
-        if all(position is not None for position in [x,y,z]) and siteId>0:
+        if all(position is not None for position in [x,y,z]) and itemId>0:
             if (srid is not None) and (srid == bgSRID):
                 x, y, z  = getOSGPosition(x, y, z, srid)
             else:
                 x, y, z = getOSGPosition(x, y, z)
             cameras.add_camera(viewer_conf_api.camera
-                               (name=utils.DEFAULT_CAMERA_PREFIX + str(siteId),
+                               (name=utils.DEFAULT_CAMERA_PREFIX + str(itemId),
                                 x=x, y=y, z=z))
     rootObject.set_cameras(cameras)
+    
     # Add the XML content of the preferences
-    # cursor.execute('select xml_content from preferences')
-    # row  = cursor.fetchone()
-    # if row == None:
-    #    logger.warn('preferences are not set!. Setting default')
     rootObject.set_preferences(viewer_conf_api.parseString(DEFAULT_PREFENCES))
-    # else:
-    #    rootObject.set_preferences(viewer_conf_api.parseString(row[0]))
-
+    
     attributes = viewer_conf_api.attributes()
-
     # Use generic method to fill all properties.
     # We need the name in the XML, the column name in the DB and
     # the table name in the DB
@@ -155,21 +151,18 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
             getattr(elements, 'add_' + property)(getattr(
                 viewer_conf_api, property)(name=element))
         getattr(attributes, 'set_' + property + 's')(elements)
-
     rootObject.set_attributes(attributes)
     # Add all the static objects, i.e. the OSG from the background
 
+    # Add the static object for the background
     staticObjects = viewer_conf_api.staticObjects()
-
     staticObjects.add_staticObject(viewer_conf_api.staticObject
                                            (url=os.path.relpath(
                                            glob.glob(backGroundAbsPath + '/' + utils.OSG_DATA_PREFIX + '.osgb')[0],
                                            opts.osg)))
-
-    # Add hardcoded DOME
+    # Add hardcode DOME
     staticObjects.add_staticObject(viewer_conf_api.staticObject
                                    (url=utils.DOMES_OSG_RELATIVE))
-
     rootObject.set_staticObjects(staticObjects)
 
     # Add the 5 different layers of active objects
@@ -183,7 +176,12 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
     for (layerName, tableName, inType) in layersData:
         layer = viewer_conf_api.layer(name=layerName)
         
-        query = 'SELECT item_id, raw_data_item_id, OSG_LOCATION.srid, x, y, z, xs, ys, zs, h, p, r, cast_shadow FROM ' + tableName + ' JOIN OSG_DATA_ITEM USING (osg_data_item_id) JOIN OSG_LOCATION USING (osg_location_id) JOIN RAW_DATA_ITEM USING (raw_data_item_id) ORDER BY item_id'
+        query = """
+SELECT item_id, raw_data_item_id, OSG_LOCATION.srid, x, y, z, xs, ys, zs, h, p, r, cast_shadow 
+FROM """ + tableName + """ JOIN OSG_DATA_ITEM USING (osg_data_item_id) 
+                           JOIN OSG_LOCATION  USING (osg_location_id) 
+                           JOIN RAW_DATA_ITEM USING (raw_data_item_id) 
+ORDER BY item_id"""
         rows, numitems = utils.fetchDataFromDB(cursor, query)
         for (itemId, rawDataItemId, srid, x, y, z, xs, ys, zs, h, p, r, castShadow) in rows:
             # only call getOSGPosition if [x,y,z] are not None            
@@ -204,21 +202,45 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
 
     # Add the boundings
     layer = viewer_conf_api.layer(name='boundings')
-    rows, numitems = utils.fetchDataFromDB(
-        cursor, 'SELECT item_id, ' +
-        'object_number, x, y, z, xs, ys, zs, h, p, r, ' +
-        'OSG_LOCATION.cast_shadow, srid FROM OSG_ITEM_OBJECT INNER JOIN ' +
-        'OSG_LOCATION ON OSG_ITEM_OBJECT.osg_location_id=' +
-        'OSG_LOCATION.osg_location_id ORDER BY item_id')
-    for (siteId, objectNumber, x, y, z, xs, ys, zs, h, p, r,
-         castShadow, srid) in rows:
+    # We first add the boundings that are currently in the DB
+    query = """
+SELECT item_id, object_number, x, y, z, xs, ys, zs, h, p, r, OSG_LOCATION.cast_shadow, srid 
+FROM OSG_ITEM_OBJECT JOIN OSG_LOCATION USING (osg_location_id) 
+ORDER BY item_id"""
+    osgItemObjects, numOsgItemObjects = utils.fetchDataFromDB(cursor, query)
+    # osgItemObjects is (itemId, objectNumber, x, y, z, xs, ys, zs, h, p, r, castShadow, srid)
+    # Now we add Default OSG data items for the objects that are not in OSG_ITEM_OBJECT table
+    query = """
+SELECT item_id,object_number 
+FROM item_object 
+WHERE (item_id,object_number) NOT IN (SELECT item_id,object_number FROM OSG_ITEM_OBJECT)"""
+    objects, num_objects = fetchDataFromDB(cursor, query)
+    for (itemId, objectNumber) in objects:
+        srid = None
+        (x,y,z) = (0,0,0)
+        (xs,ys,zs) = (1,1,1)
+        query = """
+SELECT ST_SRID(geom), st_x(st_centroid(geom)), st_y(st_centroid(geom)), min_z + ((max_z - min_z) / 2), 
+       st_xmax(geom)-st_xmin(geom) as dx, st_ymax(geom)-st_ymin(geom) as dy, (max_z - min_z) as dz 
+FROM ITEM 
+WHERE item_id = %s and geom is not %s"""
+        queryArgs = [itemId, None]
+        footprints, num_footprints = fetchDataFromDB(cursor, query, queryArgs)
+        if num_footprints:
+            (srid, x, y, z, xs, ys, zs) = footprints[0]
+            if xs == 0: xs = 1
+            if ys == 0: ys = 1
+            if zs == 0: zs = 1
+        osgItemObjects.append([itemId, objectNumber, x, y, z, xs, ys, zs, 0, 0, 0, False, srid])
+    # Now let's add them to the XML
+    for (itemId, objectNumber, x, y, z, xs, ys, zs, h, p, r, castShadow, srid) in osgItemObjects:
         # only call getOSGPosition if [x,y,z] are not None
-        if all(position is not None for position in [x,y,z]) and siteId>0:        
+        if all(position is not None for position in [x,y,z]) and itemId>0:        
             if (srid is not None) and (srid == bgSRID):
                 x, y, z  = getOSGPosition(x, y, z, srid)
             else:
                 x, y, z = getOSGPosition(x, y, z)                
-            uniqueName = utils.codeOSGActiveObjectUniqueName(cursor, utils.AO_TYPE_OBJ, itemId = siteId, objectId = objectNumber)
+            uniqueName = utils.codeOSGActiveObjectUniqueName(cursor, utils.AO_TYPE_OBJ, itemId = itemId, objectId = objectNumber)
             proto = "Bounding Box"
             activeObject = viewer_conf_api.activeObject(prototype=proto,
                                                         uniqueName=uniqueName)

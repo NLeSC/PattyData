@@ -223,7 +223,6 @@ def main(opts):
         cleanRaw(dataItemTypes)
 
     if 'o' in opts.types:
-        addOSGItemObjects() #Add OSG items for all item_objects
         os.system('touch ' + osgDataAbsPath + '/LAST_MOD')
 
     cursor.close()
@@ -556,28 +555,6 @@ def addPOTDataItem(absPath, itemId, dataItemType):
             if modTime > lastModDB: #Data has changed
                 logging.warn('POTREE data item in ' + sAbsPath + ' may have been updated and it may not be reflected in the DB.')
             dbExecute(cursor, 'UPDATE POTREE_DATA_ITEM_PC SET last_check=%s WHERE potree_data_item_pc_id = %s', [initialTime, potreeDataItemId])
-
-def addOSGItemObjects():
-    query = 'SELECT item_id,object_number FROM item_object WHERE (item_id,object_number) NOT IN (SELECT item_id,object_number FROM osg_item_object)'
-    objects, num_objects = fetchDataFromDB(cursor, query)
-    if num_objects:
-        for (itemId, objectNumber) in objects:
-            srid = None
-            (x,y,z) = (0,0,0)
-            (xs,ys,zs) = (1,1,1)
-            query = 'select ST_SRID(geom), st_x(st_centroid(geom)), st_y(st_centroid(geom)), min_z + ((max_z - min_z) / 2), st_xmax(geom)-st_xmin(geom) as dx, st_ymax(geom)-st_ymin(geom) as dy, (max_z - min_z) as dz FROM item WHERE item_id = %s and geom is not %s'
-            queryArgs = [itemId,None]
-            footprints, num_footprints = fetchDataFromDB(cursor, query, queryArgs)
-            if num_footprints:
-                (srid, x, y, z, xs, ys, zs) = footprints[0]
-                if xs == 0: xs = 1
-                if ys == 0: ys = 1
-                if zs == 0: zs = 1
-            dbExecute(cursor, "INSERT INTO OSG_LOCATION (osg_location_id, srid, x, y, z, xs, ys, zs) VALUES (DEFAULT,%s,%s,%s,%s,%s,%s,%s) RETURNING osg_location_id", 
-                    [srid, x, y, z, xs, ys, zs])
-            osgLocationId = cursor.fetchone()[0]
-            dbExecute(cursor, "INSERT INTO osg_item_object (item_id,object_number,osg_location_id) VALUES (%s,%s,%s)", 
-                    [itemId, objectNumber, osgLocationId])
 
 if __name__ == "__main__":
     usage = 'Usage: %prog [options]'
