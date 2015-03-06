@@ -354,31 +354,34 @@ def codeOSGActiveObjectUniqueName(cursor, aoType, rawDataItemId = None, itemId =
     return uniqueName
 
 def decodeOSGActiveObjectUniqueName(uniqueName):
-    itemId = None
-    rawDataItemId = None
-    objectId = None
-    labelName = None
-    
-    fs = uniqueName.split('_')
-    aux = fs[1]
-    
-    if aux == 'mesh':
-        aoType = AO_TYPE_MESH
-    elif aux == 'pc':
-        aoType = AO_TYPE_PC
-    elif aux == 'pic':
-        aoType = AO_TYPE_PIC    
-    elif aux == 'obj':
-        aoType = AO_TYPE_OBJ
-    else:
-        aoType = AO_TYPE_LAB
-            
-    if aoType == AO_TYPE_OBJ:
-        objectId = int(fs[2])
-        itemId = int(fs[0])
-    elif aoType == AO_TYPE_LAB:
-        labelName = uniqueName[len('lab_'):]
-    else:
-        itemId = int(fs[0])
-        rawDataItemId = int(fs[2])
-    return  (aoType, itemId, rawDataItemId, objectId, labelName)
+    try:
+        itemId = None
+        rawDataItemId = None
+        objectId = None
+        labelName = None    
+        fs = uniqueName.split('_')
+        aux = fs[1]
+        
+        if aux == 'mesh':
+            aoType = AO_TYPE_MESH
+        elif aux == 'pc':
+            aoType = AO_TYPE_PC
+        elif aux == 'pic':
+            aoType = AO_TYPE_PIC    
+        elif aux == 'obj':
+            aoType = AO_TYPE_OBJ
+        else:
+            aoType = AO_TYPE_LAB
+                
+        if aoType == AO_TYPE_OBJ:
+            objectId = int(fs[2])
+            itemId = int(fs[0])
+        elif aoType == AO_TYPE_LAB:
+            labelName = uniqueName[len('lab_'):]
+        else:
+            itemId = int(fs[0])
+            rawDataItemId = int(fs[2])
+        print fs, objectId
+        return  (aoType, itemId, rawDataItemId, objectId, labelName)
+    except Exception:
+        return (None, None, None, None, None)
