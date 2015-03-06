@@ -5,18 +5,16 @@
 # Authors:          Oscar Martinez, NLeSC, o.rubi@esciencecenter.nl
 #                   Elena Ranguelova, NLeSc
 # Created:          16.02.2015
-# Last modified:    02.03.2015
+# Last modified:    06.03.2015
 #
-# Changes:
+# Changes:          * Can delete a list of raw data items
 #
 # Notes:            * User gives an ID from raw_data_item_id
 #                   * The absPath of the raw data item is retrieved
 #                   * The absPath of related (OSG/POTree) data item are retrieved
 #                   * All the previous data is deleted
 ##############################################################################
-import argparse
-import utils, time
-import shutil
+import argparse, os, utils, time, shutil
 
 
 logger = None
@@ -24,9 +22,9 @@ connection = None
 cursor = None
 
 def argument_parser():
-    description = "Removes a Raw data item and the related converted data from the file structure."
+    description = "Removes a list of Raw data items and their related converted data from the file structure."
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-i', '--itemid', help='Raw data item id (with ? the available raw data items are listed)',
+    parser.add_argument('-i', '--itemid', help='Comma-separated list of Raw Data Item Ids  Raw data item id (with ? the available raw data items are listed)',
                         action='store', required=True)
     parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name ' + utils.DEFAULT_DB + ']',type=str , required=False)
     parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
@@ -49,14 +47,6 @@ def apply_argument_parser(options=None):
         args = parser.parse_args() 
             
     return args
-    
-#def remove_data(opts):
-#    """
-#    Removes the data from the file structure.
-#    """
-#    logger.info('Removing data.')
-#   # logger.info("Finished copying data to " + TARGETDIR)
-
 
 def fetch_abs_path(rawDataItemId):
     """ get the absolute data item path given the rawDataItemId"""
@@ -118,6 +108,15 @@ def fetch_osg_abs_paths_pc_bg(rawDataItemId):
     
     return abs_paths, num 
     
+def remove_data(abs_paths):
+    """ removes all the data in the abs_paths directories"""
+    for (abs_path,) in abs_paths:
+        if os.path.isfile(abs_path) or os.path.isdir(abs_path):
+            shutil.rmtree(abs_path)
+        else:
+            logger.warning('Can not remove %s. Already deleted?' % abs_path)
+
+
 #------------------------------------------------------------------------------        
 def run(args): 
     
@@ -126,82 +125,73 @@ def run(args):
     global connection
     global cursor
     
-    logger = utils.start_logging(filename=utils.LOG_FILENAME, level=args.log)
-    logger.info('#######################################')
-    logger.info('Starting script RemoveRawDataItem.py')
-    logger.info('#######################################')
+    logname = os.path.basename(__file__).split('.')[0] + '.log'
+    logger = utils.start_logging(filename=logname, level=args.log)
+    localtime = utils.getCurrentTimeAsAscii()
+    msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
+    print msg
+    logger.info(msg)
 
- # start timer
-    t0 = utils.getCurrentTime()
+     # start timer
+    t0 = time.time()
     
     # connect to the DB
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport) 
 
-    # fetch the abs_path
-    abs_path = fetch_abs_path(args.itemid)        
-    msg = 'Abs path fetched: %s', abs_path
-    print msg
-    logger.info(msg)
+    if args.itemid == '?':
+        utils.listRawDataItems(cursor)
+        return
+    else:
+        for rawDataItemId in args.itemid.split(','):
+            # fetch the abs_path
+            abs_paths = fetch_abs_path(rawDataItemId)        
+            msg = 'Abs path fetched: %s' % abs_paths
+            print msg
+            logger.info(msg)
+ 
+            # fetch the potree abs_paths
+            abs_potree_paths, num_potree = fetch_potree_abs_paths(rawDataItemId)
+            msg = '%s abs potree paths fetched %s' %(num_potree, abs_potree_paths)
+            print msg
+            logger.info(msg)
     
-    # fetch the potree abs_paths
-    abs_potree_paths, num_potree = fetch_potree_abs_paths(args.itemid)        
-    msg = '%s abs potree paths fetched %s' %(num_potree, abs_potree_paths)
-    print msg
-    logger.info(msg)
-    
-    # fetch the OSG abs_paths PC
-    abs_osg_pc_paths, num_osg_pc = fetch_osg_abs_paths_pc(args.itemid)        
-    msg = '%s abs OSG paths for PC fetched: %s' %(num_osg_pc, abs_osg_pc_paths)
-    print msg
-    logger.info(msg)    
+            # fetch the OSG abs_paths PC
+            abs_osg_pc_paths, num_osg_pc = fetch_osg_abs_paths_pc(rawDataItemId)        
+            msg = '%s abs OSG paths for PC fetched: %s' %(num_osg_pc, abs_osg_pc_paths)
+            print msg
+            logger.info(msg)    
 
-    # fetch the OSG abs_paths mesh
-    abs_osg_mesh_paths, num_osg_mesh = fetch_osg_abs_paths_mesh(args.itemid)        
-    msg = '%s abs OSG paths for meshes fetched: %s' %(num_osg_mesh, abs_osg_mesh_paths)
-    print msg
-    logger.info(msg)    
+            # fetch the OSG abs_paths mesh
+            abs_osg_mesh_paths, num_osg_mesh = fetch_osg_abs_paths_mesh(rawDataItemId)        
+            msg = '%s abs OSG paths for meshes fetched: %s' %(num_osg_mesh, abs_osg_mesh_paths)
+            print msg
+            logger.info(msg)    
     
-    # fetch the OSG abs_paths picture
-    abs_osg_picture_paths, num_osg_picture = fetch_osg_abs_paths_picture(args.itemid)        
-    msg = '%s abs OSG paths for pictures fetched: %s' %(num_osg_picture, abs_osg_picture_paths)
-    print msg
-    logger.info(msg)
+            # fetch the OSG abs_paths picture
+            abs_osg_picture_paths, num_osg_picture = fetch_osg_abs_paths_picture(rawDataItemId)        
+            msg = '%s abs OSG paths for pictures fetched: %s' %(num_osg_picture, abs_osg_picture_paths)
+            print msg
+            logger.info(msg)
+     
+            # fetch the OSG abs_paths PC BG
+            abs_osg_pc_bg_paths, num_osg_pc_bg = fetch_osg_abs_paths_pc_bg(rawDataItemId)        
+            msg = '%s abs OSG paths for PC BG fetched: %s' %(num_osg_pc_bg, abs_osg_pc_bg_paths)
+            print msg
+            logger.info(msg)
     
-    # fetch the OSG abs_paths PC BG
-    abs_osg_pc_bg_paths, num_osg_pc_bg = fetch_osg_abs_paths_pc_bg(args.itemid)        
-    msg = '%s abs OSG paths for PC BG fetched: %s' %(num_osg_pc_bg, abs_osg_pc_bg_paths)
-    print msg
-    logger.info(msg)
+            # remove the files related to the above absolute paths
+            for abs_paths_to_remove in (abs_paths, abs_potree_paths, abs_osg_pc_paths, abs_osg_mesh_paths, abs_osg_picture_paths, abs_osg_pc_bg_paths):
+                remove_data(abs_paths_to_remove)
     
-    # remove the files related to the above absolute paths
-    shutil.rmtree(abs_path)
-   
-    for abs_potree_path in abs_potree_paths:
-        shutil.rmtree(abs_potree_path)
-   
-    for abs_osg_pc_path in abs_osg_pc_paths:
-        shutil.rmtree(abs_osg_pc_path)
-    for abs_osg_mesh_path in abs_osg_mesh_paths:
-        shutil.rmtree(abs_osg_mesh_path)
-    for abs_osg_picture_path in abs_osg_picture_paths:
-        shutil.rmtree(abs_osg_picture_path)
-        
-    for abs_osg_pc_bg_path in abs_osg_pc_bg_paths:
-        shutil.rmtree(abs_osg_pc_bg_path)
-    
-    msg = 'Files in found abs_path locations removed!'
-    print msg
-    logger.info(msg)    
+            msg = 'Removed data locations related to raw data item %s (%s)!' % (rawDataItemId, abs_paths[0])
+            print msg
+            logger.info(msg)    
 
     # measure elapsed time
-    elapsed_time = time.time() - t0    
-    msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, utils.LOG_FILENAME)
+    elapsed_time = time.time() - t0
+    msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
     print(msg)
     logger.info(msg)
-    
-    return
-
-
     
 if __name__ == '__main__':
     run( apply_argument_parser() )
