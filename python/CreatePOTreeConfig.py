@@ -172,25 +172,27 @@ def addObjectsMetaData(cursor, itemId, jsonSite, srid):
         objectData['period'] = period
         objectData['date_specific'] = date_specific
         objectData['description_restorations'] = description_restorations
-        
+        # Object materials
+        objectsMaterialData= []
+        query = "SELECT material_type, material_subtype, material_technique FROM tbl2_object_material  WHERE site_id = %s AND object_id = %s"
+        queryArgs = [itemId,object_id]
+        object_materials, num_object_materials = utils.fetchDataFromDB(cursor, query,  queryArgs)
+        for (material_type, material_subtype, material_technique) in object_materials:
+            objectMaterialData = {}
+            objectMaterialData["id"] = len(objectsMaterialData) + 1
+            objectMaterialData["material_type"] = material_type
+            objectMaterialData["material_subtype"] = material_subtype
+            objectMaterialData["material_technique"] = material_technique
+            objectsMaterialData.append(objectMaterialData)
+        objectData["object_material"] = objectsMaterialData
+        # Object location
         query = "SELECT B.srid, B.x, B.y, B.z, B.xs, B.ys, B.zs, B.h, B.p, B.r FROM osg_item_object A, osg_location B WHERE A.item_id = %s AND A.object_number = %s"
         queryArgs = [itemId,object_id]
         object_locations, num_object_locations = utils.fetchDataFromDB(cursor, query,  queryArgs)
         if num_object_locations:
             (locationSrid, x, y, z, xs, ys, zs, h, p ,r) = object_locations[0]
             objectData['osg_position'] = getOSGPosition(cursor, srid, locationSrid, x, y, z, xs, ys, zs, h, p, r)
-            objectsMaterialData= []
-            query = "SELECT type, technique FROM tbl2_object_material  WHERE site_id = %s AND object_id = %s"
-            queryArgs = [itemId,object_id]
-            object_materials, num_object_materials = utils.fetchDataFromDB(cursor, query,  queryArgs)
-            for (material_type, material_technique) in object_materials:
-                objectMaterialData = {}
-                objectMaterialData["id"] = len(objectsMaterialData) + 1
-                objectMaterialData["material_type"] = material_type
-                #objectMaterialData["material_subtype"] = ''
-                objectMaterialData["material_technique"] = material_technique
-                objectsMaterialData.append(objectMaterialData)
-            objectData["object_material"] = objectsMaterialData
+            
         objectsData.append(objectData)
     jsonSite["objects"] = objectsData
     
