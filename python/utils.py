@@ -261,7 +261,7 @@ def dbExecute(cursor, query, queryArgs = None, mogrify = True):
     cursor.connection.commit()
 
 def listRawDataItems(cursor):
-    data_items, num_items = fetchDataFromDB(cursor, "SELECT raw_data_item_id, abs_path FROM RAW_DATA_ITEM")
+    data_items, num_items = fetchDataFromDB(cursor, "SELECT raw_data_item_id, abs_path FROM RAW_DATA_ITEM ORDER BY item_id, abs_path")
     if num_items:
         m = '\t'.join(('#RawDataItemId','absPath'))
         print m
