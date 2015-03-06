@@ -55,21 +55,24 @@ def readLASInfo(absPath):
                 srid = -1
             
             numberPoints += lasHeader.get_pointrecordscount()
-            [lminx, lminy, lminz] = lasHeader.get_min()
-            if minx == None or lminx < minx:
-                minx = lminx 
-            if miny == None or lminy < miny:
-                miny = lminy
-            if minz == None or lminz < minz:
-                minz = lminz
             
-            [lmaxx, lmaxy, lmaxz] = lasHeader.get_max()
-            if maxx == None or lmaxx > maxx:
-                maxx = lmaxx
-            if maxy == None or lmaxy > maxy:
-                maxy = lmaxy
-            if maxz == None or lmaxz > maxz:
-                maxz = lmaxz
+            if lasHeader.get_pointrecordscount():
+            
+                [lminx, lminy, lminz] = lasHeader.get_min()
+                if minx == None or lminx < minx:
+                    minx = lminx 
+                if miny == None or lminy < miny:
+                    miny = lminy
+                if minz == None or lminz < minz:
+                    minz = lminz
+                
+                [lmaxx, lmaxy, lmaxz] = lasHeader.get_max()
+                if maxx == None or lmaxx > maxx:
+                    maxx = lmaxx
+                if maxy == None or lmaxy > maxy:
+                    maxy = lmaxy
+                if maxz == None or lmaxz > maxz:
+                    maxz = lmaxz
         
     else: #It is a single file
         if asbPath.lower.endswith('las'):
