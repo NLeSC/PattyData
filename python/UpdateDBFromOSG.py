@@ -149,9 +149,48 @@ def main(opts):
                 # update the DB with the information in the xml config file
                 updateSetting(cursor, ao, aoType, labelName, itemId, objectId)
             else:
-                # log error if object is not found in DB
-                logger.error('Update not possible. OSG_ITEM_OBJECT ' +
-                            str(uniqueName) + ' not found in DB')
+                if aoType==utils.AO_TYPE_OBJ:
+                    # It is a bounding that has been moved and it is not currentlly
+                    # in the DB. Let's insert it!
+                    # add label to osg_location
+                    # add srid
+                    names, values, auxs = [],[],[]
+                    names.append('srid')
+                    values.append(offsetSRID[0][-1])
+                    # add location
+                    for c in ('x', 'y', 'z', 'h', 'p', 'r'):
+                        if c in ao.keys():
+                            names.append(c)
+                            values.append(ao.get(c))
+                    auxs = []
+                    try:
+                        values[values.index('x')] += offsetSRID[0]
+                        values[values.index('y')] += offsetSRID[1]
+                        values[values.index('z')] += offsetSRID[2]
+                    except ValueError:
+                        logger.error('No location x,y,z found')
+                    
+                    for i in range(len(names)):
+                        auxs.append('%s')
+                    # fill OSG_LOCATION
+                    OSG_LOCATION_list = ['srid', 'x', 'y', 'z', 'xs', 'ys', 'zs', 'h', 'p',
+                                    'r', 'cast_shadow']
+                    fill_DB_table(names, values, auxs, OSG_LOCATION_list, 'OSG_LOCATION',
+                                cursor)
+                    osgLocationId = cursor.fetchone()[0]
+                    
+                    # add object to the DB
+                    auxs = ['%s', '%s', '%s']
+                    names = ['item_id', 'object_number', 'osg_location_id']
+                    ITEM_OBJECT_list = ['item_id', 'object_number']
+                    OSG_ITEM_OBJECT_list = ['item_id', 'object_number', 'osg_location_id']
+                    values = [itemId, ObjectId, osgLocationId]
+                    fill_DB_table(names, values, auxs, ITEM_OBJECT_list, 'ITEM_OBJECT', cursor)                        
+                    fill_DB_table(names, values, auxs, OSG_ITEM_OBJECT_list, 'OSG_ITEM_OBJECT', cursor)
+                else:
+                    # log error if object is not found in DB
+                    logger.error('Update not possible. OSG_ITEM_OBJECT ' +
+                                str(uniqueName) + ' not found in DB')
 
     # Process deletes (only possible for site objects)
     deleteAOS = data.xpath('//*[@status="deleted"]')
