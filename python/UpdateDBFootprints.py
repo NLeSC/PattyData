@@ -8,20 +8,31 @@
 # Modifications:   
 # Notes:            Based on mergefootprints.py from the PattyFFW Oct 2014
 ################################################################################
-import os, argparse, utils, psycopg2, time
+import os, argparse, utils, psycopg2, time, sys
+from osgeo import osr
 
 logger = None
 connection = None
 cursor = None
 
-# CONSTANTS
-#LOG_FILENAME = 'UpdateFootprints.log'
+def getEPSG(shapeprj_path):
+   prj_file = open(shapeprj_path, 'r')
+   prj_txt = prj_file.read()
+   srs = osr.SpatialReference()
+   srs.ImportFromESRI([prj_txt])
+   #print 'Shape prj is: %s' % prj_txt
+   #print 'WKT is: %s' % srs.ExportToWkt()
+   #print 'Proj4 is: %s' % srs.ExportToProj4()
+   srs.AutoIdentifyEPSG()
+   #print 'EPSG is: %s' % srs.GetAuthorityCode(None)
+   return srs.GetAuthorityCode(None)
+
 
 def argument_parser():
     """ Define the arguments and return the parser object"""
     parser = argparse.ArgumentParser(
     description="Script to update the sites footprints from an SQL file to the DB")
-    parser.add_argument('-i','--input',help='Input SQL file',type=str, required=True)
+    parser.add_argument('-i','--input',help='Input SQL or ShapeFile file. If shapefile is provided we also need a PRF file (we assume same name as ShapeFile with changing extension from shp to prj',type=str, required=True)
     parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name which should be updated with these footprints ' + utils.DEFAULT_DB + ']',type=str , required=False)
     parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
     parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
@@ -129,20 +140,44 @@ def run(args):
     print msg
     logger.info(msg)
     
-    if os.popen('head -500 ' + args.input + ' | grep "CREATE TABLE sites_geoms_temp"').read().count("CREATE TABLE sites_geoms_temp") == 0:
-        msg = "The table in the SQL file must be named sites_geom_temp. Replace the table name to sites_geoms_temp!"
+    if not os.path.isfile(args.input):
+        msg = "Input file is not found!"
         print msg
         logger.error(msg)
-        return  
-     
+        return
+    
     # connect to the DB
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport) 
+    
+    if args.input.endswith('shp'):
+    
+        prjFile = args.input.replace('shp','prj')
+        if not os.path.isfile(prjFile):
+            msg = "Input PRJ file is not found!"
+            print msg
+            logger.error(msg)
+            return
         
+        sqlFile = args.input.replace('shp','sql')
+        shp2psql = 'shp2pgsql -s ' + str(getEPSG(prjFile)) + ' -c ' + args.input + ' sites_geoms_temp > ' + sqlFile
+        print shp2psql
+        logger.info(shp2psql)
+        os.system(shp2psql) 
+    else:
+        sqlFile = args.input
+        for line in open(sqlFile, 'r').read().split('\n'):
+            if line.count('CREATE TABLE'):
+                if line.count('sites_geoms_temp') == 0: 
+                    msg = "The table in the SQL file must be named sites_geom_temp. Replace the table name to sites_geoms_temp!"
+                    print msg
+                    logger.error(msg)
+                    return  
+            
     # clean the temp table if exsisted
     clean_temp_table(args)
 
     # load the table sites_geoms_temp from the SQL file ot the DB
-    success_loading = utils.load_sql_file(cursor, args.input)
+    success_loading = utils.load_sql_file(cursor, sqlFile)
         
     if success_loading:
       
