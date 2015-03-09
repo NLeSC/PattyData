@@ -19,15 +19,13 @@ import argparse, os, utils, time, shutil
 def argument_parser():
     description = "List the Raw data items that are in the DB."
     parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('-i', '--itemid',default='', help='List the Raw Data Item Ids related to a list of items (comma-separated) [default list all raw data items]', type=str, required=False)
     parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name ' + utils.DEFAULT_DB + ']',type=str , required=False)
     parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
     parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
     parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
     parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
-    parser.add_argument('-l', '--log', help='Log level',
-                        choices=['debug', 'info', 'warning', 'error',
-                                 'critical'],
-                        default=utils.DEFAULT_LOG_LEVEL)
+    parser.add_argument('-l', '--log', help='Log level', choices=['debug', 'info', 'warning', 'error','critical'], default=utils.DEFAULT_LOG_LEVEL)
 
     return parser 
 
@@ -39,7 +37,11 @@ def run(args):
     # connect to the DB
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport) 
 
-    utils.listRawDataItems(cursor)
+    itemIds = None
+    if args.itemid != '':
+        itemIds = args.itemid.split(',')                           
+
+    utils.listRawDataItems(cursor, itemIds)
     
 if __name__ == '__main__':
     run( utils.apply_argument_parser(argument_parser()))

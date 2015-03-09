@@ -255,8 +255,11 @@ def dbExecute(cursor, query, queryArgs = None, mogrify = True):
         cursor.execute(query, queryArgs)
     cursor.connection.commit()
 
-def listRawDataItems(cursor):
-    data_items, num_items = fetchDataFromDB(cursor, "SELECT raw_data_item_id, abs_path FROM RAW_DATA_ITEM ORDER BY item_id, abs_path")
+def listRawDataItems(cursor, itemIds = None):
+    if itemIds != None:
+        data_items, num_items = fetchDataFromDB(cursor, "SELECT raw_data_item_id, abs_path FROM RAW_DATA_ITEM WHERE item_id IN %s ORDER BY item_id, abs_path", [itemIds])
+    else:
+        data_items, num_items = fetchDataFromDB(cursor, "SELECT raw_data_item_id, abs_path FROM RAW_DATA_ITEM ORDER BY item_id, abs_path")
     if num_items:
         m = '\t'.join(('#RawDataItemId','absPath'))
         print m
