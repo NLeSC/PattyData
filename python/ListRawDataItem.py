@@ -50,4 +50,4 @@ def run(args):
     utils.listRawDataItems(cursor)
     
 if __name__ == '__main__':
-    run( apply_argument_parser() )
+    run( utils.apply_argument_parser(argument_parser()))
