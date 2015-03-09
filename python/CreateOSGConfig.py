@@ -329,7 +329,7 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--dbpass', help='DB pass', action='store')
     parser.add_argument('-t', '--dbhost', help='DB host', action='store')
     parser.add_argument('-r', '--dbport', help='DB port', action='store')
-    parser.add_argument('-o', '--osg', default=utils.DEFAULT_OSG_DATA_DIR,
+    parser.add_argument('-g', '--osg', default=utils.DEFAULT_OSG_DATA_DIR,
                         help='OSG data directory [default ' +
                         utils.DEFAULT_OSG_DATA_DIR + ']', action='store')
     parser.add_argument('-l', '--log', help='Log level',
@@ -339,7 +339,7 @@ if __name__ == "__main__":
     parser.add_argument('-b', '--background', help='Background', 
                         default=utils.DEFAULT_BACKGROUND, action='store')
     # required input
-    parser.add_argument('-f', '--output', help='XML file', action='store',
+    parser.add_argument('-o', '--output', help='XML file', action='store',
                         required=True)
 
     # extract user entered arguments
