@@ -257,7 +257,7 @@ def dbExecute(cursor, query, queryArgs = None, mogrify = True):
 
 def listRawDataItems(cursor, itemIds = None):
     if itemIds != None:
-        data_items, num_items = fetchDataFromDB(cursor, "SELECT raw_data_item_id, abs_path FROM RAW_DATA_ITEM WHERE item_id IN %s ORDER BY item_id, abs_path", [itemIds])
+        data_items, num_items = fetchDataFromDB(cursor, "SELECT raw_data_item_id, abs_path FROM RAW_DATA_ITEM WHERE item_id IN %s ORDER BY item_id, abs_path", [tuple(itemIds),])
     else:
         data_items, num_items = fetchDataFromDB(cursor, "SELECT raw_data_item_id, abs_path FROM RAW_DATA_ITEM ORDER BY item_id, abs_path")
     if num_items:
