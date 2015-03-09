@@ -267,9 +267,9 @@ def main(opts):
     if opts.itemid == '?':
         utils.listRawDataItems(cursor)
         return
-    elif opts.itemid == '':
+    elif opts.itemid == '' or opts.itemid == '!':
         query = """
-SELECT raw_data_item_id 
+SELECT raw_data_item_id, abs_path 
 FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) 
 WHERE NOT background AND raw_data_item_id NOT IN (
           SELECT raw_data_item_id FROM OSG_DATA_ITEM_PC_SITE 
@@ -279,8 +279,13 @@ WHERE NOT background AND raw_data_item_id NOT IN (
           SELECT raw_data_item_id FROM OSG_DATA_ITEM_PICTURE)"""
         # Get the list of items that are not converted yet (we sort by background to have the background converted first)
         raw_data_items, num_raw_data_items = utils.fetchDataFromDB(cursor, query)
-        for (rawDataItemId,) in raw_data_items:
-            createOSG(cursor, rawDataItemId, opts.osgDir)
+        for (rawDataItemId, absPath) in raw_data_items:
+            if opts.itemid == '':
+                createOSG(cursor, rawDataItemId, opts.osgDir)
+            else:
+                m = '\t'.join((str(rawDataItemId),absPath))
+                print m
+                logging.info(m)
     else:
         for rawDataItemId in opts.itemid.split(','):
             createOSG(cursor, int(rawDataItemId), opts.osgDir)    
@@ -295,12 +300,12 @@ WHERE NOT background AND raw_data_item_id NOT IN (
 
 if __name__ == "__main__":
     # define argument menu
-    description = "Updates DB from the changes in the XML configuration file"
+    description = "Generates the OSG data for a raw data item."
     parser = argparse.ArgumentParser(description=description)
 
     # fill argument groups
     parser.add_argument('-i','--itemid',default='',
-                       help='Comma-separated list of Raw Data Item Ids [default is to convert all raw data items related to sites that do not have a related OSG data item] (with ? the available raw data items are listed)',
+                       help='Comma-separated list of Raw Data Item Ids [default is to convert all raw data items related to sites that do not have a related OSG data item] (with ? the available raw data items are listed, with ! the list all the raw data items without any related OSG data item)',
                        type=str, required=False)
     parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
                         help='Postgres DB name [default ' + utils.DEFAULT_DB +

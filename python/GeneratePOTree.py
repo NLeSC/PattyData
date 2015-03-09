@@ -144,17 +144,23 @@ def main(opts):
     if opts.itemid == '?':
         utils.listRawDataItems(cursor)
         return
-    elif opts.itemid == '':
+    elif opts.itemid == '' or opts.itemid == '!':
         query = """
-SELECT raw_data_item_id,background 
+SELECT raw_data_item_id,absPath,background 
 FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) JOIN RAW_DATA_ITEM_PC USING (raw_data_item_id) 
 WHERE raw_data_item_id NOT IN (
           SELECT raw_data_item_id FROM POTREE_DATA_ITEM_PC)"""
         # Get the list of items that are not converted yet (we sort by background to have the background converted first)
         raw_data_items, num_raw_data_items = utils.fetchDataFromDB(cursor, query)
-        for (rawDataItemId,isBackground) in raw_data_items:
-            levels = getNumLevels(opts, isBackground)
-            createPOTree(cursor, rawDataItemId, opts.potreeDir, levels)
+        for (rawDataItemId,absPath,isBackground) in raw_data_items:
+            if opts.itemid == '' :
+                levels = getNumLevels(opts, isBackground)
+                createPOTree(cursor, rawDataItemId, opts.potreeDir, levels)
+            else:
+                m = '\t'.join((str(rawDataItemId),absPath))
+                print m
+                logging.info(m)
+                
     else:
         for rawDataItemId in opts.itemid.split(','):
             rows,num_rows = utils.fetchDataFromDB(cursor, 'SELECT background FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) WHERE raw_data_item_id = %s', [int(rawDataItemId)])
@@ -175,12 +181,12 @@ WHERE raw_data_item_id NOT IN (
 
 if __name__ == "__main__":
     # define argument menu
-    description = "Updates DB from the changes in the XML configuration file"
+    description = "Generates the POTree data for a raw data item (ONLY FOR PCs)"
     parser = argparse.ArgumentParser(description=description)
 
     # fill argument groups
     parser.add_argument('-i','--itemid',default='',
-                       help='Comma-separated list of Raw Data Item Ids [default is to convert all raw data items that do not have a related POtree data item] (with ? the available raw data items are listed)',
+                       help='Comma-separated list of PointCloud Raw Data Item Ids [default is to convert all raw data items that do not have a related POtree data item] (with ? the available raw data items are listed, with ! the list all the raw data items without any related POTree data item)',
                        type=str, required=False)
     parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
                         help='Postgres DB name [default ' + utils.DEFAULT_DB +
