@@ -146,7 +146,7 @@ def main(opts):
         return
     elif opts.itemid == '' or opts.itemid == '!':
         query = """
-SELECT raw_data_item_id,absPath,background 
+SELECT raw_data_item_id,abs_path,background 
 FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) JOIN RAW_DATA_ITEM_PC USING (raw_data_item_id) 
 WHERE raw_data_item_id NOT IN (
           SELECT raw_data_item_id FROM POTREE_DATA_ITEM_PC)"""
