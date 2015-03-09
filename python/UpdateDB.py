@@ -169,7 +169,7 @@ def getMTLAbsPath(absPath):
     else:
         mtlPath = mtlfiles[0]
         if len(mtlfiles) > 1:
-            logging.warn('multiple MTLs file were found in ' + outFolder + '. Using ' + mtlPath)
+            logging.warn('multiple MTLs file were found in ' + absPath + '. Using ' + mtlPath)
         return mtlPath       
  
 def getXMLAbsPath(absPath):
