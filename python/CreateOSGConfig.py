@@ -47,12 +47,15 @@ DEFAULT_PREFENCES = """
 
 
 def main(opts):
-    # Define logger and start logging
     global logger
-    logger = utils.start_logging(filename=opts.output + '.log', level=opts.log)
-    logger.info('#######################################')
-    logger.info('Starting script CreateOSGConfig.py')
-    logger.info('#######################################')
+    # Define logger and start logging
+    logname = os.path.basename(opts.output).split('.')[0] + '.log'
+    logger = utils.start_logging(filename=logname, level=opts.log)
+    localtime = utils.getCurrentTimeAsAscii()
+    t0 = time.time()
+    msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
+    print msg
+    logger.info(msg)
 
     if not opts.output.endswith(".conf.xml"):
         logger.error('The output file must end with .conf.xml')
@@ -279,6 +282,11 @@ WHERE item_id = %s and geom is not %s"""
 
     # Create the XML
     rootObject.export(open(opts.output, 'w'), 0)
+    
+    elapsed_time = time.time() - t0
+    msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
+    print(msg)
+    logger.info(msg)
 
 def getOSGPosition(x, y, z, ItemSRID=None):
     if (ItemSRID is not None):

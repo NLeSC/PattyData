@@ -122,8 +122,13 @@ FROM (
     return (returnOk, vertices, minZ, maxZ, avgZ, numpoints)
 
 def run(args):
-    utils.start_logging(filename=args.output + '.log', level=args.log)
+    logname = os.path.basename(__file__).split('.')[0] + '.log'
+    utils.start_logging(filename=logname, level=opts.log)
+    localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
+    msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
+    print msg
+    logging.info(msg)
 
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport) 
     
@@ -139,7 +144,12 @@ def run(args):
             fpOutput.write(','.join(point) + '\n')
         fpOutput.close()
         
-        logging.info('Finished!. Time:%.2f seconds. #Points: %d' % (time.time() - t0, numpoints)) 
+        logging.info('#Points: %d' % numpoints)
+        
+    elapsed_time = time.time() - t0
+    msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
+    print(msg)
+    logging.info(msg) 
 
 if __name__ == '__main__':
     run(utils.apply_argument_parser(argument_parser()))

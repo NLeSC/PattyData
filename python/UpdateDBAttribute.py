@@ -24,7 +24,7 @@ def argument_parser():
     return parser
 
 def run(args):
-    logname = args.input + '.log'
+    logname = os.path.basename(args.input) + '.log'
     utils.start_logging(filename=logname, level=args.log)
     
     localtime = utils.getCurrentTimeAsAscii()
@@ -73,7 +73,7 @@ def run(args):
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport) 
       
     # First we drop all tables in attribute
-    logging.info("Dropping all previous atrribute tables")
+    logging.info("Dropping all previous attribute tables")
     for tablename in ('tbl2_site_relation','tbl2_object_depression','tbl2_object_decoration','tbl2_object_material','tbl1_object','tbl1_site'):
         cursor.execute('DROP TABLE IF EXISTS ' + tablename + ' CASCADE')
         connection.commit()
@@ -90,7 +90,7 @@ def run(args):
     logging.info('Executing SQL file %s' % args.input)
     #utils.load_sql_file(cursor, args.input)
     connParams = utils.postgresConnectString(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport, True)
-    logFile = args.input + '.log'
+    logFile = os.path.basename(args.input) + '.log'
     command = 'psql ' + connParams + ' -f ' + args.input + ' &> ' + logFile
     logging.info(command)
     os.system(command)

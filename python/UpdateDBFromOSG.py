@@ -9,11 +9,7 @@
 # Notes:            Based on updateconfigxml.py from ViaAppia project
 ##############################################################################
 
-import os
-import argparse
-import psycopg2
-import utils
-import viewer_conf_api
+import os, time, argparse, psycopg2, utils, viewer_conf_api
 from lxml import etree as ET
 from numpy import array as nparray
 
@@ -113,10 +109,13 @@ def updateSetting(cursor, ao, aoType, labelName, itemId, ObjectId):
 def main(opts):
     # Define logger and start logging
     global logger
-    logger = utils.start_logging(filename=opts.config + '.log', level=opts.log)
-    logger.info('#######################################')
-    logger.info('Starting script UpdateDBFromOSG.py')
-    logger.info('#######################################')
+    logname = os.path.basename(opts.config).split('.')[0] + '.log'
+    logger = utils.start_logging(filename=logname, level=opts.log)
+    localtime = utils.getCurrentTimeAsAscii()
+    t0 = time.time()
+    msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
+    print msg
+    logger.info(msg)
 
     # Parse xml configuration file
     data = ET.parse(opts.config).getroot()
@@ -371,6 +370,11 @@ def main(opts):
                       'OSG_ITEM_CAMERA', cursor)
     # close DB connection
     utils.closeConnectionDB(connection, cursor)
+    
+    elapsed_time = time.time() - t0
+    msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
+    print(msg)
+    logger.info(msg)
 
 def get_SRID(data, cursor):
     '''

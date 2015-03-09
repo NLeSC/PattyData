@@ -7,7 +7,7 @@ import os, optparse, psycopg2, logging, time, utils
 
 def main(opts):
     # Set logging
-    logname = opts.sql + '.log'
+    logname = os.path.basename(opts.sql) + '.log'
     utils.start_logging(filename=logname, level=opts.log)
    
     localtime = utils.getCurrentTimeAsAscii()

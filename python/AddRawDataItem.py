@@ -44,14 +44,7 @@
 #                       |- Sn
 ###############################################################################
 
-import re
-import os
-import shutil
-import argparse
-import utils
-import json
-import liblas
-import glob
+import re, time, os, shutil, argparse, utils, json, liblas, glob
 
 logger = None
 
@@ -362,10 +355,14 @@ def copy_data(opts, TARGETDIR):
 def main(opts):
     # set logging level
     global logger
-    logger = utils.start_logging(filename=utils.LOG_FILENAME, level=opts.log)
-    logger.info('#######################################')
-    logger.info('Starting script AddRawDataItem.py')
-    logger.info('#######################################')
+    logname = os.path.basename(__file__).split('.')[0] + '.log'
+    logger = utils.start_logging(filename=logname, level=opts.log)
+    localtime = utils.getCurrentTimeAsAscii()
+    t0 = time.time()
+    msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
+    print msg
+    logger.info(msg)
+    
     # check if all required options are specified
     check_required_options(opts)
     # check if the required directory structure exists
@@ -376,6 +373,11 @@ def main(opts):
     TARGETDIR = define_create_target_dir(opts)
     # copy the data to the target directory
     copy_data(opts, TARGETDIR)
+    
+    elapsed_time = time.time() - t0
+    msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
+    print(msg)
+    logger.info(msg)
 
 
 if __name__ == "__main__":

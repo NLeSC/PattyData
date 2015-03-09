@@ -9,7 +9,7 @@
 # Modifications:   
 # Notes:            Based on createjson.py from the Patty FFWD, October 2014
 ################################################################################
-import argparse, json, utils, glob, os
+import argparse, json, utils, glob, os, time
 logger = None
 
 def argument_parser():
@@ -207,14 +207,15 @@ def save2JSON(outFileName, jsonData):
 #------------------------------------------------------------------------------        
 def run(args):    
     global logger
-    logger = utils.start_logging(filename=args.output + '.log', level=args.log)
+    logname = os.path.basename(args.output).split('.')[0] + '.log'
+    logger = utils.start_logging(filename=logname, level=args.log)
 
     # start logging    
     localtime = utils.getCurrentTimeAsAscii()
     msg = __file__ + ' script logging start at %s'% localtime
     print msg
     logger.info(msg)
-    t0 = utils.getCurrentTime()
+    t0 = time.time()
        
     # connect to DB and get a cursor   
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost)
@@ -247,18 +248,10 @@ def run(args):
     # save the data into JSON file
     save2JSON(args.output, data)
     
-    elapsed_time = utils.getCurrentTime() - t0    
-    msg = 'Finished. Total elapsed time: %s s.' %elapsed_time
+    elapsed_time = time.time() - t0
+    msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
     print(msg)
     logger.info(msg)
-
-    # end logging
-    localtime = utils.getCurrentTimeAsAscii()  
-    msg = __file__ + ' script logging end at %s'% localtime
-    print(msg)
-    logger.info(msg)
-    
-    return    
 
 if __name__ == '__main__':
     run( apply_argument_parser() )

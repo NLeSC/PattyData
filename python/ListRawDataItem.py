@@ -33,17 +33,9 @@ def argument_parser():
 
 #------------------------------------------------------------------------------        
 def run(args): 
-    
     logname = os.path.basename(__file__).split('.')[0] + '.log'
-    logger = utils.start_logging(filename=logname, level=args.log)
-    localtime = utils.getCurrentTimeAsAscii()
-    msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
-    print msg
-    logger.info(msg)
+    utils.start_logging(filename=logname, level=args.log)
 
-     # start timer
-    t0 = time.time()
-    
     # connect to the DB
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost, args.dbport) 
 

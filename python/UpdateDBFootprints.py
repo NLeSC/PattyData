@@ -132,7 +132,7 @@ def run(args):
     global cursor
     
     # start logging
-    logname = args.input + '.log'
+    logname = os.path.basename(args.input) + '.log'
     logger = utils.start_logging(filename=logname, level=utils.DEFAULT_LOG_LEVEL)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
@@ -158,7 +158,7 @@ def run(args):
             logger.error(msg)
             return
         
-        sqlFile = args.input.replace('shp','sql')
+        sqlFile = os.path.basename(args.input).replace('shp','sql')
         shp2psql = 'shp2pgsql -s ' + str(getEPSG(prjFile)) + ' -c ' + args.input + ' sites_geoms_temp > ' + sqlFile
         print shp2psql
         logger.info(shp2psql)
