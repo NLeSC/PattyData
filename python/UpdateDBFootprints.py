@@ -178,6 +178,9 @@ def run(args):
 
     # load the table sites_geoms_temp from the SQL file ot the DB
     success_loading = utils.load_sql_file(cursor, sqlFile)
+
+    if args.input.endswith('shp'):
+        os.system('rm -rf ' + sqlFile)
         
     if success_loading:
       
