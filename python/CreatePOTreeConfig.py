@@ -60,6 +60,12 @@ def addSiteMetaData(cursor, itemId, dataSite):
     
     if num_site_metadatas:
         (descriptionSite, siteContext, siteInterpretation) = site_metadatas[0]
+        if descriptionSite == None:
+            query = 'SELECT description_object FROM tbl1_object WHERE site_id = %s ORDER BY object_id'
+            queryArgs = [itemId,]
+            object_metadatas, num_object_metadatas = utils.fetchDataFromDB(cursor, query,  queryArgs)
+            if num_object_metadatas:
+                descriptionSite = object_metadatas[0][0]
         dataSite["description_site"] = descriptionSite
         dataSite["site_context"] = siteContext
         dataSite["site_interpretation"] = siteInterpretation
