@@ -151,22 +151,32 @@ def main(opts):
         uniqueName = ao.get('uniqueName')
         (aoType, itemId, rawDataItemId, objectId, labelName) = utils.decodeOSGActiveObjectUniqueName(cursor, uniqueName)
         if aoType == None:
-            logging.warning('Ignoring operation on %s. Could not decode uniqueName' % uniqueName)
+            msg = 'Ignoring operation on %s. Could not decode uniqueName' % uniqueName
+            print msg
+            logging.warning(msg)
         else:
             # check if the object is in the DB
             osgLocationId = getOSGLocationId(cursor, aoType, labelName, itemId, objectId, rawDataItemId)
             if osgLocationId != None:
                 # update the DB with the information in the xml config file
+                msg = 'Updating OSG location %d from %s' % (osgLocationId, uniqueName)
+                print msg
+                logging.info(msg)
                 updateOSGLocation(cursor, osgLocationId, ao.getchildren()[0], bgSRID, bgOffset)
             else:
-                if aoType==utils.AO_TYPE_OBJ:
+                if aoType == utils.AO_TYPE_OBJ:
                     # It is a bounding that has been moved and it is not currently in the DB. Let's insert it!
+                    msg = 'Adding missing ITEM_OBJECT (%d,%d)' % (itemId, objectId)
+                    print msg
+                    logging.info(msg)
                     insertDB('ITEM_OBJECT', ('item_id', 'object_number'), (itemId, objectId))
                     osgLocationId = insertOSGLocation(cursor, ao.getchildren()[0], bgSRID, bgOffset)
                     insertDB('OSG_ITEM_OBJECT', ('item_id', 'object_number', 'osg_location_id'), (itemId, objectId, osgLocationId))
                 else:
                     # log error if object is not found in DB
-                    logging.error('Update not possible. OSG_ITEM_OBJECT ' + str(uniqueName) + ' not found in DB')
+                    msg = 'Update not possible. OSG_ITEM_OBJECT from %s not found in DB' % uniqueName
+                    print msg
+                    logging.error(msg)
 
     # Process deletes (only possible for site objects)
     deleteAOS = data.xpath('//*[@status="deleted"]')
@@ -175,20 +185,29 @@ def main(opts):
         uniqueName = ao.get('uniqueName')
         (aoType, itemId, rawDataItemId, objectId, labelName) =  utils.decodeOSGActiveObjectUniqueName(cursor, uniqueName)
         if aoType==None:
-            logging.warning('add warning')
+            msg = 'Ignoring operation on %s. Could not decode uniqueName' % uniqueName
+            print msg
+            logging.warning(msg)
         else:
             if aoType in (utils.AO_TYPE_OBJ, utils.AO_TYPE_LAB):
                 # check if the object is in the DB
                 osgLocationId = getOSGLocationId(cursor, aoType, labelName, itemId, objectId)
                 if osgLocationId != None:
                     # Delete the OSG-related entries from the DB
+                    msg = 'Deleting OSG related entries for %s' % uniqueName
+                    print msg
+                    logging.info(msg)
                     deleteOSG(cursor, aoType, labelName, itemId, objectId)
                 else:
                     # log error if object is not found in DB
-                    logging.warn('Not possible to delete.. OSG_ITEM_OBJECT ' + str(uniqueName) + ' not found in DB. Maybe already deleted?')
+                    msg = 'Not possible to delete. OSG_ITEM_OBJECT from %s not found in DB. Maybe already deleted?' % uniqueName
+                    print msg
+                    logging.warning(msg)
             else:
                 # log error if trying to delete a non-site object
-                logging.error('Ignoring delete in ' + uniqueName + ': Meshes, pictures and PCs can not be deleted')
+                msg = 'Ignoring delete in %s: Meshes, pictures and PCs can not be deleted' % uniqueName
+                print msg
+                logging.error(msg)
 
     # Process new objects (only possible for site objects)
     newAOS = data.xpath('//*[@status="new"]')
@@ -197,29 +216,41 @@ def main(opts):
         uniqueName = ao.get('uniqueName')
         (aoType, itemId, rawDataItemId, objectId, labelName) = utils.decodeOSGActiveObjectUniqueName(cursor, uniqueName)
         if aoType==None:
-            logging.warning('warning')
+            msg = 'Ignoring operation on %s. Could not decode uniqueName' % uniqueName
+            print msg
+            logging.warning(msg)
         else:
             if aoType in (utils.AO_TYPE_OBJ, utils.AO_TYPE_LAB):
                 # check if the object is in the DBbesafe i
                 osgLocationId = getOSGLocationId(cursor, aoType, labelName, itemId, objectId)
                 if osgLocationId != None:
                     # log error if the new object is already in the DB
-                    logging.warning('OSG_ITEM_OBJECT ' + str(uniqueName) + ' already in DB. Ignoring add ' + uniqueName)
+                    msg = 'OSG_ITEM_OBJECT from %s already in DB. Ignoring add' % uniqueName
+                    print msg
+                    logging.warning(msg)
                 else:
                     osgLocationId = insertOSGLocation(cursor, ao.getchildren()[0], bgSRID, bgOffset)
                     if aoType == utils.AO_TYPE_OBJ:
                         # add object to the DB
+                        msg = 'Adding ITEM_OBJECT (%d,%d)' % (itemId, objectId)
+                        print msg
+                        logging.info(msg)
                         insertDB('ITEM_OBJECT', ('item_id', 'object_number'), (itemId, objectId))
                         insertDB('OSG_ITEM_OBJECT', ('item_id', 'object_number', 'osg_location_id'), (itemId, objectId, osgLocationId))
                     else:                        
                         # add label to the DB
+                        msg = 'Adding label %s' % uniqueName
+                        print msg
+                        logging.info(msg)
                         insertDB('OSG_LABEL', ('osg_label_name', 'osg_location_id', 'text', 'red', 'green', 'blue', 'rotate_screen', 'outline', 'font'), 
                                  (uniqueName, osgLocationId, ao.get('labelText'), 
                                   ao.get('labelColorRed'), ao.get('labelColorGreen'), ao.get('labelColorBlue'), 
                                   ao.get('labelRotateScreen'), ao.get('outline'), ao.get('Font')))
             else:
                 # log error if trying to add a non-site object
-                logging.error('Ignoring new in ' + uniqueName + ': Meshes, pictures and PCs can not be added')
+                msg = 'Ignoring new in %s: Meshes, pictures and PCs can not be added' % uniqueName
+                print msg
+                logging.error(msg)
 
     # Process the cameras (the DEF CAMs are added for all objects and can not be deleted or updated)
     cameras = data.xpath('//camera[not(starts-with(@name,"' + utils.DEFAULT_CAMERA_PREFIX + '"))]')
@@ -233,8 +264,13 @@ def main(opts):
             try:
                 itemId = int(name[name.index(utils.USER_CAMERA) + len(utils.USER_CAMERA):].split('_')[0])
             except:
-                logging.warn('Incorrect name %s for a ITEM camera' % name)
+                msg = 'Incorrect name %s for a ITEM camera' % name
+                print msg
+                logging.warn(msg)
                 itemId = None
+        msg = 'Adding camera %s' % name
+        print msg
+        logging.info(msg)
         osgLocationId = insertOSGLocation(cursor, camera, bgSRID, bgOffset)
         insertDB('OSG_CAMERA', ('osg_camera_name', 'osg_location_id'), (name, osgLocationId))
         if itemId != None:
