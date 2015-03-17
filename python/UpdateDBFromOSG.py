@@ -53,7 +53,7 @@ def getOSGLocationId(cursor, aoType, labelName = None, itemId = None, objectId =
     else:
         if rawDataItemId == None:
             raise Exception ('Raw data item operations require not null rawDataItemId')
-        rows, num_rows = utils.fetchDataFromDB(cursor, 'SELECT osg_location_id FROM ((SELECT * FROM OSG_DATA_ITEM_PC_SITE) UNION (SELECT * FROM OSG_DATA_ITEM_PC_SITE) UNION (SELECT * FROM OSG_DATA_ITEM_PC_SITE)) A JOIN OSG_DATA_ITEM USING (osg_data_item_id) WHERE raw_data_item_id = %s', [rawDataItemId, ])
+        rows, num_rows = utils.fetchDataFromDB(cursor, 'SELECT osg_location_id FROM ((SELECT * FROM OSG_DATA_ITEM_PC_SITE) UNION (SELECT * FROM OSG_DATA_ITEM_PC_MESH) UNION (SELECT * FROM OSG_DATA_ITEM_PC_PICTURE)) A JOIN OSG_DATA_ITEM USING (osg_data_item_id) WHERE raw_data_item_id = %s', [rawDataItemId, ])
     if num_rows == 0:
         return None
     else:
