@@ -1,0 +1,58 @@
+\documentclass[a4paper,11pt]{article}
+\setlength{\topmargin}{-.5in}
+\setlength{\textheight}{9in}
+\setlength{\oddsidemargin}{.125in}
+\setlength{\textwidth}{6.25in}
+\usepackage[pdftex]{graphicx}
+\usepackage{fancyvrb}
+
+\makeatletter
+\renewcommand\paragraph{%
+   \@startsection{paragraph}{4}{0mm}%
+      {-\baselineskip}%
+      {.5\baselineskip}%
+      {\normalfont\normalsize\bfseries}}
+\makeatother
+
+\begin{document}
+
+% The Title page
+\begin{titlepage}
+\begin{center}
+\includegraphics[width=0.6\textwidth]{fig/logo}\\[3cm]    
+\textsc{\LARGE Patty / Mapping the Via Appia in 3D}\\[0.5cm]
+\textsc{\large Via Appia 3D GIS: Software User Manual}\\[0.5cm]
+\vfill
+\end{center}
+{\large
+\emph{E. Ranguelova} \\
+\emph{R. Goncalves } \\
+\emph{R. van Haren } \\
+\emph{O. Martinez-Rubi } \\
+}
+{\large
+{Netherlands eScience Center, \\
+Science Park 140 (Matrix 1), 1098 XG Amsterdam, the Netherlands\\
+}
+}
+\begin{center}
+{\large \today}
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+
+\newpage
+
+\input{01_overview.tex}
+
+\input{02_system_architecture.tex}
+
+\input{03_conceptual_description.tex}
+
+\input{04_data_structure.tex}
+
+\input{05_database.tex}
+
+\end{document}
+
