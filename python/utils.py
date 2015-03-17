@@ -89,6 +89,10 @@ AO_TYPE_PIC = PIC_FT
 AO_TYPE_LAB = 'LAB'
 AO_TYPE_OBJ = 'OBJ'
 
+def isCurrent(absPath):
+    return (absPath.count(CURR_FT) > 0)
+
+
 def getLastModification(absPath, initialLMTime = None):
     """
     Get the last modification time of the provided path. 
@@ -337,13 +341,18 @@ def codeOSGActiveObjectUniqueName(cursor, aoType, rawDataItemId = None, itemId =
         rows, num = fetchDataFromDB(cursor, "SELECT item_id, abs_path FROM RAW_DATA_ITEM WHERE raw_data_item_id = %s", [rawDataItemId,])
         if num == 1:
             (itemId, absPath) = rows[0]
+            isCurr = 0
             if aoType == AO_TYPE_MESH:
                 aux = 'mesh'
+                if isCurrent(absPath):
+                    isCurr = 1
             elif aoType == AO_TYPE_PC:
                 aux = 'pc'
             else:
                 aux  = 'pic'
-            uniqueName = str(itemId) + '_' + aux + '_' + str(rawDataItemId) + '_' + os.path.basename(absPath)
+                if isCurrent(absPath):
+                    isCurr = 1
+            uniqueName = str(itemId) + '_' + aux + '_' + str(isCurr) + '_' + os.path.basename(absPath)
         else:
             raise Exception('Raw Data Item with ID %d is not in DB!' % rawDataItemId)
     elif aoType == AO_TYPE_OBJ:
@@ -356,7 +365,7 @@ def codeOSGActiveObjectUniqueName(cursor, aoType, rawDataItemId = None, itemId =
         uniqueName = 'lab_' + str(labelName)
     return uniqueName
 
-def decodeOSGActiveObjectUniqueName(uniqueName):
+def decodeOSGActiveObjectUniqueName(cursor, uniqueName):
     try:
         itemId = None
         rawDataItemId = None
@@ -382,9 +391,27 @@ def decodeOSGActiveObjectUniqueName(uniqueName):
         elif aoType == AO_TYPE_LAB:
             labelName = uniqueName[len('lab_'):]
         else:
-            itemId = int(fs[0])
-            rawDataItemId = int(fs[2])
-        print fs, objectId
+            itemId = int(fs[0])            
+            isCurr = int(fs[2])
+            baseName = '_'.join(fs[3:])
+            pattern = '/' + aoType + '/SITE/'
+            if aoType == AO_TYPE_MESH:
+                if isCurr:
+                    pattern += 'CURR/'
+                else:
+                    pattern += 'ARCH_REC/'
+            if aoType == AO_TYPE_PIC:
+                if isCurr:
+                    pattern += 'CURR/'
+                else:
+                    pattern += 'HIST/'
+            pattern += 'S' + str(itemId) + '/' + baseName
+            query = "select raw_data_item_id from raw_data_item where abs_path LIKE %s AND item_id = %s"
+            queryArgs = ['%' + pattern, itemId, ]
+            rows, num = fetchDataFromDB(cursor, query, queryArgs)
+            if num != 1:
+                raise Exception('None or Multiple Raw Data Item found for ' + uniqueName)
+            rawDataItemId = rows[0][0]
         return  (aoType, itemId, rawDataItemId, objectId, labelName)
     except Exception:
         return (None, None, None, None, None)

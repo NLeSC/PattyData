@@ -17,60 +17,50 @@ logger = None
 cursor = None
 offsetSRID = None
 
-
-def deleteSiteObject(cursor, ao, aoType, labelName, itemId, ObjectId):
-    '''
-    Function to delete a site object
-    '''
+def getOSGLocationId(cursor, ao, aoType, labelName = None, itemId = None, ObjectId = None, rawDataItemId = None):
+    ''' Function to check if the object exists in the DB '''
     if aoType == utils.AO_TYPE_OBJ:
-        # extract osg_location_id of the object
-        data,rows = utils.fetchDataFromDB(
-            cursor, 'SELECT osg_location_id FROM ' +
-            'OSG_ITEM_OBJECT WHERE item_id = %s AND object_number = %s',
-            [itemId, ObjectId])        
-        utils.dbExecute(cursor, 'DELETE FROM OSG_ITEM_OBJECT ' +
-                        'WHERE item_id = %s AND object_number = %s',
-                        [itemId, ObjectId])
-        # delete from OSG_LOCATION
-        utils.dbExecute(cursor, 'DELETE FROM OSG_LOCATION WHERE ' +
-                        'osg_location_id=%s', [data[0]])
-        
+        if (itemId == None) or (objectId == None):
+            raise Exception ('Item Object operations require not null itemId and objectId')
+        rows, num_rows = utils.fetchDataFromDB(cursor, 'SELECT osg_location_id FROM OSG_ITEM_OBJECT WHERE item_id = %s AND object_number = %s', [itemId, ObjectId])
     elif aoType == utils.AO_TYPE_LAB:
-        # extract osg_location_id of the label
-        data, rows = utils.fetchDataFromDB(
-            cursor, 'SELECT osg_location_id FROM OSG_LABEL WHERE ' +
-            'osg_label_name = %s', [labelName])
-        # delete from OSG_LABEL
-        utils.dbExecute(cursor,
-                        'DELETE FROM OSG_LABEL WHERE osg_label_name = %s',
-                        [labelName])
+        if labelName == None:
+            raise Exception ('Label operations require not null labelName')
+        rows, num_rows = utils.fetchDataFromDB(cursor, 'SELECT osg_location_id FROM OSG_LABEL WHERE osg_label_name = %s', [labelName,])
+    else:
+        if rawDataItemId == None:
+            raise Exception ('Raw data item operations require not null rawDataItemId')
+        rows, num_rows = utils.fetchDataFromDB(cursor, 'SELECT osg_location_id FROM ((SELECT * FROM OSG_DATA_ITEM_PC_SITE) UNION (SELECT * FROM OSG_DATA_ITEM_PC_SITE) UNION (SELECT * FROM OSG_DATA_ITEM_PC_SITE)) A JOIN OSG_DATA_ITEM USING (osg_data_item_id) WHERE raw_data_item_id = %s', [rawDataItemId, ])
+    if num_rows == 0:
+        return None
+    else:
+        return rows[0][0]
+
+def deleteOSG(cursor, ao, aoType, labelName = None, itemId = None, objectId = None, rawDataItemId = None):
+    ''' Function to delete a site object '''
+    if aoType == utils.AO_TYPE_OBJ:
+        if (itemId == None) or (objectId == None):
+            raise Exception ('Item Object operations require not null itemId and objectId')
+        # extract osg_location_id of the object
+        data,rows = utils.fetchDataFromDB(cursor, 'SELECT osg_location_id FROM OSG_ITEM_OBJECT WHERE item_id = %s AND object_number = %s', [itemId, objectId])
+        utils.dbExecute(cursor, 'DELETE FROM OSG_ITEM_OBJECT WHERE item_id = %s AND object_number = %s', [itemId, objectId])
         # delete from OSG_LOCATION
-        utils.dbExecute(cursor, 'DELETE FROM OSG_LOCATION WHERE ' +
-                        'osg_location_id=%s', [data[0]])        
+        utils.dbExecute(cursor, 'DELETE FROM OSG_LOCATION WHERE osg_location_id = %s', [data[0][0],])
+
+    elif aoType == utils.AO_TYPE_LAB:
+        if labelName == None:
+            raise Exception ('Label operations require not null labelName')
+        # extract osg_location_id of the label
+        data, rows = utils.fetchDataFromDB(cursor, 'SELECT osg_location_id FROM OSG_LABEL WHERE osg_label_name = %s', [labelName,])
+        # delete from OSG_LABEL
+        utils.dbExecute(cursor,'DELETE FROM OSG_LABEL WHERE osg_label_name = %s', [labelName,])
+        # delete from OSG_LOCATION
+        utils.dbExecute(cursor, 'DELETE FROM OSG_LOCATION WHERE osg_location_id = %s', [data[0][0],])
     else:
         raise Exception('Not possible to delete object ' + labelName)
 
-def checkActiveObject(cursor, ao, aoType, labelName, itemId,
-                      ObjectId):
-    ''' 
-    Function to check if the object exists in the DB 
-    '''
-    if aoType == utils.AO_TYPE_OBJ:
-        utils.fetchDataFromDB(cursor, 'SELECT * FROM OSG_ITEM_OBJECT ' +
-                              'WHERE item_id = %s AND object_number = %s',
-                              [itemId, ObjectId])
-    elif aoType == utils.AO_TYPE_LAB:
-        utils.dbExecute(cursor, 'SELECT * FROM OSG_LABEL ' +
-                        'WHERE osg_label_name = %s', [labelName])
-    else:
-        utils.dbExecute(cursor, 'SELECT * FROM OSG_DATA_ITEM ' +
-                        'WHERE osg_data_item_id = %s', [itemId, ])
-    if not cursor.rowcount:
-        return False
-    return True
 
-
-def updateSetting(cursor, ao, aoType, labelName, itemId, ObjectId):
+def updateOSGLocation(cursor, ao, aoType, labelName = None, itemId = None, objectId = None, rawDataItemId = None):
     s = ao.getchildren()[0]
     names = []
     auxs = []
@@ -136,14 +126,12 @@ def main(opts):
         #(aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) = \
         #getDetails(ao)
         uniqueName = ao.get('uniqueName')
-        (aoType, itemId, rawDataItemId, objectId, labelName) = \
-            utils.decodeOSGActiveObjectUniqueName(uniqueName)
-        if aoType==None:
-            logger.warning('warning')
+        (aoType, itemId, rawDataItemId, objectId, labelName) = utils.decodeOSGActiveObjectUniqueName(cursor, uniqueName)
+        if aoType == None:
+            logger.warning('Ignoring operation on %s. Could not decode uniqueName' % uniqueName)
         else:
             # check if the object is in the DB
-            inDB = checkActiveObject(cursor, ao, aoType, labelName, itemId,
-                                    objectId)
+            inDB = getOSGLocationId(cursor, ao, aoType, labelName, itemId, objectId)
             if inDB:
                 # update the DB with the information in the xml config file
                 updateSetting(cursor, ao, aoType, labelName, itemId, objectId)
@@ -199,13 +187,13 @@ def main(opts):
         #getDetails(ao)
         uniqueName = ao.get('uniqueName')
         (aoType, itemId, rawDataItemId, objectId, labelName) = \
-            utils.decodeOSGActiveObjectUniqueName(uniqueName)
+            utils.decodeOSGActiveObjectUniqueName(cursor, uniqueName)
         if aoType==None:
             logger.warning('add warning')
         else:
             if aoType in (utils.AO_TYPE_OBJ, utils.AO_TYPE_LAB):
                 # check if the object is in the DB
-                inDB = checkActiveObject(cursor, ao, aoType, labelName, itemId,
+                inDB = getOSGLocationId(cursor, ao, aoType, labelName, itemId,
                                         objectId)
                 if inDB:
                     # update the DB with the information in the xml config file
@@ -225,18 +213,14 @@ def main(opts):
     newAOS = data.xpath('//*[@status="new"]')
     # loop over all new objects found in the xml config file
     for ao in newAOS:
-        #(aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) = \
-        #getDetails(ao)
         uniqueName = ao.get('uniqueName')
-        (aoType, itemId, rawDataItemId, ObjectId, labelName) = \
-            utils.decodeOSGActiveObjectUniqueName(uniqueName)
+        (aoType, itemId, rawDataItemId, objectId, labelName) = utils.decodeOSGActiveObjectUniqueName(cursor, uniqueName)
         if aoType==None:
             logger.warning('warning')
         else:
             if aoType in (utils.AO_TYPE_OBJ, utils.AO_TYPE_LAB):
                 # check if the object is in the DBbesafe i
-                inDB = checkActiveObject(cursor, ao, aoType, labelName, itemId,
-                                        ObjectId)
+                inDB = getOSGLocationId(cursor, ao, aoType, labelName, itemId, ObjectId)
                 if inDB:
                     # log error if the new object is already in the DB
                     logger.warning('OSG_ITEM_OBJECT ' + str(uniqueName) +
