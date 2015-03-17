@@ -24,7 +24,10 @@ cursor = None
 def argument_parser():
     description = "Removes a list of Raw data items and their related converted data from the file structure."
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('-i', '--itemid', help='Comma-separated list of Raw Data Item Ids  Raw data item id (with ? the available raw data items are listed)',
+    # add required argument group
+    requiredNamed = parser.add_argument_group('required arguments')
+    # arguments
+    requiredNamed.add_argument('-i', '--itemid', help='Comma-separated list of Raw Data Item Ids  Raw data item id (with ? the available raw data items are listed)',
                         action='store', required=True)
     parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name ' + utils.DEFAULT_DB + ']',type=str , required=False)
     parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
