@@ -13,7 +13,7 @@ import os, time, argparse, psycopg2, utils, logging
 from lxml import etree as ET
 from numpy import array as nparray
 
-def insertDB(tableName, names, values, returnColumn = None):
+def insertDB(cursor, tableName, names, values, returnColumn = None):
     """ Generic method to insert a row in a table"""
     auxs = []
     for i in range(len(names)):
@@ -23,7 +23,10 @@ def insertDB(tableName, names, values, returnColumn = None):
     if returnColumn != None:
         insertStatement += ' RETURNING ' + returnColumn
     utils.dbExecute(cursor, insertStatement, insertValues)
-    return cursor.fetchone()[0]
+    if returnColumn != None:
+        return cursor.fetchone()[0]
+    else:
+        return None
 
 def getBackgroundOffset(data, cursor):
     ''' Get the offset and srid for the background used in the conf.xml file  '''
@@ -95,7 +98,7 @@ def updateOSGLocation(cursor, osgLocationId, xml_element, bgSRID, bgOffset):
 def insertOSGLocation(cursor, xml_element, bgSRID, bgOffset):
     """Inserts a OSG location and returns a osgLocationId"""
     (names, values) = parseLocation(cursor, xml_element, bgSRID, bgOffset)
-    return insertDB('OSG_LOCATION', names, values, returnColumn = 'osg_location_id')
+    return insertDB(cursor, 'OSG_LOCATION', names, values, returnColumn = 'osg_location_id')
     
 def deleteOSG(cursor, aoType, labelName = None, itemId = None, objectId = None, rawDataItemId = None):
     ''' Function to delete a and OSG item objects or an OSG label (and their related OSG location entries) '''
@@ -169,9 +172,9 @@ def main(opts):
                     msg = 'Adding missing ITEM_OBJECT (%d,%d)' % (itemId, objectId)
                     print msg
                     logging.info(msg)
-                    insertDB('ITEM_OBJECT', ('item_id', 'object_number'), (itemId, objectId))
+                    insertDB(cursor, 'ITEM_OBJECT', ('item_id', 'object_number'), (itemId, objectId))
                     osgLocationId = insertOSGLocation(cursor, ao.getchildren()[0], bgSRID, bgOffset)
-                    insertDB('OSG_ITEM_OBJECT', ('item_id', 'object_number', 'osg_location_id'), (itemId, objectId, osgLocationId))
+                    insertDB(cursor, 'OSG_ITEM_OBJECT', ('item_id', 'object_number', 'osg_location_id'), (itemId, objectId, osgLocationId))
                 else:
                     # log error if object is not found in DB
                     msg = 'Update not possible. OSG_ITEM_OBJECT from %s not found in DB' % uniqueName
@@ -235,14 +238,14 @@ def main(opts):
                         msg = 'Adding ITEM_OBJECT (%d,%d)' % (itemId, objectId)
                         print msg
                         logging.info(msg)
-                        insertDB('ITEM_OBJECT', ('item_id', 'object_number'), (itemId, objectId))
-                        insertDB('OSG_ITEM_OBJECT', ('item_id', 'object_number', 'osg_location_id'), (itemId, objectId, osgLocationId))
+                        insertDB(cursor, 'ITEM_OBJECT', ('item_id', 'object_number'), (itemId, objectId))
+                        insertDB(cursor, 'OSG_ITEM_OBJECT', ('item_id', 'object_number', 'osg_location_id'), (itemId, objectId, osgLocationId))
                     else:                        
                         # add label to the DB
                         msg = 'Adding label %s' % uniqueName
                         print msg
                         logging.info(msg)
-                        insertDB('OSG_LABEL', ('osg_label_name', 'osg_location_id', 'text', 'red', 'green', 'blue', 'rotate_screen', 'outline', 'font'), 
+                        insertDB(cursor, 'OSG_LABEL', ('osg_label_name', 'osg_location_id', 'text', 'red', 'green', 'blue', 'rotate_screen', 'outline', 'font'), 
                                  (uniqueName, osgLocationId, ao.get('labelText'), 
                                   ao.get('labelColorRed'), ao.get('labelColorGreen'), ao.get('labelColorBlue'), 
                                   ao.get('labelRotateScreen'), ao.get('outline'), ao.get('Font')))
@@ -272,9 +275,9 @@ def main(opts):
         print msg
         logging.info(msg)
         osgLocationId = insertOSGLocation(cursor, camera, bgSRID, bgOffset)
-        insertDB('OSG_CAMERA', ('osg_camera_name', 'osg_location_id'), (name, osgLocationId))
+        insertDB(cursor, 'OSG_CAMERA', ('osg_camera_name', 'osg_location_id'), (name, osgLocationId))
         if itemId != None:
-            insertDB('OSG_ITEM_CAMERA', ('item_id', 'osg_camera_name'), (itemId, name))
+            insertDB(cursor, 'OSG_ITEM_CAMERA', ('item_id', 'osg_camera_name'), (itemId, name))
     # close DB connection
     utils.closeConnectionDB(connection, cursor)
     
