@@ -362,7 +362,7 @@ def codeOSGActiveObjectUniqueName(cursor, aoType, rawDataItemId = None, itemId =
     else: #LAB
         if labelName == None:
             raise Exception('Label name ID can not be None if Active Object Type is ' + AO_TYPE_LAB)
-        uniqueName = 'lab_' + str(labelName)
+        uniqueName = labelName
     return uniqueName
 
 def decodeOSGActiveObjectUniqueName(cursor, uniqueName):
@@ -372,24 +372,25 @@ def decodeOSGActiveObjectUniqueName(cursor, uniqueName):
         objectId = None
         labelName = None    
         fs = uniqueName.split('_')
-        aux = fs[1]
         
-        if aux == 'mesh':
+        if len(fs) > 1 and fs[1] == 'mesh':
             aoType = AO_TYPE_MESH
-        elif aux == 'pc':
+        elif len(fs) > 1 and fs[1] == 'pc':
             aoType = AO_TYPE_PC
-        elif aux == 'pic':
+        elif len(fs) > 1 and fs[1] == 'pic':
             aoType = AO_TYPE_PIC    
-        elif aux == 'obj':
+        elif len(fs) > 1 and fs[1] == 'obj':
             aoType = AO_TYPE_OBJ
-        else:
+        elif uniqueName.count('label') >= 1: 
             aoType = AO_TYPE_LAB
-                
+        else:
+            raise Exception('Incorrect unique name %s. For new objects (boundings) use [itemId]_obj_[object_number] and for labels the unique name must contain "label"' % uniqueName)
+
         if aoType == AO_TYPE_OBJ:
             objectId = int(fs[2])
             itemId = int(fs[0])
         elif aoType == AO_TYPE_LAB:
-            labelName = uniqueName[len('lab_'):]
+            labelName = uniqueName
         else:
             itemId = int(fs[0])            
             isCurr = int(fs[2])
@@ -413,5 +414,7 @@ def decodeOSGActiveObjectUniqueName(cursor, uniqueName):
                 raise Exception('None or Multiple Raw Data Item found for ' + uniqueName)
             rawDataItemId = rows[0][0]
         return  (aoType, itemId, rawDataItemId, objectId, labelName)
-    except Exception:
+    except Exception as e:
+        print e
+        logging.error(e)
         return (None, None, None, None, None)
