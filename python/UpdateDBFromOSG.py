@@ -9,20 +9,43 @@
 # Notes:            Based on updateconfigxml.py from ViaAppia project
 ##############################################################################
 
-import os, time, argparse, psycopg2, utils, viewer_conf_api
+import os, time, argparse, psycopg2, utils, logging
 from lxml import etree as ET
 from numpy import array as nparray
 
-logger = None
-cursor = None
-offsetSRID = None
+def insertDB(tableName, names, values, returnColumn = None):
+    """ Generic method to insert a row in a table"""
+    auxs = []
+    for i in range(len(names)):
+        auxs.append('%s')
+    insertStatement = 'INSERT INTO ' + tableName + ' (' + ','.join(names) +') VALUES (' + ','.join(auxs) + ')'
+    insertValues = values[:]
+    if returnColumn != None:
+        insertStatement += ' RETURNING ' + returnColumn
+    utils.dbExecute(cursor, insertStatement, insertValues)
+    return cursor.fetchone()[0]
 
-def getOSGLocationId(cursor, ao, aoType, labelName = None, itemId = None, ObjectId = None, rawDataItemId = None):
-    ''' Function to check if the object exists in the DB '''
+def getBackgroundOffset(data, cursor):
+    ''' Get the offset and srid for the background used in the conf.xml file  '''
+    staticobj = [os.path.dirname(x.get('url')) for x in
+                 data.xpath('//staticObject')]
+    matching = [s for s in staticobj if 'PC/BACK/' in s]
+    if len(matching) != 1:
+        raise Exception('More than 1 background detected in xml file')
+    else:
+        rows, numitems = utils.fetchDataFromDB(cursor, """
+SELECT offset_x, offset_y, offset_z, srid 
+FROM OSG_DATA_ITEM_PC_BACKGROUND INNER JOIN RAW_DATA_ITEM USING (raw_data_item_id)
+WHERE OSG_DATA_ITEM_PC_BACKGROUND.abs_path=%s""", 
+[os.path.join(utils.DEFAULT_DATA_DIR,utils.DEFAULT_OSG_DATA_DIR,matching[0])])
+    return rows[0]
+
+def getOSGLocationId(cursor, aoType, labelName = None, itemId = None, objectId = None, rawDataItemId = None):
+    ''' Function to get OSG location id of an Active Object related DB entry '''
     if aoType == utils.AO_TYPE_OBJ:
         if (itemId == None) or (objectId == None):
             raise Exception ('Item Object operations require not null itemId and objectId')
-        rows, num_rows = utils.fetchDataFromDB(cursor, 'SELECT osg_location_id FROM OSG_ITEM_OBJECT WHERE item_id = %s AND object_number = %s', [itemId, ObjectId])
+        rows, num_rows = utils.fetchDataFromDB(cursor, 'SELECT osg_location_id FROM OSG_ITEM_OBJECT WHERE item_id = %s AND object_number = %s', [itemId, objectId])
     elif aoType == utils.AO_TYPE_LAB:
         if labelName == None:
             raise Exception ('Label operations require not null labelName')
@@ -35,9 +58,47 @@ def getOSGLocationId(cursor, ao, aoType, labelName = None, itemId = None, Object
         return None
     else:
         return rows[0][0]
+    
+def parseLocation(cursor, xml_element, bgSRID, bgOffset):
+    """ Get the names and values for a DB insert/update statement from a xml_element with location info (camera or setting)"""
+    names = []
+    values = []
+    # Add srid
+    names.append('srid')
+    values.append(bgSRID)
+    # Add location parameters
+    for c in ('x', 'y', 'z', 'xs', 'ys', 'zs', 'h', 'p', 'r'):
+        if c in xml_element.keys():
+            names.append(c)
+            values.append(float(xml_element.get(c)))
+    # Add cast_shadow is it is present
+    if 'castShadow' in xml_element.keys():
+        names.append('cast_shadow')
+        values.append(False if (xml_element.get('castShadow') == '0') else 1)
+    # Add the offset of the background in order to store absolute coordinates in the DB   
+    try:
+        values[names.index('x')] += bgOffset[0]
+        values[names.index('y')] += bgOffset[1]
+        values[names.index('z')] += bgOffset[2]
+    except ValueError:
+        logging.error('No location x,y,z found')
+    return (names, values)
 
-def deleteOSG(cursor, ao, aoType, labelName = None, itemId = None, objectId = None, rawDataItemId = None):
-    ''' Function to delete a site object '''
+def updateOSGLocation(cursor, osgLocationId, xml_element, bgSRID, bgOffset):
+    """ Update an OSG location by its osgLocationId"""
+    (names, values) = parseLocation(cursor, xml_element, bgSRID, bgOffset)
+    auxs = []
+    for i in range(len(values)):
+        auxs.append('%s')
+    utils.dbExecute(cursor, 'UPDATE OSG_LOCATION SET (' + ','.join(names) + ') = (' + ','.join(auxs) + ') WHERE osg_location_id = %s', values + [osgLocationId,]) 
+
+def insertOSGLocation(cursor, xml_element, bgSRID, bgOffset):
+    """Inserts a OSG location and returns a osgLocationId"""
+    (names, values) = parseLocation(cursor, xml_element, bgSRID, bgOffset)
+    return insertDB('OSG_LOCATION', names, values, returnColumn = 'osg_location_id')
+    
+def deleteOSG(cursor, aoType, labelName = None, itemId = None, objectId = None, rawDataItemId = None):
+    ''' Function to delete a and OSG item objects or an OSG label (and their related OSG location entries) '''
     if aoType == utils.AO_TYPE_OBJ:
         if (itemId == None) or (objectId == None):
             raise Exception ('Item Object operations require not null itemId and objectId')
@@ -59,155 +120,94 @@ def deleteOSG(cursor, ao, aoType, labelName = None, itemId = None, objectId = No
     else:
         raise Exception('Not possible to delete object ' + labelName)
 
-
-def updateOSGLocation(cursor, ao, aoType, labelName = None, itemId = None, objectId = None, rawDataItemId = None):
-    s = ao.getchildren()[0]
-    names = []
-    auxs = []
-    values = []
-    # add srid
-    names.append('srid')
-    auxs.append('%s')
-    values.append(offsetSRID[0][-1])
-    # add location
-    for c in ('x', 'y', 'z', 'xs', 'ys', 'zs', 'h', 'p', 'r'):
-        if c in s.keys():
-            names.append(c)
-            auxs.append('%s')
-            values.append(s.get(c))
-    # cast_shadow
-    if 'castShadow' in s.keys():
-        names.append('cast_shadow')
-        auxs.append('%s')
-        values.append(False if (s.get('castShadow') == '0') else 1)
-    try:
-        values[values.index('x')] += offsetSRID[0]
-        values[values.index('y')] += offsetSRID[1]
-        values[values.index('z')] += offsetSRID[2]
-    except ValueError:
-        logger.error('No location x,y,z found')
-    
-    # update the position of the object in OSG_LOCATION table
-    OSG_LOCATION_list = ['srid', 'x', 'y', 'z', 'xs', 'ys', 'zs', 'h', 'p',
-                         'r', 'cast_shadow']
-    update_DB_table(names, values, auxs, OSG_LOCATION_list, 'OSG_LOCATION',
-                      cursor)
-    return 1
-
-
+def deleteCameras(cursor):
+    utils.dbExecute(cursor, 'DELETE FROM OSG_CAMERA CASCADE')
 
 def main(opts):
-    # Define logger and start logging
-    global logger
+    # Define logging and start logging
     logname = os.path.basename(opts.config).split('.')[0] + '.log'
-    logger = utils.start_logging(filename=logname, level=opts.log)
+    utils.start_logging(filename=logname, level=opts.log)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
     msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
     print msg
-    logger.info(msg)
+    logging.info(msg)
 
     # Parse xml configuration file
     data = ET.parse(opts.config).getroot()
 
     # Database connection
-    global cursor
-    connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser,
-                                           opts.dbpass, opts.dbhost,
-                                           opts.dbport)
+    connection, cursor = utils.connectToDB(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport)
 
     # get offset and srid of the background defined in the conf file
-    global offsetSRID
-    offsetSRID = get_SRID(data, cursor)
+    (bgOffsetX, bgOffsetY, bgOffsetZ, bgSRID) = getBackgroundOffset(data, cursor)
+    bgOffset = (bgOffsetX, bgOffsetY, bgOffsetZ)
     # Process updates
     updateAOS = data.xpath('//*[@status="updated"]')
     # loop over all updates found in the xml config file
     for ao in updateAOS:
-        #(aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) = \
+        #(aoType, proto, uniqueName, siteId, activeobjectId, objectNumber) = \
         #getDetails(ao)
         uniqueName = ao.get('uniqueName')
         (aoType, itemId, rawDataItemId, objectId, labelName) = utils.decodeOSGActiveObjectUniqueName(cursor, uniqueName)
         if aoType == None:
-            logger.warning('Ignoring operation on %s. Could not decode uniqueName' % uniqueName)
+            msg = 'Ignoring operation on %s. Could not decode uniqueName' % uniqueName
+            print msg
+            logging.warning(msg)
         else:
             # check if the object is in the DB
-            inDB = getOSGLocationId(cursor, ao, aoType, labelName, itemId, objectId)
-            if inDB:
+            osgLocationId = getOSGLocationId(cursor, aoType, labelName, itemId, objectId, rawDataItemId)
+            if osgLocationId != None:
                 # update the DB with the information in the xml config file
-                updateSetting(cursor, ao, aoType, labelName, itemId, objectId)
+                msg = 'Updating OSG location %d from %s' % (osgLocationId, uniqueName)
+                print msg
+                logging.info(msg)
+                updateOSGLocation(cursor, osgLocationId, ao.getchildren()[0], bgSRID, bgOffset)
             else:
-                if aoType==utils.AO_TYPE_OBJ:
-                    # It is a bounding that has been moved and it is not currentlly
-                    # in the DB. Let's insert it!
-                    # add label to osg_location
-                    # add srid
-                    names, values, auxs = [],[],[]
-                    names.append('srid')
-                    values.append(offsetSRID[0][-1])
-                    # add location
-                    for c in ('x', 'y', 'z', 'h', 'p', 'r'):
-                        if c in ao.keys():
-                            names.append(c)
-                            values.append(ao.get(c))
-                    auxs = []
-                    try:
-                        values[values.index('x')] += offsetSRID[0]
-                        values[values.index('y')] += offsetSRID[1]
-                        values[values.index('z')] += offsetSRID[2]
-                    except ValueError:
-                        logger.error('No location x,y,z found')
-                    
-                    for i in range(len(names)):
-                        auxs.append('%s')
-                    # fill OSG_LOCATION
-                    OSG_LOCATION_list = ['srid', 'x', 'y', 'z', 'xs', 'ys', 'zs', 'h', 'p',
-                                    'r', 'cast_shadow']
-                    fill_DB_table(names, values, auxs, OSG_LOCATION_list, 'OSG_LOCATION',
-                                cursor)
-                    osgLocationId = cursor.fetchone()[0]
-                    
-                    # add object to the DB
-                    auxs = ['%s', '%s', '%s']
-                    names = ['item_id', 'object_number', 'osg_location_id']
-                    ITEM_OBJECT_list = ['item_id', 'object_number']
-                    OSG_ITEM_OBJECT_list = ['item_id', 'object_number', 'osg_location_id']
-                    values = [itemId, ObjectId, osgLocationId]
-                    fill_DB_table(names, values, auxs, ITEM_OBJECT_list, 'ITEM_OBJECT', cursor)                        
-                    fill_DB_table(names, values, auxs, OSG_ITEM_OBJECT_list, 'OSG_ITEM_OBJECT', cursor)
+                if aoType == utils.AO_TYPE_OBJ:
+                    # It is a bounding that has been moved and it is not currently in the DB. Let's insert it!
+                    msg = 'Adding missing ITEM_OBJECT (%d,%d)' % (itemId, objectId)
+                    print msg
+                    logging.info(msg)
+                    insertDB('ITEM_OBJECT', ('item_id', 'object_number'), (itemId, objectId))
+                    osgLocationId = insertOSGLocation(cursor, ao.getchildren()[0], bgSRID, bgOffset)
+                    insertDB('OSG_ITEM_OBJECT', ('item_id', 'object_number', 'osg_location_id'), (itemId, objectId, osgLocationId))
                 else:
                     # log error if object is not found in DB
-                    logger.error('Update not possible. OSG_ITEM_OBJECT ' +
-                                str(uniqueName) + ' not found in DB')
+                    msg = 'Update not possible. OSG_ITEM_OBJECT from %s not found in DB' % uniqueName
+                    print msg
+                    logging.error(msg)
 
     # Process deletes (only possible for site objects)
     deleteAOS = data.xpath('//*[@status="deleted"]')
     # loop over all deletes found in the xml config file
     for ao in deleteAOS:
-        #(aoType, proto, uniqueName, siteId, activeObjectId, objectNumber) = \
-        #getDetails(ao)
         uniqueName = ao.get('uniqueName')
-        (aoType, itemId, rawDataItemId, objectId, labelName) = \
-            utils.decodeOSGActiveObjectUniqueName(cursor, uniqueName)
+        (aoType, itemId, rawDataItemId, objectId, labelName) =  utils.decodeOSGActiveObjectUniqueName(cursor, uniqueName)
         if aoType==None:
-            logger.warning('add warning')
+            msg = 'Ignoring operation on %s. Could not decode uniqueName' % uniqueName
+            print msg
+            logging.warning(msg)
         else:
             if aoType in (utils.AO_TYPE_OBJ, utils.AO_TYPE_LAB):
                 # check if the object is in the DB
-                inDB = getOSGLocationId(cursor, ao, aoType, labelName, itemId,
-                                        objectId)
-                if inDB:
-                    # update the DB with the information in the xml config file
-                    deleteSiteObject(cursor, ao, aoType, labelName, itemId,
-                                    objectId)
+                osgLocationId = getOSGLocationId(cursor, aoType, labelName, itemId, objectId)
+                if osgLocationId != None:
+                    # Delete the OSG-related entries from the DB
+                    msg = 'Deleting OSG related entries for %s' % uniqueName
+                    print msg
+                    logging.info(msg)
+                    deleteOSG(cursor, aoType, labelName, itemId, objectId)
                 else:
                     # log error if object is not found in DB
-                    logger.warn('Not possible to delete.. OSG_ITEM_OBJECT ' +
-                                str(uniqueName) +
-                                ' not found in DB. Maybe already deleted?')
+                    msg = 'Not possible to delete. OSG_ITEM_OBJECT from %s not found in DB. Maybe already deleted?' % uniqueName
+                    print msg
+                    logging.warning(msg)
             else:
                 # log error if trying to delete a non-site object
-                logger.error('Ignoring delete in ' + uniqueName +
-                            ': Meshes, pictures and PCs can not be deleted')
+                msg = 'Ignoring delete in %s: Meshes, pictures and PCs can not be deleted' % uniqueName
+                print msg
+                logging.error(msg)
 
     # Process new objects (only possible for site objects)
     newAOS = data.xpath('//*[@status="new"]')
@@ -216,209 +216,72 @@ def main(opts):
         uniqueName = ao.get('uniqueName')
         (aoType, itemId, rawDataItemId, objectId, labelName) = utils.decodeOSGActiveObjectUniqueName(cursor, uniqueName)
         if aoType==None:
-            logger.warning('warning')
+            msg = 'Ignoring operation on %s. Could not decode uniqueName' % uniqueName
+            print msg
+            logging.warning(msg)
         else:
             if aoType in (utils.AO_TYPE_OBJ, utils.AO_TYPE_LAB):
                 # check if the object is in the DBbesafe i
-                inDB = getOSGLocationId(cursor, ao, aoType, labelName, itemId, ObjectId)
-                if inDB:
+                osgLocationId = getOSGLocationId(cursor, aoType, labelName, itemId, objectId)
+                if osgLocationId != None:
                     # log error if the new object is already in the DB
-                    logger.warning('OSG_ITEM_OBJECT ' + str(uniqueName) +
-                                ' already in DB. Ignoring add ' + uniqueName)
+                    msg = 'OSG_ITEM_OBJECT from %s already in DB. Ignoring add' % uniqueName
+                    print msg
+                    logging.warning(msg)
                 else:
-                    # add label to osg_location
-                    # add srid
-                    names, values, auxs = [],[],[]
-                    names.append('srid')
-                    values.append(offsetSRID[0][-1])
-                    # add location
-                    for c in ('x', 'y', 'z', 'h', 'p', 'r'):
-                        if c in ao.keys():
-                            names.append(c)
-                            values.append(ao.get(c))
-                    auxs = []
-                    try:
-                        values[values.index('x')] += offsetSRID[0]
-                        values[values.index('y')] += offsetSRID[1]
-                        values[values.index('z')] += offsetSRID[2]
-                    except ValueError:
-                        logger.error('No location x,y,z found')
-                    
-                    for i in range(len(names)):
-                        auxs.append('%s')
-                    # fill OSG_LOCATION
-                    OSG_LOCATION_list = ['srid', 'x', 'y', 'z', 'xs', 'ys', 'zs', 'h', 'p',
-                                    'r', 'cast_shadow']
-                    fill_DB_table(names, values, auxs, OSG_LOCATION_list, 'OSG_LOCATION',
-                                cursor)
-                    osgLocationId = cursor.fetchone()[0]
-                    
+                    osgLocationId = insertOSGLocation(cursor, ao.getchildren()[0], bgSRID, bgOffset)
                     if aoType == utils.AO_TYPE_OBJ:
                         # add object to the DB
-                        #utils.addSiteObject(cursor, itemId, ObjectId, proto)
-                        auxs = ['%s', '%s', '%s']
-                        names = ['item_id', 'object_number', 'osg_location_id']
-                        ITEM_OBJECT_list = ['item_id', 'object_number']
-                        OSG_ITEM_OBJECT_list = ['item_id', 'object_number', 'osg_location_id']
-                        values = [itemId, ObjectId, osgLocationId]
-                        fill_DB_table(names, values, auxs, ITEM_OBJECT_list, 'ITEM_OBJECT', cursor)                        
-                        fill_DB_table(names, values, auxs, OSG_ITEM_OBJECT_list, 'OSG_ITEM_OBJECT', cursor)
-
+                        msg = 'Adding ITEM_OBJECT (%d,%d)' % (itemId, objectId)
+                        print msg
+                        logging.info(msg)
+                        insertDB('ITEM_OBJECT', ('item_id', 'object_number'), (itemId, objectId))
+                        insertDB('OSG_ITEM_OBJECT', ('item_id', 'object_number', 'osg_location_id'), (itemId, objectId, osgLocationId))
                     else:                        
                         # add label to the DB
-                        utils.dbExecute(cursor, 'INSERT INTO OSG_LABEL ' +
-                                        '(osg_label_name, osg_location_id, text, red, green, ' +
-                                        'blue, rotate_screen, outline, font) ' +
-                                        'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)',
-                                        [uniqueName, osgLocationId, ao.get('labelText'),
-                                        ao.get('labelColorRed'),
-                                        ao.get('labelColorGreen'),
-                                        ao.get('labelColorBlue'),
-                                        ao.get('labelRotateScreen'),
-                                        ao.get('outline'), ao.get('Font'), ])
-                    ## update the information in the DB
-                    #updateSetting(cursor, ao, aoType, labelName, itemId, ObjectId)
+                        msg = 'Adding label %s' % uniqueName
+                        print msg
+                        logging.info(msg)
+                        insertDB('OSG_LABEL', ('osg_label_name', 'osg_location_id', 'text', 'red', 'green', 'blue', 'rotate_screen', 'outline', 'font'), 
+                                 (uniqueName, osgLocationId, ao.get('labelText'), 
+                                  ao.get('labelColorRed'), ao.get('labelColorGreen'), ao.get('labelColorBlue'), 
+                                  ao.get('labelRotateScreen'), ao.get('outline'), ao.get('Font')))
             else:
                 # log error if trying to add a non-site object
-                logger.error('Ignoring new in ' + uniqueName +
-                            ': Meshes, pictures and PCs can not be added')
+                msg = 'Ignoring new in %s: Meshes, pictures and PCs can not be added' % uniqueName
+                print msg
+                logging.error(msg)
 
-    # Process the cameras (the DEF CAMs are added for all objects
-    # and can not be deleted or updated)
-    cameras = data.xpath('//camera[not(starts-with(@name,"' +
-                         utils.DEFAULT_CAMERA_PREFIX + '"))]')
-    # get a list of cameras from the db
-    data,rows = utils.fetchDataFromDB(
-        cursor, 'SELECT osg_camera_name, osg_location_id FROM OSG_CAMERA')
-    # only execute if there are non default cameras in the DB
-    if len(data) > 0:
-    # remove all cameras that are in DB
-        # convert list of tuples into two lists
-        camerasInDB,camerasInDBId = map(list, zip(*data))
-        for i in range(0,len(camerasInDB)):
-            # delete from osg_item_camera
-            utils.dbExecute(cursor, 'DELETE FROM OSG_ITEM_CAMERA WHERE ' +
-                                'osg_camera_name=%s', [camerasInDB[i]])                                                                                         
-            # delete from osg_camera
-            utils.dbExecute(cursor, 'DELETE FROM OSG_CAMERA WHERE ' +
-                                'osg_camera_name=%s', [camerasInDB[i]])
-            # delete from osg_location
-            utils.dbExecute(cursor, 'DELETE FROM OSG_LOCATION WHERE ' +
-                                'osg_location_id=%s', [camerasInDBId[i]])
+    # Process the cameras (the DEF CAMs are added for all objects and can not be deleted or updated)
+    cameras = data.xpath('//camera[not(starts-with(@name,"' + utils.DEFAULT_CAMERA_PREFIX + '"))]')
+    # Delete all previous cameras and related entries (with CASCADE)
+    deleteCameras(cursor)
     # add all cameras
     for camera in cameras:
         name = camera.get('name')
-        names = ['osg_camera_name', ]
-        values = [name, ]
+        itemId = None
         if name.count(utils.USER_CAMERA):
             try:
-                siteId = int(name[name.index(utils.USER_CAMERA) +
-                                  len(utils.USER_CAMERA):].split('_')[0])
-                names.append('item_id')
-                values.append(siteId)
+                itemId = int(name[name.index(utils.USER_CAMERA) + len(utils.USER_CAMERA):].split('_')[0])
             except:
-                logger.warn('Incorrect e name:' + name)
-        # add srid
-        names.append('srid')
-        values.append(offsetSRID[0][-1])
-        # add location
-        for c in ('x', 'y', 'z', 'h', 'p', 'r'):
-            if c in camera.keys():
-                names.append(c)
-                values.append(camera.get(c))
-        auxs = []
-        try:
-            values[values.index('x')] += offsetSRID[0]
-            values[values.index('y')] += offsetSRID[1]
-            values[values.index('z')] += offsetSRID[2]
-        except ValueError:
-            logger.error('No location x,y,z found')
-        for i in range(len(names)):
-            auxs.append('%s')
-        # fill OSG_LOCATION
-        OSG_LOCATION_list = ['srid', 'x', 'y', 'z', 'xs', 'ys', 'zs', 'h', 'p',
-                         'r', 'cast_shadow']
-        fill_DB_table(names, values, auxs, OSG_LOCATION_list, 'OSG_LOCATION',
-                      cursor)
-        osgLocationId = cursor.fetchone()[0]
-        names.append('osg_location_id')
-        values.append(osgLocationId)
-        auxs.append('%s')
-        # fill OSG_CAMERA
-        OSG_CAMERA_list = ['osg_camera_name', 'osg_location_id']
-        fill_DB_table(names, values, auxs, OSG_CAMERA_list, 'OSG_CAMERA',
-                      cursor)
-        # fill OSG_ITEM_CAMERA
-        OSG_ITEM_CAMERA_list = ['item_id', 'osg_camera_name'] 
-        fill_DB_table(names, values, auxs, OSG_ITEM_CAMERA_list,
-                      'OSG_ITEM_CAMERA', cursor)
+                msg = 'Incorrect name %s for a ITEM camera' % name
+                print msg
+                logging.warn(msg)
+                itemId = None
+        msg = 'Adding camera %s' % name
+        print msg
+        logging.info(msg)
+        osgLocationId = insertOSGLocation(cursor, camera, bgSRID, bgOffset)
+        insertDB('OSG_CAMERA', ('osg_camera_name', 'osg_location_id'), (name, osgLocationId))
+        if itemId != None:
+            insertDB('OSG_ITEM_CAMERA', ('item_id', 'osg_camera_name'), (itemId, name))
     # close DB connection
     utils.closeConnectionDB(connection, cursor)
     
     elapsed_time = time.time() - t0
     msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
     print(msg)
-    logger.info(msg)
-
-def get_SRID(data, cursor):
-    '''
-    get the offset and srid for the background used in the conf.xml file
-    '''
-    staticobj = [os.path.dirname(x.get('url')) for x in
-                 data.xpath('//staticObject')]
-    matching = [s for s in staticobj if 'PC/BACK/' in s]
-    if len(matching) != 1:
-        raise Exception('More than 1 background detected in xml file')
-    else:
-        offsetSRID, numitems = utils.fetchDataFromDB(
-            cursor, 'SELECT ' +
-            'offset_x, offset_y, offset_z, srid FROM OSG_DATA_ITEM_PC_BACKGROUND INNER JOIN RAW_DATA_ITEM ON OSG_DATA_ITEM_PC_BACKGROUND.raw_data_item_id=RAW_DATA_ITEM.raw_data_item_id WHERE OSG_DATA_ITEM_PC_BACKGROUND.abs_path=%s', [os.path.join(utils.DEFAULT_DATA_DIR,utils.DEFAULT_OSG_DATA_DIR,matching[0])])
-    return offsetSRID
-
-
-def fill_DB_table(itemList, valueList, auxList, dbTable, dbTableName, cursor):
-    '''
-    Fill a DB table using dbTable and dbTableName and values provided as
-    argument to the function
-    '''
-    # intersection of itemList with OSG_LOCATION_list
-    addItemNames = list(set(itemList) & set(dbTable))
-    # index of addItemNames in itemList
-    addIndex = [itemList.index(item) for item in addItemNames]
-    # extract required values using the index
-    addItemValues = nparray(valueList)[addIndex].tolist()
-    addItemAuxs = nparray(auxList)[addIndex].tolist()
-    # Add item to OSG_LOCATTION DB table
-    if dbTableName == 'OSG_LOCATION':
-        utils.dbExecute(cursor, 'INSERT INTO ' + dbTableName + ' (' + 
-                        ','.join(addItemNames) +
-                        ') VALUES (' + ','.join(addItemAuxs) +
-                        ') returning osg_location_id', addItemValues)
-    else:
-        utils.dbExecute(cursor, 'INSERT INTO ' + dbTableName + ' (' +
-                        ','.join(addItemNames) +
-                        ') VALUES (' + ','.join(addItemAuxs) +
-                        ')', addItemValues) 
-    return 1
-
-def update_DB_table(itemList, valueList, auxList, dbTable, dbTableName, cursor):
-    '''
-    Fill a DB table using dbTable and dbTableName and values provided as
-    argument to the function
-    '''
-    # intersection of itemList with OSG_LOCATION_list
-    addItemNames = list(set(itemList) & set(dbTable))
-    # index of addItemNames in itemList
-    addIndex = [itemList.index(item) for item in addItemNames]
-    # extract required values using the index
-    addItemValues = nparray(valueList)[addIndex].tolist()
-    addItemAuxs = nparray(auxList)[addIndex].tolist()
-    # Add item to OSG_LOCATTION DB table
-    utils.dbExecute(cursor, 'UPDATE ' + dbTableName + ' SET (' +
-                        ','.join(addItemNames) +
-                        ') = (' + ','.join(addItemAuxs) +
-                        ')', addItemValues) 
-    return 1
+    logging.info(msg)
 
 if __name__ == "__main__":
     # define argument menu
