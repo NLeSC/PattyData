@@ -3,7 +3,8 @@
 
 \subsection{Description of the data structure}
 \label{sec:descriptiondata}
-The raw data is \textbf{only} stored in the Via Appia Linux server and there is Python script that needs to be used to generate the converted OSG data, the \textit{createosgdata.py}. The raw data directory is \textit{/home/vadata/DATA/RAW}. OSG data is stored in \textit{/home/vadata/DATA/OSG} and POTREE data is stored in \textit{/home/vadata/DATA/POTREE} (figure \ref{fig:directory_structure_overview}). 
+The raw data is \textbf{only} stored in the Via Appia Linux server. There is python script that needs to be used to generate the converted OSG data, \textit{createosgdata.py}. Another python script exists that needs to be used to generate the converted POTree data, \textit{CreatePOTreeConfig.py}.
+The raw data directory is \textit{/home/vadata/DATA/RAW}. OSG data is stored in \textit{/home/vadata/DATA/OSG} and POTREE data is stored in \textit{/home/vadata/DATA/POTREE} (figure \ref{fig:directory_structure_overview}). 
 
 The next subsections explores the RAW data tree in more detail and discusses how to modify and list the data in the RAW data tree.
 
@@ -14,7 +15,7 @@ The next subsections explores the RAW data tree in more detail and discusses how
  \label{fig:directory_structure_overview}
 \end{figure}
 
-\subsubsection{RAW data}
+\subsubsection{Raw data}
 \paragraph{Point clouds}
 Higher resolution point clouds are stored in the subdirectories \textit{PC/BACK} and \textit{PC/SITE}, for respectively backgrounds and sites. For backgrounds, the subdirectory contains different folders with point clouds for each background. For sites, the subdirectory contains a separate folder for each site (e.g.\ \textit{PC/SITE/S162} for site 162), which in turn contain different folders for each point cloud of the site. These folders contain LAS files of different point clouds of the site. 
 
@@ -48,13 +49,13 @@ In order to view the data in your Windows machine you need to download a version
 The raw data can be converted to the POTree format. For that purpose a python script \textit{GeneratePOTree.py} has been created. This script is discussed in section \ref{sec:generateosg}.
 
 \subsection{Operation on the data structure}
-Different operations can be performed on the data structure. The different operations that can be performed are (1) adding RAW data items (section \ref{sec:addraw}); (2) removing RAW data items (section \ref{sec:removeraw}); and (3) listing RAW data items (section \ref{sec:listraw}).
+Different operations can be performed on the data structure. The different operations that can be performed are (1) adding raw data items (section \ref{sec:addraw}); (2) removing raw data items (section \ref{sec:removeraw}); and (3) listing raw data items (section \ref{sec:listraw}).
 
-\subsubsection{Adding RAW data items}
+\subsubsection{Adding raw data items}
 \label{sec:addraw}
 This section describes the script that should be used to add raw data items to the directory structure: \textit{AddRawDataItem.py}. To run the script, the user needs, depending on the exact datatype, supply additional arguments to the script. An overview of the possible arguments are found in the verbatim below. The script automatically creates a destination folder with the required naming, as specified in section \ref{sec:descriptiondata}, using the supplied arguments.
 
-For MESH and PICT, the \textit{-f, --file} argument can be either a file, or a folder containing files with the correct extension. For a PC the argument must always be a folder.
+For MESH and PICT, the (\textit{-f, -\hspace{0cm}-file}) argument can be either a file, or a folder containing files with the correct extension. For a PC the argument must always be a folder.
 
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
  usage: AddRawDataItem.py [-h] [-i DATA] -k {BACK,SITE} -t {PC,MESH,PICT} -f FILE                                                                                                     
@@ -87,9 +88,9 @@ required arguments for SITE:
   --site SITE           Site number
 \end{Verbatim}
 
-\subsubsection{Removing RAW data items}
+\subsubsection{Removing raw data items}
 \label{sec:removeraw}
-This section describes the script that should be used to remove RAW data items from the file structure: \textit{RemoveRawDataItem.py}.
+This section describes the script that should be used to remove raw data items from the file structure: \textit{RemoveRawDataItem.py}.
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
 usage: RemoveRawDataItem.py [-h] -i ITEMID [-d DBNAME] [-u DBUSER] [-p DBPASS]
                             [-t DBHOST] [-r DBPORT]
@@ -101,7 +102,7 @@ file structure.
 optional arguments:
   -h, --help            show this help message and exit
   -d DBNAME, --dbname DBNAME
-                        PostgreSQL DB name vadb]
+                        PostgreSQL DB name viaappiadb]
   -u DBUSER, --dbuser DBUSER
                         DB user [default ronald]
   -p DBPASS, --dbpass DBPASS
@@ -122,7 +123,7 @@ required arguments:
 
 \subsubsection{Listing raw data items}
 \label{sec:listraw}
-This section describes the script that lists the RAW data items currently in the file structure: \textit{ListRawDataItem.py}.
+This section describes the script that lists the raw data items currently in the file structure: \textit{ListRawDataItem.py}.
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
 usage: ListRawDataItem.py [-h] [-i ITEMID] [-d DBNAME] [-u DBUSER] [-p DBPASS]
                           [-t DBHOST] [-r DBPORT]
@@ -136,7 +137,7 @@ optional arguments:
                         List the Raw Data Item Ids related to a list of items
                         (comma-separated) [default list all raw data items]
   -d DBNAME, --dbname DBNAME
-                        PostgreSQL DB name vadb]
+                        PostgreSQL DB name viaappiadb]
   -u DBUSER, --dbuser DBUSER
                         DB user [default $USERNAME]
   -p DBPASS, --dbpass DBPASS
@@ -155,7 +156,7 @@ optional arguments:
 This script should be run with the \textit{vadata} user and should be run when some data has changed in the raw data directory. The POTree data is copied automatically in the POTree data tree, with the naming as specified in figure
  \ref{fig:directory_structure_overview_osg}.
  
-\begin{figure}[!ht]
+\begin{figure}[]
  \centering
  \includegraphics[width=0.7\textwidth]{fig/directory_structure_osg}
  \caption{Overview of the data structure: OSG data items}
@@ -179,7 +180,7 @@ optional arguments:
                         all the raw data items without any related OSG data
                         item)
   -d DBNAME, --dbname DBNAME
-                        Postgres DB name [default vadb]
+                        Postgres DB name [default viaappiadb]
   -u DBUSER, --dbuser DBUSER
                         DB user [default $USERNAME]
   -p DBPASS, --dbpass DBPASS
@@ -198,7 +199,7 @@ optional arguments:
 \label{sec:generatePOTree}
  This script should be run with the \textit{vadata} user and should be run when some data has changed in the raw data directory. The POTree data is copied automatically in the POTree data tree, with the naming as specified in figure \ref{fig:directory_structure_overview_potree}.
 
-\begin{figure}[!ht]
+\begin{figure}[]
  \centering
  \includegraphics[width=1\textwidth]{fig/directory_structure_potree}
  \caption{Overview of the data structure: POTree data items}
@@ -222,9 +223,9 @@ optional arguments:
                         raw data items are listed, with ! the list all the raw
                         data items without any related POTree data item)
   -d DBNAME, --dbname DBNAME
-                        Postgres DB name [default vadb]
+                        Postgres DB name [default viaappiadb]
   -u DBUSER, --dbuser DBUSER
-                        DB user [default ronald]
+                        DB user [default $USERNAME]
   -p DBPASS, --dbpass DBPASS
                         DB pass
   -t DBHOST, --dbhost DBHOST
