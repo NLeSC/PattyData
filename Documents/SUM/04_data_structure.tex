@@ -40,27 +40,12 @@ Similarly to the LAS files the meshes can also be aligned. In this case the fold
 Pictures are stored in the subdirectory \textit{PICT}. Pictures can be either of a background or of a site. For both types a further subdivision is made between (a) pictures of the current state of the sites, and (b) historical pictures and paintings. These are stored in respectively \textit{PICT/BACK/CURR} and \textit{PICT/BACK/HIST} for backgrounds, or \textit{PICT/SITE/CURR} and \textit{PICT/SITE/HIST} for sites. For sites, each of these directoryes contains a separate folder for each site. For example the folder \textit{PICT/SITE/CURR/S162} contains pictures of the current state of the site 162.
 
 \subsubsection{OSG data}
-The raw data can be converted to the OSGB format. For that purpose a python script \textit{GenerateOSG.py} as been created (section \ref{sec:generatePOTree}). This script should be run with the \textit{vadata} user and should be run when some data has changed in the raw data directory. The POTree data is copied automatically in the POTree data tree, with the naming as specified in figure \ref{fig:directory_structure_overview_osg}.
+The raw data can be converted to the OSGB format. For that purpose a python script \textit{GenerateOSG.py} as been created. This script is discussed in section \ref{sec:generatePOTree}. 
 
 In order to view the data in your Windows machine you need to download a version of the converted OSG data in your local machine. We use a NLeSC tool called Xenon.
 
-\begin{figure}[!ht]
- \centering
- \includegraphics[width=0.75\textwidth]{fig/directory_structure_osg}
- \caption{Overview of the data structure: OSG data items}
- \label{fig:directory_structure_overview_osg}
-\end{figure}
-
 \subsubsection{POTree data}
-The raw data can be converted to the POTree format. For that purpose a python script \textit{GeneratePOTree.py} has been created (section \ref{sec:generateosg}). This script should be run with the \textit{vadata} user and should be run when some data has changed in the raw data directory. The POTree data is copied automatically in the POTree data tree, with the naming as specified in figure \ref{fig:directory_structure_overview_potree}.
-
-\begin{figure}[!ht]
- \centering
- \includegraphics[width=1\textwidth]{fig/directory_structure_potree}
- \caption{Overview of the data structure: POTree data items}
- \label{fig:directory_structure_overview_potree}
-\end{figure}
-
+The raw data can be converted to the POTree format. For that purpose a python script \textit{GeneratePOTree.py} has been created. This script is discussed in section \ref{sec:generateosg}.
 
 \subsection{Operation on the data structure}
 Different operations can be performed on the data structure. The different operations that can be performed are (1) adding RAW data items (section \ref{sec:addraw}); (2) removing RAW data items (section \ref{sec:removeraw}); and (3) listing RAW data items (section \ref{sec:listraw}).
@@ -68,6 +53,8 @@ Different operations can be performed on the data structure. The different opera
 \subsubsection{Adding RAW data items}
 \label{sec:addraw}
 This section describes the script that should be used to add raw data items to the directory structure: \textit{AddRawDataItem.py}. To run the script, the user needs, depending on the exact datatype, supply additional arguments to the script. An overview of the possible arguments are found in the verbatim below. The script automatically creates a destination folder with the required naming, as specified in section \ref{sec:descriptiondata}, using the supplied arguments.
+
+For MESH and PICT, the \textit{-f, --file} argument can be either a file, or a folder containing files with the correct extension. For a PC the argument must always be a folder.
 
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
  usage: AddRawDataItem.py [-h] [-i DATA] -k {BACK,SITE} -t {PC,MESH,PICT} -f FILE                                                                                                     
@@ -165,6 +152,16 @@ optional arguments:
 
 \subsubsection{Generating OSG data}
 \label{sec:generateosg}
+This script should be run with the \textit{vadata} user and should be run when some data has changed in the raw data directory. The POTree data is copied automatically in the POTree data tree, with the naming as specified in figure
+ \ref{fig:directory_structure_overview_osg}.
+ 
+\begin{figure}[!ht]
+ \centering
+ \includegraphics[width=0.7\textwidth]{fig/directory_structure_osg}
+ \caption{Overview of the data structure: OSG data items}
+ \label{fig:directory_structure_overview_osg}
+\end{figure}
+
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
  usage: GenerateOSG.py [-h] [-i ITEMID] [-d DBNAME] [-u DBUSER] [-p DBPASS]
                       [-t DBHOST] [-r DBPORT] [-o OSGDIR]
@@ -199,6 +196,15 @@ optional arguments:
 
 \subsubsection{Generating POTree data}
 \label{sec:generatePOTree}
+ This script should be run with the \textit{vadata} user and should be run when some data has changed in the raw data directory. The POTree data is copied automatically in the POTree data tree, with the naming as specified in figure \ref{fig:directory_structure_overview_potree}.
+
+\begin{figure}[!ht]
+ \centering
+ \includegraphics[width=1\textwidth]{fig/directory_structure_potree}
+ \caption{Overview of the data structure: POTree data items}
+ \label{fig:directory_structure_overview_potree}
+\end{figure}
+
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
 usage: GeneratePOTree.py [-h] [-i ITEMID] [-d DBNAME] [-u DBUSER] [-p DBPASS]
                          [-t DBHOST] [-r DBPORT] [-o POTREEDIR]
