@@ -108,10 +108,14 @@ FROM OSG_DATA_ITEM ORDER BY xml_abs_path"""
     # Add the cameras that are in the DB
     cameras = viewer_conf_api.cameras()
     query = """
-SELECT osg_camera_name, x, y, z, h, p, r 
+SELECT osg_camera_name, srid, x, y, z, h, p, r 
 FROM OSG_CAMERA JOIN OSG_LOCATION USING (osg_location_id)"""
     rows, num_rows = utils.fetchDataFromDB(cursor, query)
-    for (name, x, y, z, h, p, r) in rows:
+    for (name, srid, x, y, z, h, p, r) in rows:
+        if (srid is not None) and (srid == bgSRID):
+            x, y, z = getOSGPosition(x, y, z, srid)
+        else:
+            x, y, z = getOSGPosition(x, y, z)
         cameras.add_camera(viewer_conf_api.camera
                            (name=name, x=x, y=y, z=z, h=h, p=p, r=r))
     # Add Default cameras for the items that have no camera in the DB
@@ -127,7 +131,7 @@ FROM ITEM WHERE NOT background AND geom IS NOT null AND item_id NOT IN (
         # should item_id = -1 be added? 
         if all(position is not None for position in [x,y,z]) and itemId>0:
             if (srid is not None) and (srid == bgSRID):
-                x, y, z  = getOSGPosition(x, y, z, srid)
+                x, y, z = getOSGPosition(x, y, z, srid)
             else:
                 x, y, z = getOSGPosition(x, y, z)
             cameras.add_camera(viewer_conf_api.camera
@@ -258,15 +262,18 @@ WHERE item_id = %s and geom is not %s"""
     # Add the labels
     layer = viewer_conf_api.layer(name='labels')
     utils.dbExecute(cursor, 'SELECT osg_label_name, text, red, green, blue, ' +
-                    'rotate_screen, outline, font, x, y, z, xs, ys, zs, h, ' +
+                    'rotate_screen, outline, font, srid, x, y, z, xs, ys, zs, h, ' +
                     'p, r, cast_shadow FROM OSG_LABEL INNER JOIN ' +
                     'OSG_LOCATION ON OSG_LABEL.osg_location_id=' +
                     'OSG_LOCATION.osg_location_id')
     rows = cursor.fetchall()
-    for (name, text, red, green, blue, rotatescreen, outline, font, x, y, z,
-         xs, ys, zs, h, p, r, castShadow) in rows:
+    for (name, text, red, green, blue, rotatescreen, outline, font, srid, x, y, z, xs, ys, zs, h, p, r, castShadow) in rows:
         proto = "labelPrototype"
         uniqueName = utils.codeOSGActiveObjectUniqueName(cursor, utils.AO_TYPE_LAB, labelName = name)
+        if (srid is not None) and (srid == bgSRID):
+            x, y, z = getOSGPosition(x, y, z, srid)
+        else:
+            x, y, z = getOSGPosition(x, y, z)
         activeObject = viewer_conf_api.activeObject(
             prototype=proto, uniqueName=uniqueName, labelText=text,
             labelColorRed=red, labelColorGreen=green, labelColorBlue=blue,

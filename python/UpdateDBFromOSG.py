@@ -124,6 +124,7 @@ def deleteOSG(cursor, aoType, labelName = None, itemId = None, objectId = None, 
         raise Exception('Not possible to delete object ' + labelName)
 
 def deleteCameras(cursor):
+    utils.dbExecute(cursor, 'DELETE FROM OSG_ITEM_CAMERA CASCADE')
     utils.dbExecute(cursor, 'DELETE FROM OSG_CAMERA CASCADE')
 
 def main(opts):
@@ -246,7 +247,7 @@ def main(opts):
                         print msg
                         logging.info(msg)
                         insertDB(cursor, 'OSG_LABEL', ('osg_label_name', 'osg_location_id', 'text', 'red', 'green', 'blue', 'rotate_screen', 'outline', 'font'), 
-                                 (uniqueName, osgLocationId, ao.get('labelText'), 
+                                 (labelName, osgLocationId, ao.get('labelText'), 
                                   ao.get('labelColorRed'), ao.get('labelColorGreen'), ao.get('labelColorBlue'), 
                                   ao.get('labelRotateScreen'), ao.get('outline'), ao.get('Font')))
             else:
@@ -257,7 +258,7 @@ def main(opts):
 
     # Process the cameras (the DEF CAMs are added for all objects and can not be deleted or updated)
     cameras = data.xpath('//camera[not(starts-with(@name,"' + utils.DEFAULT_CAMERA_PREFIX + '"))]')
-    # Delete all previous cameras and related entries (with CASCADE)
+    # Delete all previous cameras and related entries
     deleteCameras(cursor)
     # add all cameras
     for camera in cameras:
