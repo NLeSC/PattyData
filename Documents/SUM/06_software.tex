@@ -1,4 +1,5 @@
 \section{Software}
+\label{sec:software}
 
 As described in section \ref{sec:sys_arch} the 3D GIS system has a two tier architecture, the server and the clients. 
 
@@ -8,7 +9,7 @@ The \textit{viaappiadb} database running in the Via Appia Linux server is a Post
 
 Specific point cloud libraries are also used for the management and processing of point cloud data, concretely LASzip, libLAS and LAStools. In LAStools and libLAS many of their applications share the same name and in these cases the usage of the LAStools ones is preferred. In order to guarantee this we need to set the \textit{PATH} environment variable accordingly, i.e. by setting the LAStools bin folder prior to the libLAS one.
 
-As described in section {sec:data_structure} the data stored in the server needs to be converted to the specific formats required by the two supported visualizations, i.e. the web viewer based on Potree and the Windows desktop viewer/editor based on Open Scene Graph. To perform these conversions we use the \textit{PotreeConverter} (https://github.com/potree/PotreeConverter) and the \textit{OSGConverter} (https://github.com/NLeSC/Via-Appia/tree/master/converter) which requires the Open Scene Graph (we currently use 3.2.1). Both converters use Boost (our installed version is 1.55).
+As described in section \ref{sec:data_structure} the data stored in the server needs to be converted to the specific formats required by the two supported visualizations, i.e. the web viewer based on Potree and the Windows desktop viewer/editor based on Open Scene Graph. To perform these conversions we use the \textit{PotreeConverter} (https://github.com/potree/PotreeConverter) and the \textit{OSGConverter} (https://github.com/NLeSC/Via-Appia/tree/master/converter) which requires the Open Scene Graph (we currently use 3.2.1). Both converters use Boost (our installed version is 1.55).
 
 An NGINX web server is also used to serve files (static content) to the web-based visualization. 
 
