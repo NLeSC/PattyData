@@ -15,17 +15,24 @@ from numpy import array as nparray
 
 def insertDB(cursor, tableName, names, values, returnColumn = None):
     """ Generic method to insert a row in a table"""
-    auxs = []
-    for i in range(len(names)):
-        auxs.append('%s')
-    insertStatement = 'INSERT INTO ' + tableName + ' (' + ','.join(names) +') VALUES (' + ','.join(auxs) + ')'
-    insertValues = values[:]
-    if returnColumn != None:
-        insertStatement += ' RETURNING ' + returnColumn
-    utils.dbExecute(cursor, insertStatement, insertValues)
-    if returnColumn != None:
-        return cursor.fetchone()[0]
-    else:
+    try:
+        auxs = []
+        for i in range(len(names)):
+            auxs.append('%s')
+        insertStatement = 'INSERT INTO ' + tableName + ' (' + ','.join(names) +') VALUES (' + ','.join(auxs) + ')'
+        insertValues = values[:]
+        if returnColumn != None:
+            insertStatement += ' RETURNING ' + returnColumn
+        utils.dbExecute(cursor, insertStatement, insertValues)
+        if returnColumn != None:
+            return cursor.fetchone()[0]
+        else:
+            return None
+    except Exception as e:
+        cursor.connection.rollback()
+        msg = 'Could not do insert in table ' + tableName + ' ' + str(names) + ' = ' + str(values)
+        print msg
+        logging.error(msg)
         return None
 
 def getBackgroundOffset(data, cursor):
@@ -170,10 +177,9 @@ def main(opts):
             else:
                 if aoType == utils.AO_TYPE_OBJ:
                     # It is a bounding that has been moved and it is not currently in the DB. Let's insert it!
-                    msg = 'Adding missing ITEM_OBJECT (%d,%d)' % (itemId, objectId)
+                    msg = 'Insert missing OSG_ITEM_OBJECT (%s,%s)' % (itemId, objectId)
                     print msg
                     logging.info(msg)
-                    insertDB(cursor, 'ITEM_OBJECT', ('item_id', 'object_number'), (itemId, objectId))
                     osgLocationId = insertOSGLocation(cursor, ao.getchildren()[0], bgSRID, bgOffset)
                     insertDB(cursor, 'OSG_ITEM_OBJECT', ('item_id', 'object_number', 'osg_location_id'), (itemId, objectId, osgLocationId))
                 else:
@@ -236,6 +242,11 @@ def main(opts):
                     osgLocationId = insertOSGLocation(cursor, ao.getchildren()[0], bgSRID, bgOffset)
                     if aoType == utils.AO_TYPE_OBJ:
                         # add object to the DB
+                        if objectId == utils.ITEM_OBJECT_NUMBER_ITEM:
+                            msg = 'Adding missing ITEM %s' % objectId
+                            print msg
+                            logging.info(msg)
+                            insertDB(cursor, 'ITEM', ('item_id', 'background'), (itemId, False))
                         msg = 'Adding ITEM_OBJECT (%d,%d)' % (itemId, objectId)
                         print msg
                         logging.info(msg)
