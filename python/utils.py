@@ -30,7 +30,7 @@ ATTRIBUTES_ORDER = ['administrator', 'site_context', 'site_interpretation', 'con
                     'depiction', 'material_type', 'material_subtype', 'material_technique']
 
 
-DEFAULT_DB = 'vadb'
+DEFAULT_DB = 'viaappiadb'
 USERNAME = os.popen('whoami').read().replace('\n','')
 # Folder tags for the file structure
 RAW_FT = 'RAW'
