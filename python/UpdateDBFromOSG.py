@@ -117,7 +117,6 @@ def deleteOSG(cursor, aoType, labelName = None, itemId = None, objectId = None, 
         utils.dbExecute(cursor, 'DELETE FROM OSG_ITEM_OBJECT WHERE item_id = %s AND object_number = %s', [itemId, objectId])
         # delete from OSG_LOCATION
         utils.dbExecute(cursor, 'DELETE FROM OSG_LOCATION WHERE osg_location_id = %s', [data[0][0],])
-
     elif aoType == utils.AO_TYPE_LAB:
         if labelName == None:
             raise Exception ('Label operations require not null labelName')
@@ -170,10 +169,22 @@ def main(opts):
             osgLocationId = getOSGLocationId(cursor, aoType, labelName, itemId, objectId, rawDataItemId)
             if osgLocationId != None:
                 # update the DB with the information in the xml config file
-                msg = 'Updating OSG location %d from %s' % (osgLocationId, uniqueName)
-                print msg
-                logging.info(msg)
-                updateOSGLocation(cursor, osgLocationId, ao.getchildren()[0], bgSRID, bgOffset)
+                if aoType == utils.AO_TYPE_LAB:
+                    # Some other params may have changed in the label
+                    msg = 'Updating label %s' % labelName
+                    print msg
+                    logging.info(msg)
+                    deleteOSG(cursor, aoType, labelName)
+                    osgLocationId = insertOSGLocation(cursor, ao.getchildren()[0], bgSRID, bgOffset)
+                    insertDB(cursor, 'OSG_LABEL', ('osg_label_name', 'osg_location_id', 'text', 'red', 'green', 'blue', 'rotate_screen', 'outline', 'font'),
+                                 (labelName, osgLocationId, ao.get('labelText'),
+                                  ao.get('labelColorRed'), ao.get('labelColorGreen'), ao.get('labelColorBlue'),
+                                  ao.get('labelRotateScreen'), ao.get('outline'), ao.get('Font')))
+                else:
+                     msg = 'Updating OSG location %d from %s' % (osgLocationId, uniqueName)
+                     print msg
+                     logging.info(msg)
+                     updateOSGLocation(cursor, osgLocationId, ao.getchildren()[0], bgSRID, bgOffset)
             else:
                 if aoType == utils.AO_TYPE_OBJ:
                     # It is a bounding that has been moved and it is not currently in the DB. Let's insert it!
