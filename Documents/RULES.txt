@@ -1,0 +1,23 @@
+DATA STRUCTURE
+==============
+Set the SRID in the aligned LAS
+
+
+OSG VIEWER
+==========
+CAMERAS:
+ - By default one camera is created per site and it is located in same point that site.
+ - User can create new cameras but their names must start with SITE_XXX if they are related to a certain site
+
+LABELS:
+ - The ObjectInfo/Name must contain word "label". Like in the CAMERAS name we suggest to use names like SITE_162_label for the ObjectInfo/Name. The "Label text" can be whatever you want
+
+NEW OBJECTS:
+ - The ObjectInfo/Name of a new object (after creating it look in Selection menu) must be: [siteId]_obj_[objectId]. Example 162_obj_10
+ - Please be sure that the objectId you choose is not being used...to see if it is used you can use the SQL query: SELECT 162,10; would show you the bounding box og the object if it is there (it will also appear in selection, if you click the box that says select near the query). If you do not see the boudnignit means you can use the objectId for the new object
+
+General remarks:
+- When you modify a text box in the GUI be sure to click out of the box in order to guarantee that the GUI saves the new value of the text box 
+ 
+The object -1 of a site is the iste itself
+

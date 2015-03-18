@@ -1,0 +1,14 @@
+In order to convert a XSD in a python API we use
+
+generateDS python module
+
+To install it:
+
+pip install generateDS
+
+(need root privileges)
+
+Once installed it as simple as: 
+
+cd python/viaappia
+generateDS.py -f --silence -o viewer_conf_api.py ../../viewer_conf.xsd 

@@ -1,0 +1,81 @@
+Instructions on how to add users in the OS and the DB
+*****************************************************
+
+Add OS user
+-----------
+0 - Become root
+sudo su
+1 - Decide new user name. We use [first name][first letter of surname]. Example Oscar Martinez would be oscarm
+2 - Issue the useradd command to create a locked user account:
+useradd <username>
+3 - Unlock the account by issuing the passwd command to assign a password (set a temporal password, later we have to tell new user to change password):
+passwd <username>
+
+ronald gha45746asdaD
+elena 823432jsfoetn8
+romulog 827bzmud62
+
+Create SSH key for new user
+--------------------------
+4 - Become new user
+su <username>
+5 - Create a key pair:
+ssh-keygen -t rsa
+Press Enter three times to use the default configuration (Important: Do not provide a
+passphrase).
+6 - Add the public key to the authorized keys:
+cat  ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+7 - Change permissions to the .ssh directory and its contents:
+chmod 700  ~/.ssh/
+chmod 600  ~/.ssh/*
+
+Create DB user
+--------------
+
+8 - Connect to the DB with a user that has admin rights in the DB (root is not an option!)
+psql <dbname>
+9 - Create user 
+create role <username> CREATEDB LOGIN PASSWORD '<password>';
+10 - Grant connect to the desired DB:
+GRANT CONNECT ON DATABASE <dbname> to <username>;
+11 - Grant usage on everything on public (all tables) to user
+GRANT USAGE ON SCHEMA public TO <username>;
+12 - In addition we must "GRANT SELECT ON TO public" to all the tables of the DB
+     And "GRANT SELECT,INSERT,UPDATE,DELETE ON TO public" to the tables that can be updated by everybody
+
+import psycopg2
+connection = psycopg2.connect(dbname='vadb')
+cursor = connection.cursor()
+cursor.execute("select tablename from  pg_tables where schemaname = 'public'")
+tablesNames = cursor.fetchall()
+for (tableName,) in tablesNames:
+    cursor.execute('GRANT SELECT ON ' + tableName + ' TO public')
+connection.commit() 
+for tableName in ('ITEM', 'ITEM_OBJECT', 'OSG_ITEM_CAMERA', 'OSG_CAMERA', 'OSG_ITEM_OBJECT', 'OSG_LABEL', 'OSG_LOCATION'):
+     cursor.execute('GRANT SELECT,INSERT,UPDATE,DELETE ON ' + tableName + ' TO public')
+connection.commit() 
+[[[To drop the user
+REVOKE USAGE ON SCHEMA PUBLIC FROM <username>;
+REVOKE CONNECT ON DATABASE <dbname> FROM <username>;
+drop role <username>;
+]]]
+
+13 - If they do not have access t github with ViaAppia code [with root]
+cp /home/oscarr/software/Via-Appia/viaappia3dgis.zip /home/<username>/
+chown <username>:<username> /home/<username>/viaappia3dgis.zip 
+IMPORTANT: Be sure that the ZIP file is up-to-date
+
+
+14 - Mail to new user about new OS and DB account and tell him to change passwords asap. 
+     Also inform of ZIP file and need to download private key (use wincsp)
+
+# Connect to Via Appia server
+ssh <username>@148.251.106.132
+
+# Update OS pssword
+passwd
+
+#Update PostgreSQL password
+psql <dbname> -c "alter user <username> WITH PASSWORD '<apasswordofyourchoice>';"
+
+

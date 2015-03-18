@@ -1,0 +1,68 @@
+In order to install the LAS->OSG converter:
+ - install latest libLAS
+ - install latest OpenSceneGraph
+ 
+All software ins installed in /home/oscarr/sw/
+We use a script in /home/oscarr/sw/scripts/export_paths.sh which must be sourced 
+to activate installed software
+
+libLAS
+******
+#It requires already installed custom installation of:
+#proj, tiff, geotiff, gdal and laszip
+
+#I installed latest boost from source
+cd /home/oscarr/sw/
+wget http://iweb.dl.sourceforge.net/project/boost/boost/1.55.0/boost_1_55_0.tar.gz
+tar xvzf boost_1_55_0.tar.gz 
+cd boost_1_55_0
+mkdir build
+./bootstrap.sh --prefix=/home/oscarr/sw/boost_1_55_0/build
+./b2  -j8 stage threading=multi --layout=tagged link=shared
+./b2 install
+
+# Add related info in /home/oscarr/sw/scripts/export_paths.sh
+
+source /home/oscarr/sw/scripts/export_paths.sh 
+
+git clone git://github.com/libLAS/libLAS.git liblas
+cd liblas/
+mkdir build
+mkdir cmake_build
+
+cd cmake_build/
+# You may need to add location of libpq manually in /home/oscarr/sw/scripts/export_paths.sh 
+source ~/sw/scripts/export_paths.sh 
+cmake28 -G "Unix Makefiles" .. -DCMAKE_INSTALL_PREFIX=/home/oscarr/sw/liblas/build
+ccmake28 .. -DCMAKE_INSTALL_PREFIX=/home/oscarr/sw/liblas/build
+make -j 8
+make install
+# add info in /home/oscarr/sw/scripts/export_paths.sh 
+source ~/sw/scripts/export_paths.sh 
+#  Install python bindings
+cd /home/oscarr/sw/liblas/python
+mkdir -p /home/oscarr/sw/liblas/build/lib/python2.6/site-packages
+export PYTHONPATH="$PYTHONPATH:/home/oscarr/sw/liblas/build/lib/python2.6/site-packages"
+python setup.py install --prefix=/home/oscarr/sw/liblas/build
+
+# add stuff in /home/oscarr/sw/scripts/export_paths.sh
+source /home/oscarr/sw/scripts/export_paths.sh
+
+OpenSceneGraph
+**************
+git clone https://github.com/openscenegraph/osg.git
+cd osg/
+mkdir build
+cmake28 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/home/oscarr/sw/osg/build
+make
+make -j8
+make install
+
+# Compiling osg shows some error messages but it compiles...probaly we are fine
+
+# Converter
+#Version send initially by Pjort on 17/06 hsa some code using c++11 features thats seems to be produing the error
+
+# when running cmake we have to manually specify all the libraries since they are not detected (liblas and OSG related stuff)
+
+See install.txt for example

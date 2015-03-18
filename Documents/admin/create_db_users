@@ -1,0 +1,12 @@
+TO CREATE: (Do this while connected to viaappiadb)
+**********
+create role testuser CREATEDB LOGIN PASSWORD 'password';
+GRANT CONNECT ON DATABASE viaappiadb to testuser;
+GRANT USAGE ON SCHEMA public TO testuser;
+
+
+TO DROP:
+********
+REVOKE USAGE ON SCHEMA PUBLIC FROM testuser;
+REVOKE CONNECT ON DATABASE viaappiadb FROM testuser;
+drop role testuser;
