@@ -69,6 +69,7 @@ def run(args):
     # start logging
     logname = os.path.basename(__file__) + '.log'
     utils.start_logging(filename=logname, level=utils.DEFAULT_LOG_LEVEL)
+    utils.checkSuperUser()
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
     msg = os.path.basename(__file__) + ' script starts at %s.' %localtime

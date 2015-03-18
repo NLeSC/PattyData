@@ -186,6 +186,7 @@ def main(opts):
     # Set logging
     logname = os.path.basename(__file__) + '.log'
     start_logging(filename=logname, level=opts.log)
+    checkSuperUser()
     # Establish connection with DB
     global cursor
     connection, cursor = connectToDB(opts.dbname, opts.dbuser, opts.dbpass, opts.dbhost, opts.dbport) 

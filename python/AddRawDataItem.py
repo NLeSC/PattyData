@@ -357,6 +357,7 @@ def main(opts):
     global logger
     logname = os.path.basename(__file__).split('.')[0] + '.log'
     logger = utils.start_logging(filename=logname, level=opts.log)
+    utils.checkSuperUser()
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
     msg = os.path.basename(__file__) + ' script starts at %s.' % localtime

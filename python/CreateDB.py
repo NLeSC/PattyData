@@ -9,6 +9,7 @@ def main(opts):
     # Set logging
     logname = os.path.basename(opts.sql) + '.log'
     utils.start_logging(filename=logname, level=opts.log)
+    utils.checkSuperUser()
    
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
