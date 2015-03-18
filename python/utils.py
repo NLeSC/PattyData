@@ -32,6 +32,7 @@ ATTRIBUTES_ORDER = ['administrator', 'site_context', 'site_interpretation', 'con
 
 DEFAULT_DB = 'viaappiadb'
 USERNAME = os.popen('whoami').read().replace('\n','')
+SUPERUSERNAME = 'pattydat'
 # Folder tags for the file structure
 RAW_FT = 'RAW'
 OSG_FT = 'OSG'
@@ -88,6 +89,13 @@ AO_TYPE_PC = PC_FT
 AO_TYPE_PIC = PIC_FT
 AO_TYPE_LAB = 'LAB'
 AO_TYPE_OBJ = 'OBJ'
+
+def checkSuperUser():
+    if USERNAME != SUPERUSERNAME:
+        msg = 'You can only execute this script with user %s' % SUPERUSERNAME
+        logging.error(msg)
+        print msg
+        raise Exception(msg)
 
 def isCurrent(absPath):
     return (absPath.count(CURR_FT) > 0)

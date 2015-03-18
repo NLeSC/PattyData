@@ -26,6 +26,7 @@ def argument_parser():
 def run(args):
     logname = os.path.basename(args.input) + '.log'
     utils.start_logging(filename=logname, level=args.log)
+    utils.checkSuperUser()
     
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
