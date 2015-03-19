@@ -5,15 +5,3 @@ http://148.251.106.132/phpPgAdmin/
 Username:password = viaappia:peileed0woh7AhY3
 
 Followed by login with your username and postgresql password.
-
-Your postgresql account doesn’t have a password yet, you can set this with:
-
-ssh 148.251.106.132
-
-psql
-
-alter user stefanv WITH PASSWORD 'apasswordofyourchoice';
-
-\q
-
-exit

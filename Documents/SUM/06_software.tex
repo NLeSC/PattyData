@@ -21,16 +21,16 @@ visualizations, i.e. the web viewer based on Potree and the Windows desktop
 viewer/editor based on Open Scene Graph. To perform these conversions we use
 the \textit{PotreeConverter} ({\url{https://github.com/potree/PotreeConverter}}) and
 the \textit{OSGConverter}
-(https://github.com/NLeSC/Via-Appia/tree/master/converter) which requires the
+(https://github.com/NLeSC/PattyData/tree/master/OSG/converter) which requires the
 Open Scene Graph (we currently use 3.2.1). Both converters use Boost (our
 installed version is 1.55). The data conversion is controlled through python
 scripts. Hence, it is required python bindings for GDAL, LibLAS and LasZIP. 
 
-The web-based viewer requestd files from a file server. An NGINX web server is
+The web-based viewer requests files from a file server. An NGINX web server is
 also used to serve files (static content) to the web-based visualization.
 
 \subsection{Client software}
 The web visualization viewer only requires the installation of a modern web
 browser in the client laptop/desktop (we have used Chrome/Chromium). For the
-desktop-based visualization the user should follow the intructions
+desktop-based visualization the user should follow the instructions
 at {\url{https://github.com/NLeSC/Via-Appia}}.

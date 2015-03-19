@@ -1,0 +1,43 @@
+OSG Converter build instructions
+================================
+
+In order to install the OSG converter:
+ - install latest libLAS (which requires proj, tiff, geotiff, gdal and laszip) 
+ - install latest OpenSceneGraph
+ - We also do a custom install of boost 1.55
+
+For installing liblas and its dependencies as well as boost 1.55 we recommend looking at https://github.com/NLeSC/pointcloud-benchmark/tree/master/install for different methods of installing liblas (and other point cloud related software) in different OSs
+
+OpenSceneGraph
+**************
+git clone https://github.com/openscenegraph/osg.git
+cd osg/
+mkdir build
+cmake28 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/osg/build
+make
+make -j8
+make install
+# Add to PATH
+export PATH="/opt/osg/build/bin:$PATH"
+export LD_LIBRARY_PATH="/opt/osg/build/lib64:$LD_LIBRARY_PATH"
+export CPATH="/opt/osg/build/include:$CPATH"
+
+
+Converter
+*********
+Assuming the code is downloaded in /opt/via-appia-osg-converter
+cd /opt/via-appia-osg-converter
+mkdir build
+mkdir makefiles 
+cd makefiles
+cmake28 .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/via-appia-osg-converter/build -DOSG_LIBRARY=/opt/OpenSceneGraph-3.2.1/build/lib64/libosg.so -DOSG_INCLUDE_DIR=/opt/OpenSceneGraph-3.2.1/build
+/include -DOSGUTIL_LIBRARY=/opt/OpenSceneGraph-3.2.1/build/lib64/libosgUtil.so -DOSGUTIL_INCLUDE_DIR=/opt/OpenSceneGraph-3.2.1/build/include -DOSGVIEWER_LIBRARY=/opt/OpenSceneGraph-3.2.1/build/lib64/libosgVi
+ewer.so -DOSGVIEWER_INCLUDE_DIR=/opt/OpenSceneGraph-3.2.1/build/include -DOSGGA_LIBRARY=/opt/OpenSceneGraph-3.2.1/build/lib64/libosgGA.so -DOSGGA_INCLUDE_DIR=/opt/OpenSceneGraph-3.2.1/build/include -DOSGDB_L
+IBRARY=/opt/OpenSceneGraph-3.2.1/build/lib64/libosgDB.so -DOSGDB_INCLUDE_DIR=/opt/OpenSceneGraph-3.2.1/build/include -DOPENTHREADS_LIBRARY=/opt/OpenSceneGraph-3.2.1/build/lib64/libOpenThreads.so -DOPENTHREAD
+S_INCLUDE_DIR=/opt/OpenSceneGraph-3.2.1/build/include -DOPENTHREADS_LIBRARY_DEBUG=/opt/OpenSceneGraph-3.2.1/build/lib64/libOpenThreads.so -DLIBLAS_LIBRARY_DEBUG=/opt/liblas/build/lib/liblas.so -DLIBLAS_LIBRA
+RY_RELEASE=/opt/liblas/build/lib/liblas.so -DLIBLAS_INCLUDE_DIR=/opt/liblas/build/include -DBoost_INCLUDE_DIR=/opt/boost_1_55_0/build/include -DBoost_LIBRARY_DIR=/opt/boost_1_55_0/build/lib -DBoost_PROGRAM_O
+PTIONS_LIBRARY_DEBUG=/opt/boost_1_55_0/build/lib/libboost_program_options.so -DBoost_PROGRAM_OPTIONS_LIBRARY_RELEASE=/opt/boost_1_55_0/build/lib/libboost_program_options.so -DBoost_SYSTEM_LIBRARY_DEBUG=/opt/
+boost_1_55_0/build/lib/libboost_system.so -DBoost_SYSTEM_LIBRARY_RELEASE=/opt/boost_1_55_0/build/lib/libboost_system.so -DBoost_THREAD_LIBRARY_DEBUG=/opt/boost_1_55_0/build/lib/libboost_thread.so -DBoost_THR
+EAD_LIBRARY_RELEASE=/opt/boost_1_55_0/build/lib/libboost_thread.so -DCMAKE_CXX_FLAGS=-std=c++0x
+make
+make install

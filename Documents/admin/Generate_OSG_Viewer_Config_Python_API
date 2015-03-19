@@ -1,0 +1,16 @@
+Make the pertinent changes in ../OSG/viewer_config/viewer_conf.xsd 
+
+In order to convert a XSD in a Python API we use
+
+generateDS python module
+
+To install it:
+
+pip install generateDS
+
+(need root privileges)
+
+Once installed: 
+
+cd /path/to/PattyDataRepo/python
+generateDS.py -f --silence -o viewer_conf_api.py ../OSG/viewer_config/viewer_conf.xsd 

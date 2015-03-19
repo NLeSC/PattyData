@@ -11,10 +11,6 @@ useradd <username>
 3 - Unlock the account by issuing the passwd command to assign a password (set a temporal password, later we have to tell new user to change password):
 passwd <username>
 
-ronald gha45746asdaD
-elena 823432jsfoetn8
-romulog 827bzmud62
-
 Create SSH key for new user
 --------------------------
 4 - Become new user
@@ -31,7 +27,6 @@ chmod 600  ~/.ssh/*
 
 Create DB user
 --------------
-
 8 - Connect to the DB with a user that has admin rights in the DB (root is not an option!)
 psql <dbname>
 9 - Create user 
@@ -43,30 +38,13 @@ GRANT USAGE ON SCHEMA public TO <username>;
 12 - In addition we must "GRANT SELECT ON TO public" to all the tables of the DB
      And "GRANT SELECT,INSERT,UPDATE,DELETE ON TO public" to the tables that can be updated by everybody
 
-import psycopg2
-connection = psycopg2.connect(dbname='vadb')
-cursor = connection.cursor()
-cursor.execute("select tablename from  pg_tables where schemaname = 'public'")
-tablesNames = cursor.fetchall()
-for (tableName,) in tablesNames:
-    cursor.execute('GRANT SELECT ON ' + tableName + ' TO public')
-connection.commit() 
-for tableName in ('ITEM', 'ITEM_OBJECT', 'OSG_ITEM_CAMERA', 'OSG_CAMERA', 'OSG_ITEM_OBJECT', 'OSG_LABEL', 'OSG_LOCATION'):
-     cursor.execute('GRANT SELECT,INSERT,UPDATE,DELETE ON ' + tableName + ' TO public')
-connection.commit() 
 [[[To drop the user
 REVOKE USAGE ON SCHEMA PUBLIC FROM <username>;
 REVOKE CONNECT ON DATABASE <dbname> FROM <username>;
 drop role <username>;
 ]]]
 
-13 - If they do not have access t github with ViaAppia code [with root]
-cp /home/oscarr/software/Via-Appia/viaappia3dgis.zip /home/<username>/
-chown <username>:<username> /home/<username>/viaappia3dgis.zip 
-IMPORTANT: Be sure that the ZIP file is up-to-date
-
-
-14 - Mail to new user about new OS and DB account and tell him to change passwords asap. 
+13 - Mail to new user about new OS and DB account and tell him to change passwords asap. 
      Also inform of ZIP file and need to download private key (use wincsp)
 
 # Connect to Via Appia server

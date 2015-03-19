@@ -1,0 +1,11 @@
+The Via Appia server is rented from Hetzner (http://www.hetzner.de). The specifications of
+the server are:
+• OS: CentOS 6.5 64 bit
+• 1 x CPU: Intel 8 Cores i7-4770 CPU @ 3.40GHz
+• Memory: 32 GB
+• Storage:
+  – Western Digital RE WD2000FYYZ 2TB 64MB Cache SATA 6.0Gb/s (mounted in /home)
+  – 2 x Intel SSDSC2BW240A4 530 Series 240GB in RAID 1 (mounted in /, /boot and SWAP)
+• Network:
+– RealTek RTL-8169 Gigabit Ethernet driver
+– IP: 148.251.106.132
