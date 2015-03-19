@@ -5,8 +5,10 @@ PattyData
 
 This repository contains:
  - Attributes: Different versions of Attributes DBs. For each version we need to have the original Microsoft Access DB file but also the converted SQL dump produced from Bullzip's software (See Attributes). 
- - Database: folder with the Entity-Relationship diagram used for the ViaAppiaDB as well as a SQL creation script. It also contains a picture and HTML documentation  
- - Documents: folder with documentaiton Software User Manual (SUM), data storage documents, meeting minutes, reports and installation instructions
+ - Database: folder with the Entity-Relationship diagram used for the ViaAppiaDB as well as a SQL creation script. It also contains a picture and HTML documentation. 
+ - Documents: folder with several documents:
+   - Software User Manual (SUM)
+   - Data storage structure documents, meeting minutes, reports and installation instructions
  - Footprints/20150306: sites footprints data as of 06 March 2015
  - OSGViewerConfiguration: folder with the OSG configuraiton files
  - python: the Data Management tools, i.e. python scripts for the creation and handling of the ViaAppia DB as well as for the management of the Data storage structure.

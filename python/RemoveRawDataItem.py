@@ -130,7 +130,6 @@ def run(args):
     
     logname = os.path.basename(__file__).split('.')[0] + '.log'
     logger = utils.start_logging(filename=logname, level=args.log)
-    utils.checkSuperUser()
     localtime = utils.getCurrentTimeAsAscii()
     msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
     print msg
@@ -198,4 +197,5 @@ def run(args):
     logger.info(msg)
     
 if __name__ == '__main__':
+    utils.checkSuperUser()
     run( apply_argument_parser() )

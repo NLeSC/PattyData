@@ -215,7 +215,6 @@ def run(args):
     global logger
     logname = os.path.basename(args.output).split('.')[0] + '.log'
     logger = utils.start_logging(filename=logname, level=args.log)
-    utils.checkSuperUser()
 
     # start logging    
     localtime = utils.getCurrentTimeAsAscii()
@@ -261,4 +260,6 @@ def run(args):
     logger.info(msg)
 
 if __name__ == '__main__':
+    
+    utils.checkSuperUser()
     run( apply_argument_parser() )

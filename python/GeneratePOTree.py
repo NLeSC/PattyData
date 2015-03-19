@@ -131,7 +131,6 @@ def main(opts):
     # Start logging
     logname = os.path.basename(__file__).split('.')[0] + '.log'
     utils.start_logging(filename=logname, level=opts.log)
-    utils.checkSuperUser()
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
     msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
@@ -181,6 +180,7 @@ WHERE raw_data_item_id NOT IN (
     logging.info(msg)
 
 if __name__ == "__main__":
+    utils.checkSuperUser()
     # define argument menu
     description = "Generates the POTree data for a raw data item (ONLY FOR PCs)"
     parser = argparse.ArgumentParser(description=description)

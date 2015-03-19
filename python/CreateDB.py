@@ -9,7 +9,6 @@ def main(opts):
     # Set logging
     logname = os.path.basename(opts.sql) + '.log'
     utils.start_logging(filename=logname, level=opts.log)
-    utils.checkSuperUser()
    
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
@@ -50,6 +49,7 @@ def main(opts):
 
 
 if __name__ == "__main__":
+    utils.checkSuperUser()
     usage = 'Usage: %prog [options]'
     description = "Create the DB"
     op = optparse.OptionParser(usage=usage, description=description)

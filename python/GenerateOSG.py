@@ -253,7 +253,6 @@ def main(opts):
     # Start logging
     logname = os.path.basename(__file__).split('.')[0] + '.log'
     utils.start_logging(filename=logname, level=opts.log)
-    utils.checkSuperUser()
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
     msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
@@ -300,6 +299,7 @@ WHERE NOT background AND raw_data_item_id NOT IN (
     logging.info(msg)
 
 if __name__ == "__main__":
+    utils.checkSuperUser()
     # define argument menu
     description = "Generates the OSG data for a raw data item."
     parser = argparse.ArgumentParser(description=description)
