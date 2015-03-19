@@ -107,8 +107,8 @@ def apply_argument_parser(argumentsParser, options=None):
 def start_logging(filename, level=DEFAULT_LOG_LEVEL):
     "Start logging with given filename and level."
     fileh = logging.FileHandler(filename, 'a')
-    formatter = logging.Formatter(LOG_FORMAT)
-    fileh.setFormatter(formatter, datefmt=DATE_FORMAT)
+    formatter = logging.Formatter(LOG_FORMAT, datefmt=DATE_FORMAT)
+    fileh.setFormatter(formatter)
     fileh.setLevel(LOG_LEVELS[level])
     log = logging.getLogger()  # root logger
     for hdlr in log.handlers:  # remove all old handlers
