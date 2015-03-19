@@ -1,22 +1,103 @@
-Setting up NGINX
-****************
+NGINX WEB SERVER
+================
 
-This web server will be serving static content: the converted data (octree LAZ by the POtree converter)
+This web server will be serving static content, i.e. the POtree data files
 
-Modify configuration file in /etc/nginx/nginx.conf
+Installation
+------------
+ - We make an installation of NGINX 1.7.9 in /opt/nginx-1.7.9/build with root
+ - Modify configuration file in /opt/nginx-1.7.9/build/conf/nginx.conf
+   * To configure the server to serve files in /home/pattydat/DATA with all access from NLeSC premises and restricted with password elsewhere (see next point about adding passwords) the server description must look like:
+   server {
 
-1 - Comment lines:
-#include /etc/nginx/conf.d/*.conf;
-#include /etc/nginx/sites-enabled/*;
+        satisfy any;
 
-2 - Add server description:
-        server {
-            listen 80;
-            location / {
-                root /home/vadata/DATA/RAW/PC/BACKGROUND/DRIVE_1_V3;
-            }
+        allow 145.100.116.0/24;
+        deny  all;
+
+        auth_basic           "Restricted";
+        auth_basic_user_file /home/pattydat/DATA/.htpasswd;
+
+        listen       8090;
+        server_name  localhost;
+       
+
+        #charset koi8-r;
+
+        #access_log  logs/host.access.log  main;
+        #
+
+        root /home/pattydat/DATA;
+
+        location / {
+                index  index.html index.htm;
+                autoindex on;
+                
+                if ($request_method = 'OPTIONS') {
+                    add_header 'Access-Control-Allow-Origin' '*';       
+                    #
+                    # Om nom nom cookies
+                    #
+                    add_header 'Access-Control-Allow-Credentials' 'true';
+                    add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+                    #
+                    # Custom headers and headers various browsers *should* be OK with but aren't
+                    #
+                    add_header 'Access-Control-Allow-Headers' 'DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';        
+                    #
+                    # Tell client that this pre-flight info is valid for 20 days
+                    #
+                    add_header 'Access-Control-Max-Age' 1728000;
+                    add_header 'Content-Type' 'text/plain charset=UTF-8';
+                    add_header 'Content-Length' 0;
+                    return 204;
+                }
+                if ($request_method = 'POST') {
+                    add_header 'Access-Control-Allow-Origin' '*';
+                    add_header 'Access-Control-Allow-Credentials' 'true';
+                    add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+                    add_header 'Access-Control-Allow-Headers' 'DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+                }
+                if ($request_method = 'GET') {
+                    add_header 'Access-Control-Allow-Origin' '*';
+                    add_header 'Access-Control-Allow-Credentials' 'true';
+                    add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+                    add_header 'Access-Control-Allow-Headers' 'DNT,X-Mx-ReqToken,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+                }
         }
-        
-3 - To add authentication see https://www.digitalocean.com/community/tutorials/how-to-set-up-http-authentication-with-nginx-on-ubuntu-12-10
+   
+        #error_page  404              /404.html;
 
- htpasswd -c /etc/nginx/.htpasswd exampleuser
+        # redirect server error pages to the static page /50x.html
+        #
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+
+        # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+        #
+        #location ~ \.php$ {
+        #    proxy_pass   http://127.0.0.1;
+        #}
+
+        # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+        #
+        #location ~ \.php$ {
+        #    root           html;
+        #    fastcgi_pass   127.0.0.1:9000;
+        #    fastcgi_index  index.php;
+        #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+        #    include        fastcgi_params;
+        #}
+
+        # deny access to .htaccess files, if Apache's document root
+        # concurs with nginx's one
+        #
+        #location ~ /\.ht {
+        #    deny  all;
+        #}
+    }
+    
+ - To add authentication for an example user
+ htpasswd -c /home/pattydat/DATA/.htpasswd exampleuser

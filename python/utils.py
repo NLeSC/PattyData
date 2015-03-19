@@ -88,6 +88,8 @@ AO_TYPE_PIC = PIC_FT
 AO_TYPE_LAB = 'LAB'
 AO_TYPE_OBJ = 'OBJ'
 
+logger = None
+
 def checkSuperUser():
     """ Check that current OS user name is the SuperUser."""
     if USERNAME != SUPERUSERNAME:
@@ -106,9 +108,38 @@ def apply_argument_parser(argumentsParser, options=None):
 
 def start_logging(filename, level=DEFAULT_LOG_LEVEL):
     "Start logging with given filename and level."
-    logging.basicConfig(filename=filename, level=LOG_LEVELS[level], format=LOG_FORMAT, datefmt=DATE_FORMAT)
-    logger = logging.getLogger(__name__)
+#     fileh = logging.FileHandler(filename, 'a')
+#     formatter = logging.Formatter(LOG_FORMAT, datefmt=DATE_FORMAT)
+#     fileh.setFormatter(formatter)
+#     fileh.setLevel(LOG_LEVELS[level])
+#     log = logging.getLogger()  # root logger
+#     for hdlr in log.handlers:  # remove all old handlers
+#         log.removeHandler(hdlr)
+#     log.addHandler(fileh)      # set the new handler
+#     return log
+    
+    #logging.basicConfig(filename=filename, level=LOG_LEVELS[level], format=LOG_FORMAT, datefmt=DATE_FORMAT)
+    #logger = logging.getLogger(__name__)
+    #return logger
+    
+    global logger
+    if logger == None:
+        logger = logging.getLogger()
+    else:  # wish there was a logger.close()
+        for handler in logger.handlers[:]:  # make a copy of the list
+            logger.removeHandler(handler)
+
+    logger.setLevel(LOG_LEVELS[level])
+    formatter = logging.Formatter(LOG_FORMAT, datefmt=DATE_FORMAT)
+
+    fh = logging.FileHandler(filename)
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
     return logger
+
+#     sh = logging.StreamHandler(sys.stdout)
+#     sh.setFormatter(formatter)
+#     logger.addHandler(sh)
 
 
 def isCurrent(absPath):

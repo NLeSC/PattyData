@@ -4,11 +4,11 @@
 #                   which are imported from an sql file (another DB dump)
 # Author:           Elena Ranguelova, NLeSc, E.Ranguelova@nlesc.nl                                       
 # Creation date:    22.01.2015      
-# Modification date: 09.02.2015
-# Modifications:   
+# Modification date: 19.03.2015
+# Modifications:    Cleaning up the code from unused lines
 # Notes:            Based on mergefootprints.py from the PattyFFW Oct 2014
 ################################################################################
-import os, argparse, utils, psycopg2, time, sys
+import os, argparse, utils, time
 from osgeo import osr
 
 logger = None
@@ -20,11 +20,7 @@ def getEPSG(shapeprj_path):
    prj_txt = prj_file.read()
    srs = osr.SpatialReference()
    srs.ImportFromESRI([prj_txt])
-   #print 'Shape prj is: %s' % prj_txt
-   #print 'WKT is: %s' % srs.ExportToWkt()
-   #print 'Proj4 is: %s' % srs.ExportToProj4()
    srs.AutoIdentifyEPSG()
-   #print 'EPSG is: %s' % srs.GetAuthorityCode(None)
    return srs.GetAuthorityCode(None)
 
 def clean_temp_table(args):
@@ -68,19 +64,16 @@ def update_geometries(list_ids, new):
         
         
     msg = "The geometries have been updated!"        
-#    print msg
     logger.debug(msg)    
     
 def update_geom_col_type(cursor):
     """ function to update the initial geometries column type """
     num_items = utils.countElementsTable(cursor, 'item')
     msg = "Number of elements in item table: %s" %num_items        
-#    print msg
     logger.debug(msg)
             
     col_type = utils.typeColumnTable(cursor, 'geom','item')
     msg = "Current geom column type is %s."%col_type
-#    print msg
     logger.debug(msg)
  
     if (num_items == 0) or (col_type == 'polygon'): 
@@ -89,7 +82,6 @@ def update_geom_col_type(cursor):
         utils.dbExecute(cursor, alter_type_sql)
         
         msg = "Current geom column type is MultiPolygon, " + str(utils.SRID)
-#        print msg
         logger.debug(msg)
 
 def find_lists(cursor):
@@ -98,7 +90,6 @@ def find_lists(cursor):
         no_item_well_temp_ids, num_ids = utils.fetchDataFromDB(cursor, no_item_well_temp_sql)
         
         msg = "The unique item ids not in item table, but in sites_geoms_temp are %s in number"%num_ids
-#        print msg
         logger.debug(msg)
 
         # find the list of IDs which are both in the temporary geometries table and the item table   
@@ -106,7 +97,6 @@ def find_lists(cursor):
         both_in_item_and_temp_ids, num_both_ids = utils.fetchDataFromDB(cursor, both_in_item_and_temp_sql)
         
         msg = "The item ids both in item table and n sites_geoms_temp are %s in number"%num_both_ids
-#        print msg
         logger.debug(msg)
 
         return  no_item_well_temp_ids, both_in_item_and_temp_ids

@@ -22,6 +22,17 @@ def getConfig(currentFolder, iniFileName):
     
     return config
 
+def cleanup():
+# clean everything
+    print "Cleaning up..."
+# cleanup the data
+    if os.path.exists(dataPath):
+       shutil.rmtree(dataPath)
+# drop the test DB
+    os.system('dropdb ' + utils.postgresConnectString(dbName, dbUser, dbPass, dbHost, dbPort, True))    
+    print "Cleaning up...DONE"
+    print "-----------------------------------------------------------------------"
+    
 ##############################################################################
 ### Setup ###
 
@@ -68,14 +79,15 @@ print "Testing creation of the DB ..."
 sqlFile = os.path.abspath(os.path.join(currentFolder, '../Database/ERDB.sql'))
 CreateDBArguements = namedtuple("Create_DB_Arguments", "sql dbname dbuser dbpass dbhost dbport log")
 CreateDB.run(CreateDBArguements(sqlFile, dbName, dbUser, dbPass, dbHost, dbPort, logLevel))
-logFile = sqlFile + '.log'
+logFile = os.path.basename(sqlFile ) + '.log'
 logFileContent = open(logFile,'r').read()
 if logFile.count('ERROR') > 0:
     print 'ERRORs in CreateDB.py. See %s' % logFile
+    cleanup()
+    sys.exit()
 print "The testing of the creation of the DB...DONE."
 print "-----------------------------------------------------------------------"
 
-# CreateDB.py -f ERDB.sql
 # UpdateDBFootprints.py -i Footprints/20150306/VIA_APPIA_SITES_06032015.shp
 # UpdateDBAttribute.py -i Attributes/20150312/VA2012-2014_12032015.mdb.sql
 # UpdateDBItemZ.py -c 16 -l dataAbsPath
@@ -89,16 +101,10 @@ print "-----------------------------------------------------------------------"
 # GenerateOSG.py
 # UpdateDB.py
 # CreateOSGConfig.py
-# CreatePotreeConfig.py
+# CreatePotreeConfig.p
 
-# clean everything
-print "Cleaning up..."
-# cleanup the data
-if os.path.exists(dataPath):
-    shutil.rmtree(dataPath)
-# drop the test DB
-os.system('dropdb ' + utils.postgresConnectString(dbName, dbUser, dbPass, dbHost, dbPort, True))
-print "Cleaning up...DONE"
-print "-----------------------------------------------------------------------"
+cleanup()
+
+
 print "DONE"
     
