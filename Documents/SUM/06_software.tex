@@ -1,8 +1,8 @@
-\newpage
 \section{Software}
 \label{sec:software}
 As described in section \ref{sec:sys_arch} the 4D GIS system has a two tier
-architecture, the server and the clients. 
+architecture, the server and the clients. In this section we identify the software
+required for each the tiers.
 
 \subsection{Server software}
 The \textit{viaappiadb} database running in the Via Appia Linux server is a
@@ -19,41 +19,18 @@ As described in section \ref{sec:data_structure} the data stored in the server
 needs to be converted to the specific formats required by the two supported
 visualizations, i.e. the web viewer based on Potree and the Windows desktop
 viewer/editor based on Open Scene Graph. To perform these conversions we use
-the \textit{PotreeConverter} (https://github.com/potree/PotreeConverter) and
+the \textit{PotreeConverter} ({\url{https://github.com/potree/PotreeConverter}}) and
 the \textit{OSGConverter}
 (https://github.com/NLeSC/Via-Appia/tree/master/converter) which requires the
 Open Scene Graph (we currently use 3.2.1). Both converters use Boost (our
-installed version is 1.55).
+installed version is 1.55). The data conversion is controlled through python
+scripts. Hence, it is required python bindings for GDAL, LibLAS and LasZIP. 
 
-An NGINX web server is also used to serve files (static content) to the
-web-based visualization. 
+The web-based viewer requestd files from a file server. An NGINX web server is
+also used to serve files (static content) to the web-based visualization.
 
 \subsection{Client software}
 The web visualization viewer only requires the installation of a modern web
-browser in the client laptop/desktop (we have used Chrome/Chromium).
-
-For the desktop-based visualization we use a tool based on OpenSceneGraph (OSG)
-so the point cloud data and also the pictures and meshes have to be converted
-to OSG format. This conversion also happens in the Via Appia server and it is
-executed by a
-
-For the usage of the OSG desktop viewer some additional libraries have to be
-installed
-
-{\em pasted form old documentaiton- to be edited!}
- 
-In order to use the new 4D GIS system the end-user only needs to do:
-\begin{itemize} \item (a.) Obtain an account in the Via Appia Linux server and
-in the \textit{viaappiadb} database and generate a SSH key pair (see
-Subsections \ref{sec:accounts} and \ref{sec:sshkeys}).  \item (b.) Download,
-install and configure the \textit{launcher} tool in his Windows laptop or
-desktop (see Subsection \ref{sec:install}).  The \textit{launcher} tool also
-contains the 4D viewer. It is also recommend to install two tools for the
-communication between the Linux server and the Windows computers: PuTTY and
-WinSCP (see Subsubsections \ref{sec:putty} and \ref{sec:winscp}).
-\end{itemize}
-
-The database is a PostgreSQL 9.2.8 (version correct?) instance running with
-PostGIS 2.1.2.
-
-We also need the python binding of GDAL and LiblAS.
+browser in the client laptop/desktop (we have used Chrome/Chromium). For the
+desktop-based visualization the user should follow the intructions
+at {\url{https://github.com/NLeSC/Via-Appia}}.

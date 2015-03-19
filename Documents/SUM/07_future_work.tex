@@ -1,0 +1,44 @@
+\section{Future work}
+\label{sec:future_work}
+The foundations for a 4D GIS for Point Cloud data exploration were successfully
+designed and implemented. In this section we summarize the major future steps
+to make the system more user efficient, robust and user friendly.
+
+\paragraph{Efficiency}
+As the number of different objects grows and the number of users increases, it
+is necessary to have multi-thread scripts for data manipulation, conversion and
+database operations. For example, the potree converter should be multi-thread.
+The same holds for database access. Multi-session should be exploited as well as
+query caching. 
+
+On the fly data generation would also open the opportunity to easily integrate
+new data without having to re-convert all the raw data for a background or site.
+In the same line, different data organization techniques for Potree, instead
+the actual octree, should be exploit in case they easy, or boost, on the fly
+data generation and visualization.
+
+\paragraph{Robustness}
+At the moment concurrent access for object manipulation is not controlled. For
+example, in case more than one user changes the object location it leads to data
+corruption. Hence, as first step it is required a feature which blocks, or discards,
+other users modifications while the object is being modified. The second step is
+to allow parallel object manipulation controlled by a version control mechanism.
+
+The addition of new features and the concurrent access by multiple users is a
+source of robustness issues. The current functionality must remain intact with
+the addition of new features. Currently the a basic test platform was introduced.
+However, it is not yet automatized and the set of unit tests is small. In the
+future all the features, and bug reports, should be covered by unit tests.
+
+\paragraph{User friendly}
+The data management, such as data upload and data transformation, should be done through
+a single user interface (UI). The same holds for data visualization. The data
+conversion and database updates should be triggered by visualization requests
+on the viewers.
+
+The ultimate goal is an end to end solution where all the parts are glued and
+automated. Such system should allow an archeologist to be on the field
+upload a set of photos to the viappia server and wait for an email notification which
+informs the archeologist about the successful integration of the new data into
+an existent one. Then with one click the archeologist should be able to 
+visualize/manipulate the new data through the 4D viewer.
