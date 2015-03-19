@@ -46,7 +46,7 @@ DEFAULT_PREFENCES = """
 </preferences>"""
 
 
-def main(opts):
+def run(opts):
     global logger
     # Define logger and start logging
     logname = os.path.basename(opts.output) + '.log'
