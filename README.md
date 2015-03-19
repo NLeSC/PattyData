@@ -8,6 +8,7 @@ This repository contains:
  - Database: folder with the Entity-Relationship diagram used for the ViaAppiaDB as well as a SQL creation script. It also contains a picture and HTML documentation. 
  - Documents: folder with several documents:
    - Software User Manual (SUM)
+   - Several information for administration purposes 
    - Data storage structure documents, meeting minutes, reports and installation instructions
  - Footprints/20150306: sites footprints data as of 06 March 2015
  - OSGViewerConfiguration: folder with the OSG configuraiton files
