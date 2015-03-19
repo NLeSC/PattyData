@@ -567,7 +567,7 @@ def argument_parser():
     parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str)
     parser.add_argument('-b','--dbhost',default='',help='DB host',type=str)
     parser.add_argument('-r','--dbport',default='',help='DB port',type=str)
-    parser.add_argument('--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
+    parser.add_argument('--log', help='Log level', choices=LOG_LEVELS_LIST, default=DEFAULT_LOG_LEVEL)
     return parser
 
 if __name__ == "__main__":
@@ -575,4 +575,5 @@ if __name__ == "__main__":
         checkSuperUser()
         run(apply_argument_parser(argument_parser()))
     except Exception as e:
+        print e
         pass
