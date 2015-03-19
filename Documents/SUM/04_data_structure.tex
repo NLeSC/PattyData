@@ -1,243 +1,211 @@
-\section{Data structure}
+\section{File Storage}
 \label{sec:data_structure}
+The file storage is organized into three major directories, {\em RAW}, {\em OSG}
+and {\em POTREE}. Their structure and the nomenclature is described in the coming
+sections as well as the scripts to manipulate their content.
 
-\subsection{Description of the data structure}
+\subsection{File storage structure}
 \label{sec:descriptiondata}
-The raw data is \textbf{only} stored in the Via Appia Linux server. There is python script that needs to be used to generate the converted OSG data, \textit{createosgdata.py}. Another python script exists that needs to be used to generate the converted POTree data, \textit{CreatePOTreeConfig.py}.
-The raw data directory is \textit{/home/vadata/DATA/RAW}. OSG data is stored in \textit{/home/vadata/DATA/OSG} and POTREE data is stored in \textit{/home/vadata/DATA/POTREE} (figure \ref{fig:directory_structure_overview}). 
+The raw data is \textbf{only} stored in the Via Appia Linux server. Through a python
+script, called \textit{createosgdata.py}, raw data is converted to OSG data. Another
+script, called \textit{CreatePotreeConfig.py}, converts the raw data into Potree
+internal format. More details about these two scripts can be found in Section~\ref{sec:generateosg}
+and Section~\ref{sec:generatePotree}. 
 
-The next subsections explores the RAW data tree in more detail and discusses how to modify and list the data in the RAW data tree.
+These two scripts pick raw data from \textit{/home/vadata/DATA/RAW}. After the data
+generation, the OSG data is stored in \textit{/home/vadata/DATA/OSG} and POTREE data
+is stored in \textit{/home/vadata/DATA/POTREE}, c.f., Figure~\ref{fig:directory_structure_overview}.
 
-\begin{figure}[!ht]
- \centering
- \includegraphics[width=0.4\textwidth]{fig/data_structure/directory_structure_overview}
- \caption{Overview of the data structure}
- \label{fig:directory_structure_overview}
-\end{figure}
+\begin{figure}[!ht] \centering
+\includegraphics[width=0.4\textwidth]{fig/data_structure/directory_structure_overview}
+\caption{Overview of the data structure}
+\label{fig:directory_structure_overview} \end{figure}
 
-\subsubsection{Raw data}
-\paragraph{Point clouds}
-Higher resolution point clouds are stored in the subdirectories \textit{PC/BACK} and \textit{PC/SITE}, for respectively backgrounds and sites. For backgrounds, the subdirectory contains different folders with point clouds for each background. For sites, the subdirectory contains a separate folder for each site (e.g.\ \textit{PC/SITE/S162} for site 162), which in turn contain different folders for each point cloud of the site. These folders contain LAS files of different point clouds of the site. 
+\subsubsection{Nomenclature}
+The directories and files name follow a specific nomenclature which describes a
+bit their content. Such information is then used by the data preparation scripts
+to locate the required data and also by the system to serve the user requests.
+These rules apply to all directories and files under raw, OSG and Potree data
+directories.
 
-The LAS files contained in each site subfolder may have been pre-aligned (using CloudCompare for example). In that case the LAS file name must be \textbf{*\_ALIGNED\_\textit{BGNAME}*} where \textit{BGNAME} must be the background name (as contained in the folder \textit{PC/BACK/}).
-Some point clouds generation tools store the color information in 8 bits instead of the usual 16 bits. In that case the folder name must be \textbf{*\_8BC}. The effect of having an undeclared LAS file with 8 bit color is that the converted data will be black and white. Note that these properties are cumulative, for example \textit{S162\_ALIGNED\_DRIVE\_1\_V3\_8BC} is a valid name for a folder containing a LAS file with 8 bit color information and aligned points.
+Under the raw data directory there is a sub-directory for point clouds, meshes
+and pictures. Each of them have a sub-directory for backgrounds called \textit{BACK}
+and one for sites called \textit{SITE}. For backgrounds, the subdirectory contains
+different folders with point clouds for each background. For sites, the subdirectory
+contains a separate folder for each site. For example, \textit{MESH/SITE/CURR/S162}
+could contain two folders called \textit{162\_curr\_1} and \textit{162\_curr\_2}.
 
-\begin{figure}[]
- \centering
- \includegraphics[width=0.8\textwidth]{fig/data_structure/directory_structure_raw}
- \caption{Overview of the data structure: RAW data items}
- \label{fig:directory_structure_overview_raw}
-\end{figure}
+Point Clouds and meshes can have two types of background and sites: (a) current
+representations, and (b) archeological reconstructions. They are stored in respectively
+\textit{CURR} and \textit{RCH\_REC}. For pictures the sub-division has a different
+nomenclature. The subdivision is made between (a) pictures of the current state of
+the sites, and (b) historical pictures and paintings. These are stored in respectively
+\textit{CURR} and \textit{HIST}.
+
+The LAS files contained in each site sub-folder may have been pre-aligned through a
+third party tool such as CloudCompare. In that case the LAS file name must contain
+\textbf{*\_ALIGNED\_\textit{BGNAME}*} where \textit{BGNAME} is the background name
+(as contained in the folder \textit{PC/BACK/}).
+
+Some point clouds generation tools store the color information in 8 bits instead of
+the usual 16 bits. In that case the folder name must be \textbf{*\_8BC}. The effect
+of having an undeclared LAS file with 8 bit color is that the converted data will be
+black and white. Note that these properties are cumulative, for example
+\textit{S162\_ALIGNED\_DRIVE\_1\_V3\_8BC} is a valid name for a folder containing
+a LAS file with 8 bit color information and aligned points.
+
+This hierarchy of folders and nomenclature for the raw data, as shown in Figure~\ref{fig:directory_structure_overview_raw},
+is also used for the OSG directories, Figure~\ref{fig:directory_structure_overview_osg},
+and for the Potree directories, Figure~\ref{fig:directory_structure_overview_potree}.
+
+\begin{figure}[] \centering
+\includegraphics[width=0.8\textwidth]{fig/data_structure/directory_structure_raw}
+\caption{Overview of the data structure: RAW data items}
+\label{fig:directory_structure_overview_raw} \end{figure}
 
 
-\paragraph{Meshes}
-Meshes are stored in the directories \textit{MESH/BACK} and \textit{MESH/SITE}, for respectively backgrounds and sites. There are two types of meshes: (a) current  mesh representations, and (b) archeological reconstructions. For backgrounds, they are stored in respectively \textit{MESH/BACK/CURR} and \textit{MESH/BACK/ARCH\_REC}. For sites they are stored in respectively \textit{MESH/SITE/CURR} and \textit{MESH/SITE/ARCH\_REC}. For sites, each of these directories contain different folders for each site. For example the folder \textit{MESH/SITE/CURR/S162} contains mesh representations of the current state of the site 162. 
-
-For each site there must be different folders for the several meshes. Inside these folders the files for the meshes are stored (OBJ, MTL, JPEG). For example \textit{MESH/SITE/CURR/S162} could contain two folders called \textit{162\_curr\_1} and \textit{162\_curr\_2} and each of them contain a OBJ, a MTL and several JPEG files. 
-
-Similarly to the LAS files the meshes can also be aligned. In this case the folder name for a certain mesh must be \textbf{*\_ALIGNED\_\textit{BGNAME}*}. 
-
-\paragraph{Pictures}
-Pictures are stored in the subdirectory \textit{PICT}. Pictures can be either of a background or of a site. For both types a further subdivision is made between (a) pictures of the current state of the sites, and (b) historical pictures and paintings. These are stored in respectively \textit{PICT/BACK/CURR} and \textit{PICT/BACK/HIST} for backgrounds, or \textit{PICT/SITE/CURR} and \textit{PICT/SITE/HIST} for sites. For sites, each of these directoryes contains a separate folder for each site. For example the folder \textit{PICT/SITE/CURR/S162} contains pictures of the current state of the site 162.
-
-\subsubsection{OSG data}
-The raw data can be converted to the OSGB format. For that purpose a python script \textit{GenerateOSG.py} as been created. This script is discussed in section \ref{sec:generatePOTree}. 
-
-In order to view the data in your Windows machine you need to download a version of the converted OSG data in your local machine. We use a NLeSC tool called Xenon.
-
-\subsubsection{POTree data}
-The raw data can be converted to the POTree format. For that purpose a python script \textit{GeneratePOTree.py} has been created. This script is discussed in section \ref{sec:generateosg}.
-
-\subsection{Operation on the data structure}
-Different operations can be performed on the data structure. The different operations that can be performed are (1) adding raw data items (section \ref{sec:addraw}); (2) removing raw data items (section \ref{sec:removeraw}); and (3) listing raw data items (section \ref{sec:listraw}).
+\subsection{Raw data management}
+On the data structure it is possible to perform different operations. Such operations
+are (1) adding raw data items (Section~\ref{sec:addraw}); (2) removing raw data
+items (Section~\ref{sec:removeraw}); and (3) listing raw data items (Section~\ref{sec:listraw}).
 
 \subsubsection{Adding raw data items}
-\label{sec:addraw}
-This section describes the script that should be used to add raw data items to the directory structure: \textit{AddRawDataItem.py}. To run the script, the user needs, depending on the exact datatype, supply additional arguments to the script. An overview of the possible arguments are found in the verbatim below. The script automatically creates a destination folder with the required naming, as specified in section \ref{sec:descriptiondata}, using the supplied arguments.
+\label{sec:addraw} 
+The script \textit{AddRawDataItem.py} is used to add raw data items to the directory
+structure. To run the script, the user needs, depending on the exact datatype,
+to supply additional arguments to the script. An overview of the possible arguments
+are found in the verbatim below. The script automatically creates a destination
+folder with the required naming, as specified in section \ref{sec:descriptiondata},
+using the supplied arguments.
 
-For MESH and PICT, the (\textit{-f, -\hspace{0cm}-file}) argument can be either a file, or a folder containing files with the correct extension. For a PC the argument must always be a folder.
+For MESH and PICT, the (\textit{-f, -\hspace{0cm}-file}) argument can be either
+a file, or a folder containing files with the correct extension. For a PC the
+argument must always be a folder.
 
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
- usage: AddRawDataItem.py [-h] [-i DATA] -k {BACK,SITE} -t {PC,MESH,PICT} -f FILE                                                                                                     
-             [-p {CURR,HIST,ARCH_REC}] [-s SRID] [--eight]
-             [-l {debug,info,warning,error,critical}] [--site SITE]
+usage: AddRawDataItem.py [-h] [-i DATA] -k {BACK,SITE} -t {PC,MESH,PICT} -f
+FILE
+[-p {CURR,HIST,ARCH_REC}] [-s SRID] [--eight] [-l
+{debug,info,warning,error,critical}] [--site SITE]
 
 Add Raw data item to the file structure.
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -i DATA, --data DATA  RAW data folder [default /home/pattydat/DATA/RAW]
-  -s SRID, --srid SRID  spatial reference system SRID [only for MESH SITE]
-  --eight               8 bit color [only for PC SITE or MESH]
-  -l {debug,info,warning,error,critical}, --log {debug,info,warning,error,critical}
-                        Log level
+optional arguments: -h, --help            show this help message and exit -i
+DATA, --data DATA  RAW data folder [default /home/pattydat/DATA/RAW] -s SRID,
+--srid SRID  spatial reference system SRID [only for MESH SITE] --eight
+8 bit color [only for PC SITE or MESH] -l {debug,info,warning,error,critical},
+--log {debug,info,warning,error,critical} Log level
 
-required arguments:
-  -k {BACK,SITE}, --kind {BACK,SITE}
-                        Type of item
-  -t {PC,MESH,PICT}, --type {PC,MESH,PICT}
-                        Type of data
-  -f FILE, --file FILE  Input file/directory name to copy
+required arguments: -k {BACK,SITE}, --kind {BACK,SITE} Type of item -t
+{PC,MESH,PICT}, --type {PC,MESH,PICT} Type of data -f FILE, --file FILE  Input
+file/directory name to copy
 
-required arguments for MESH and PICT:
-  -p {CURR,HIST,ARCH_REC}, --period {CURR,HIST,ARCH_REC}
-                        Period (choose from MESH:CURR,ARCH_REC;
-                        PICT:CURR,HIST)
+required arguments for MESH and PICT: -p {CURR,HIST,ARCH_REC}, --period
+{CURR,HIST,ARCH_REC} Period (choose from MESH:CURR,ARCH_REC; PICT:CURR,HIST)
 
-required arguments for SITE:
-  --site SITE           Site number
-\end{Verbatim}
+required arguments for SITE: --site SITE           Site number \end{Verbatim}
 
 \subsubsection{Removing raw data items}
-\label{sec:removeraw}
-This section describes the script that should be used to remove raw data items from the file structure: \textit{RemoveRawDataItem.py}.
+\label{sec:removeraw} 
+The \textit{RemoveRawDataItem.py} is used to remove raw data items from the file
+structure. 
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
 usage: RemoveRawDataItem.py [-h] -i ITEMID [-d DBNAME] [-u DBUSER] [-p DBPASS]
-                            [-t DBHOST] [-r DBPORT]
-                            [-l {debug,info,warning,error,critical}]
+[-t DBHOST] [-r DBPORT] [-l {debug,info,warning,error,critical}]
 
-Removes a list of Raw data items and their related converted data from the
-file structure.
+Removes a list of Raw data items and their related converted data from the file
+structure.
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -d DBNAME, --dbname DBNAME
-                        PostgreSQL DB name viaappiadb]
-  -u DBUSER, --dbuser DBUSER
-                        DB user [default ronald]
-  -p DBPASS, --dbpass DBPASS
-                        DB pass
-  -t DBHOST, --dbhost DBHOST
-                        DB host
-  -r DBPORT, --dbport DBPORT
-                        DB port
-  -l {debug,info,warning,error,critical}, --log {debug,info,warning,error,critical}
-                        Log level
+optional arguments: -h, --help            show this help message and exit -d
+DBNAME, --dbname DBNAME PostgreSQL DB name viaappiadb] -u DBUSER, --dbuser
+DBUSER DB user [default ronald] -p DBPASS, --dbpass DBPASS DB pass -t DBHOST,
+--dbhost DBHOST DB host -r DBPORT, --dbport DBPORT DB port -l
+{debug,info,warning,error,critical}, --log {debug,info,warning,error,critical}
+Log level
 
-required arguments:
-  -i ITEMID, --itemid ITEMID
-                        Comma-separated list of Raw Data Item Ids Raw data
-                        item id (with ? the available raw data items are
-                        listed)
+required arguments: -i ITEMID, --itemid ITEMID Comma-separated list of Raw Data
+Item Ids Raw data item id (with ? the available raw data items are listed)
 \end{Verbatim}
 
 \subsubsection{Listing raw data items}
-\label{sec:listraw}
-This section describes the script that lists the raw data items currently in the file structure: \textit{ListRawDataItem.py}.
+\label{sec:listraw} 
+The script \textit{ListRawDataItem.py} lists the raw data items currently in the
+file structure.
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
 usage: ListRawDataItem.py [-h] [-i ITEMID] [-d DBNAME] [-u DBUSER] [-p DBPASS]
-                          [-t DBHOST] [-r DBPORT]
-                          [-l {debug,info,warning,error,critical}]
+[-t DBHOST] [-r DBPORT] [-l {debug,info,warning,error,critical}]
 
 List the Raw data items that are in the DB.
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -i ITEMID, --itemid ITEMID
-                        List the Raw Data Item Ids related to a list of items
-                        (comma-separated) [default list all raw data items]
-  -d DBNAME, --dbname DBNAME
-                        PostgreSQL DB name viaappiadb]
-  -u DBUSER, --dbuser DBUSER
-                        DB user [default $USERNAME]
-  -p DBPASS, --dbpass DBPASS
-                        DB pass
-  -t DBHOST, --dbhost DBHOST
-                        DB host
-  -r DBPORT, --dbport DBPORT
-                        DB port
-  -l {debug,info,warning,error,critical}, --log {debug,info,warning,error,critical}
-                        Log level
+optional arguments: -h, --help            show this help message and exit -i
+ITEMID, --itemid ITEMID List the Raw Data Item Ids related to a list of items
+(comma-separated) [default list all raw data items] -d DBNAME, --dbname DBNAME
+PostgreSQL DB name viaappiadb] -u DBUSER, --dbuser DBUSER DB user [default
+$USERNAME] -p DBPASS, --dbpass DBPASS DB pass -t DBHOST, --dbhost DBHOST DB
+host -r DBPORT, --dbport DBPORT DB port -l {debug,info,warning,error,critical},
+--log {debug,info,warning,error,critical} Log level
 
 \end{Verbatim}
 
 \subsubsection{Generating OSG data}
 \label{sec:generateosg}
-This script should be run with the \textit{vadata} user and should be run when some data has changed in the raw data directory. The POTree data is copied automatically in the POTree data tree, with the naming as specified in figure
- \ref{fig:directory_structure_overview_osg}.
+The script should be run with the \textit{vadata} user and should be run when some data has
+changed in the raw data directory. The Potree data is copied automatically in
+the Potree data tree, with the naming as specified in figure
+\ref{fig:directory_structure_overview_osg}.
  
-\begin{figure}[]
- \centering
- \includegraphics[width=0.7\textwidth]{fig/data_structure/directory_structure_osg}
- \caption{Overview of the data structure: OSG data items}
- \label{fig:directory_structure_overview_osg}
-\end{figure}
+\begin{figure}[] \centering
+\includegraphics[width=0.7\textwidth]{fig/data_structure/directory_structure_osg}
+\caption{Overview of the data structure: OSG data items}
+\label{fig:directory_structure_overview_osg} \end{figure}
 
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
- usage: GenerateOSG.py [-h] [-i ITEMID] [-d DBNAME] [-u DBUSER] [-p DBPASS]
-                      [-t DBHOST] [-r DBPORT] [-o OSGDIR]
-                      [-l {debug,info,warning,error,critical}]
+usage: GenerateOSG.py [-h] [-i ITEMID] [-d DBNAME] [-u DBUSER] [-p DBPASS] [-t
+DBHOST] [-r DBPORT] [-o OSGDIR] [-l {debug,info,warning,error,critical}]
 
 Generates the OSG data for a raw data item.
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -i ITEMID, --itemid ITEMID
-                        Comma-separated list of Raw Data Item Ids [default is
-                        to convert all raw data items related to sites that do
-                        not have a related OSG data item] (with ? the
-                        available raw data items are listed, with ! the list
-                        all the raw data items without any related OSG data
-                        item)
-  -d DBNAME, --dbname DBNAME
-                        Postgres DB name [default viaappiadb]
-  -u DBUSER, --dbuser DBUSER
-                        DB user [default $USERNAME]
-  -p DBPASS, --dbpass DBPASS
-                        DB pass
-  -t DBHOST, --dbhost DBHOST
-                        DB host
-  -r DBPORT, --dbport DBPORT
-                        DB port
-  -o OSGDIR, --osgDir OSGDIR
-                        OSG data directory [default /home/pattydat/DATA/OSG]
-  -l {debug,info,warning,error,critical}, --log {debug,info,warning,error,critical}
-                        Log level
-\end{Verbatim}
+optional arguments: -h, --help            show this help message and exit -i
+ITEMID, --itemid ITEMID Comma-separated list of Raw Data Item Ids [default is
+to convert all raw data items related to sites that do not have a related OSG
+data item] (with ? the available raw data items are listed, with ! the list all
+the raw data items without any related OSG data item) -d DBNAME, --dbname
+DBNAME Postgres DB name [default viaappiadb] -u DBUSER, --dbuser DBUSER DB user
+[default $USERNAME] -p DBPASS, --dbpass DBPASS DB pass -t DBHOST, --dbhost
+DBHOST DB host -r DBPORT, --dbport DBPORT DB port -o OSGDIR, --osgDir OSGDIR
+OSG data directory [default /home/pattydat/DATA/OSG] -l
+{debug,info,warning,error,critical}, --log {debug,info,warning,error,critical}
+Log level \end{Verbatim}
 
-\subsubsection{Generating POTree data}
-\label{sec:generatePOTree}
- This script should be run with the \textit{vadata} user and should be run when some data has changed in the raw data directory. The POTree data is copied automatically in the POTree data tree, with the naming as specified in figure \ref{fig:directory_structure_overview_potree}.
+\subsubsection{Generating Potree data}
+\label{sec:generatePotree} 
+The script should be run with the \textit{vadata} user and should be run when some data
+has changed in the raw data directory. The Potree data is copied automatically
+in the Potree data tree, with the naming as specified in figure
+\ref{fig:directory_structure_overview_potree}.
 
-\begin{figure}[]
- \centering
- \includegraphics[width=1\textwidth]{fig/data_structure/directory_structure_potree}
- \caption{Overview of the data structure: POTree data items}
- \label{fig:directory_structure_overview_potree}
-\end{figure}
+\begin{figure}[] \centering
+\includegraphics[width=1\textwidth]{fig/data_structure/directory_structure_potree}
+\caption{Overview of the data structure: Potree data items}
+\label{fig:directory_structure_overview_potree} \end{figure}
 
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
-usage: GeneratePOTree.py [-h] [-i ITEMID] [-d DBNAME] [-u DBUSER] [-p DBPASS]
-                         [-t DBHOST] [-r DBPORT] [-o POTREEDIR]
-                         [--levels LEVELS]
-                         [-l {debug,info,warning,error,critical}]
+usage: GeneratePotree.py [-h] [-i ITEMID] [-d DBNAME] [-u DBUSER] [-p DBPASS]
+[-t DBHOST] [-r DBPORT] [-o POTREEDIR] [--levels LEVELS] [-l
+{debug,info,warning,error,critical}]
 
-Generates the POTree data for a raw data item (ONLY FOR PCs)
+Generates the Potree data for a raw data item (ONLY FOR PCs)
 
-optional arguments:
-  -h, --help            show this help message and exit
-  -i ITEMID, --itemid ITEMID
-                        Comma-separated list of PointCloud Raw Data Item Ids
-                        [default is to convert all raw data items that do not
-                        have a related POtree data item] (with ? the available
-                        raw data items are listed, with ! the list all the raw
-                        data items without any related POTree data item)
-  -d DBNAME, --dbname DBNAME
-                        Postgres DB name [default viaappiadb]
-  -u DBUSER, --dbuser DBUSER
-                        DB user [default $USERNAME]
-  -p DBPASS, --dbpass DBPASS
-                        DB pass
-  -t DBHOST, --dbhost DBHOST
-                        DB host
-  -r DBPORT, --dbport DBPORT
-                        DB port
-  -o POTREEDIR, --potreeDir POTREEDIR
-                        POTREE data directory [default
-                        /home/pattydat/DATA/POTREE]
-  --levels LEVELS       Number of levels of the Octree, parameter for
-                        PotreeConverter. [default is 4 for Sites and 8 for
-                        Backgrounds]
-  -l {debug,info,warning,error,critical}, --log {debug,info,warning,error,critical}
-                        Log level
-\end{Verbatim}
+optional arguments: -h, --help            show this help message and exit -i
+ITEMID, --itemid ITEMID Comma-separated list of PointCloud Raw Data Item Ids
+[default is to convert all raw data items that do not have a related Potree
+data item] (with ? the available raw data items are listed, with ! the list all
+the raw data items without any related Potree data item) -d DBNAME, --dbname
+DBNAME Postgres DB name [default viaappiadb] -u DBUSER, --dbuser DBUSER DB user
+[default $USERNAME] -p DBPASS, --dbpass DBPASS DB pass -t DBHOST, --dbhost
+DBHOST DB host -r DBPORT, --dbport DBPORT DB port -o POTREEDIR, --potreeDir
+POTREEDIR POTREE data directory [default /home/pattydat/DATA/POTREE] --levels
+LEVELS       Number of levels of the Octree, parameter for PotreeConverter.
+[default is 4 for Sites and 8 for Backgrounds] -l
+{debug,info,warning,error,critical}, --log {debug,info,warning,error,critical}
+Log level \end{Verbatim}

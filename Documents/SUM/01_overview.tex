@@ -1,6 +1,27 @@
 \section{Overview}
 \label{sec:dataman_overview}
 
- The subject of this project is an archaeological study of an area full of funerary monuments between the fifth and sixth miles of the Via Appia Antica. The data gathered from this area are of different resolution and different types (modalities): point clouds, meshes, photos, historical images and attribute information of the monuments of interest. The data are managed, processed and visualized by the Via Appia 3D GIS. The GIS combines a 3D viewer and a database (DB) and allows the user to refine which data are visualized based on some attributes. The system, which can be updated when new data is available, allows multiple researchers in different locations to analyze and study the area in 3D and aims to be an example for other complex archaeological study areas. This document is the user manual for the data management part of the system.
+The subject of this project is an archaeological study of an area full of
+funerary monuments between the fifth and sixth miles of the Via Appia Antica~\cite{}.
+The data gathered from this area is of different resolution and different
+types (modalities): point clouds, meshes, photos, historical images and
+attribute information of the monuments of interest. The data is managed,
+processed and visualized by a Via Appia 4D Geospatial Information Systems (GIS).
+Such system combines two 4D viewers and a Database Management System (DBMS).
 
-The Via Appia 3D/4D GIS has client-server architecture described in Section \ref{sec:sys_arch}.The data are heterogeneous in nature both due to their conceptual difference and acquisition modality. The conceptual data description can be found in Section \ref{sec:concept_descr}. The storage of the data is organized according to a predefined hierarchical convention as described in Section \ref{sec:data_structure}. The DB, storing the actual data location as well as many attribute data (meta-data) of archaeological interest, is explained in Section \ref{sec:database}. The software used in the 3D/4D GIS is described in Section \ref{sec:software}.
+Through a client-server architecture, multiple researchers at different locations
+are able to analyze and study different areas of the ViaAppia. Using the data
+attributes the user requests a data sub-set from the DBMS and visualizes it.
+Such architecture creates the base 4D GIS data exploration on large and complex
+archaeological study areas.
+
+This document is the user manual and the remainder of it is organized as follows.
+The Via Appia 4D/4D GIS has client-server architecture described in Section
+\ref{sec:sys_arch}.The data are heterogeneous in nature both due to their
+conceptual difference and acquisition modality. The conceptual data description
+can be found in Section \ref{sec:concept_descr}. The storage of the data is
+organized according to a predefined hierarchical convention as described in
+Section \ref{sec:data_structure}. The database storing the actual data location as
+well as many attribute data (meta-data) of archaeological interest is
+explained in Section \ref{sec:database}. The software used in the 4D/4D GIS is
+described in Section \ref{sec:software}.

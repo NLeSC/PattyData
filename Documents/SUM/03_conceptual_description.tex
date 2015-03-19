@@ -1,51 +1,83 @@
-\section{Conceptual description}
-\label{sec:concept_descr}
+\section{Conceptual description} \label{sec:concept_descr}
 
-The gathered data of interest originate from the surface of an area corresponding to one mile of the ancient Via Appia in Rome. Conceptually these are divided into road data (also referred as to the {\em background}), which serve as a reference system and context and monument data, which represent the objects of interest, aligned with the road data. The monuments, are referred to as {\em sites}. 
+The gathered data use in the ViaAppia project represents the surface of an area
+corresponding to one mile of the ancient Via Appia in Rome. Conceptually the
+data is divided into road data (also referred as the {\em background}) and
+context and monument data (also referred as {\em sites}). The {\em background}
+data serves as a reference system. The {\em sites} data represents the objects
+of interest and it is aligned with the {\em background}.
 
-The data, depending on the way of acquisition, are of several types:
-\begin{itemize}
+The data, depending on the way of acquisition, is of several types:
+\begin{itemize} 
 \item {\em Point clouds (PC)}
-\begin{itemize}
-\item A low resolution PC of the research area that has been generated making use of Fugro's DRIVE-MAP services. 
-\item High resolution PCs of the different objects of interest (monuments, sites) generated using photogrammetric technologies. 
-\end{itemize}
-\item {\em Meshes} (sites reconstructions) for different historical epochs. 
-\item Contemporary and historical {\em pictures} or paintings. 
-\item {\em Attributes} data for the sites and their parts, which are gathered by field observations. 
+    \begin{itemize} 
+    \item A low resolution PC of the research area that has been generated making
+    use of Fugro's DRIVE-MAP services.
+    \item High resolution PCs of the different objects of interest (monuments,
+    sites) generated using photogrammetric technologies.
+    \end{itemize}
+\item {\em Meshes} (sites reconstructions) for different historical epochs.
+\item Contemporary and historical {\em pictures} or paintings.
+\item {\em Attributes} data for the sites and their parts, which are gathered
+by field observations.
 \end{itemize}
 
 \subsection{Point clouds}
-Using the DRIVE-MAP service of Fugro the part of the surface of the Via Appia between the fifth and sixth miles was scanned and a {\em PC} was produced. A point in the PC has 3D coordinates ($x, y, z$), in respect to a given Earth reference system known at scanning time, color and possibly other measured attributes. The resolution (number of points per area or volume) of this point cloud is not enough to see detailed features of the sites, furthermore, they were only scanned from the main road. Thus, the back of the sites is missing. This is illustrated on Fig.\ref{fig:viaAppiaPointCloud}.
+Using the DRIVE-MAP service of Fugro the part of the
+surface of the Via Appia between the fifth and sixth miles was scanned and a
+{\em PC} was produced. A point in the PC has 4D coordinates ($x, y, z$), in
+respect to a given Earth reference system known at scanning time, color and
+possibly other measured attributes. The resolution (number of points per area
+or volume) of this point cloud is not enough to see detailed features of the
+sites, furthermore, they were only scanned from the main road. Thus, the back
+of the sites is missing. This is illustrated on Fig.\ref{fig:viaAppiaPointCloud}.
 
-\begin{figure}[!ht]
-\centering
+\begin{figure}[!ht] \centering
 \includegraphics[scale=0.5]{fig/conceptual_description/ViaAppiaPCAnnot.pdf}
-\caption{Point cloud data gathered along Via Appia. The Drive map is of low resolution and covers only part of the monuments (sites) facing the road.}
-\label{fig:viaAppiaPointCloud}
-\end{figure}
+\caption{Point cloud data gathered along Via Appia. The Drive map is of low
+resolution and covers only part of the monuments (sites) facing the road.}
+\label{fig:viaAppiaPointCloud} \end{figure}
 
-Usually there is one drive-map used as a background at a time, while there can be multiple drive-maps obtained at different times or acquisition devices. Or there can be different versions of the same drive-map where some post-processing have been performed like points classification (e.g.\ sky, tree, road, etc.) and possibly non-interesting points filtering (e.g.\ tree and grass removal).
+Despite the existence of multiple drive-maps, obtained at different times or
+with different acquisition devices, only one drive-map at a time is used as
+background. It is also possible to have different versions of the same drive-map.
+Each version contains post-processing results. For example, points classification,
+e.g., sky, tree, road, etc., and non-interesting points filtering, e.g., tree and
+grass removal.
 
-Additional point clouds of higher resolution covering also the back of the monuments have been obtained using photogrammetric software from photographic pictures of the sites from different camera locations (viewpoints). 
+Additional point clouds of higher resolution covering also the back of the
+monuments have been obtained using photogrammetric software from photographic
+pictures of the sites from different camera locations (viewpoints). Such data
+is an addition to the {\em sites} data set.
 
 \subsection{Pictures}
-The pictures of a site can be both contemporary (current) or historical pictures or paintings. An illustration of visualizing a contemporary photo of a monument next to its point cloud data can be seen on Fig.\ref{fig:viaAppiaMeshPicture}. The photo was one of the photos used to generate the high resolution site PC and visualizing it next to the location of the monument can be extra informative or can be used as thumbnail. Usually there are multiple pictures per site.
+The pictures of a site are both contemporary (current) or historical pictures
+or paintings. Fig.\ref{fig:viaAppiaMeshPicture} has an illustration of visualizing
+a contemporary photo of a monument next to its point cloud data. The photo was
+one of the photos used to generate the high resolution site PC and visualizing
+it next to the location of the monument provides extra information about the
+context. Each site has multiple pictures.
 
 \subsection{Meshes}
-For the purpose of archaeological research, multiple reconstructions of the sites of interest are often performed. These reconstructions, or meshes, can also be current or historical. An illustration of visualizing a contemporary mesh of a monument aligned to its point cloud data can be seen on Fig.\ref{fig:viaAppiaMeshPicture}.
+For the purpose of archaeological research, multiple reconstructions of the
+sites of interest are often performed. These reconstructions, or meshes, are
+also classified as current or historical. An illustration of visualizing a
+contemporary mesh of a monument aligned to its point cloud data is pictured
+on Fig.\ref{fig:viaAppiaMeshPicture}.
 
-\begin{figure}[!ht]
-\centering
+\begin{figure}[!ht] \centering
 \includegraphics[scale=0.5]{fig/conceptual_description/ViaAppiaMeshPicture.pdf}
-\caption{Reconstruction meshes and picture of a site overlayed on the point cloud data.}
-\label{fig:viaAppiaMeshPicture}
-\end{figure}
+\caption{Reconstruction meshes and picture of a site overlayed on the point
+cloud data.} \label{fig:viaAppiaMeshPicture} \end{figure}
 
-
-The point clouds, meshes and pictures are stored according to the data structure convention (Section \ref{sec:data_structure}).
+The point clouds, meshes and pictures are stored according to the data
+structure convention (Section \ref{sec:data_structure}).
 
 \subsection {Attributes}
-These data are collected on the site from archaeologists. They are relevant to the archaeological research question,  and can be, for example material composition, condition, possible interpretation, description of the different elements or sub-parts, etc.  
-
-The attribute data are considered as additional descriptive (meta) data and are stored in a database along with the pointers to the other data types (Section \ref{sec:database}).
+Attributes represents the data collected at the site by the archaeologists, 
+for example, material composition, condition, possible interpretation,
+description of the different elements or sub-parts, etc. The attribute data
+is considered as additional descriptive (meta) data and it is stored in a
+database along with the pointers to the other data types (Section
+\ref{sec:database}). Furthermore, they extremely relevant for the definition
+of archaeological research questions.
