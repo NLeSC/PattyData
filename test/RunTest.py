@@ -2,7 +2,7 @@
 from ConfigParser import ConfigParser
 import os, sys, shutil
 from collections import namedtuple
-import itertools
+#import itertools
 
 # import the tested modules
 testFolder = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
@@ -11,7 +11,7 @@ scriptsFolder = os.path.abspath(os.path.join(testFolder, '../python'))
 sys.path.append(scriptsFolder)
 
 import utils
-import CreateDB, UpdateDBFootprints, UpdateDBAttribute
+import CreateDB, UpdateDBFootprints, UpdateDBAttribute, UpdateDBItemZ
 
 
 # get configuration from an ini file 
@@ -70,25 +70,29 @@ dbPort = config.get('DB','Port')
 footprints_file = config.get('Data','Footprints')
 attributes_file = config.get('Data','Attributes')
 
+footprints_item_ids = config.get('Data', 'FootprintsItemIds')
+footprints_drive_map = config.get('Data', 'FootprintsDriveMap')
+
 ####
 dataPath = config.get('Data','Path')
 # clean everything
-if os.path.exists(dataPath):
-    shutil.rmtree(dataPath)
-
-dirs = [[dataPath],
-        ['RAW','OSG','POTREE'],
-        ['PC','MESH','PICT','DOME','BOUND'],
-        ['BACK', 'SITE'],
-        ['CURR', 'HIST', 'ARCH_REC']]
-# generate a redundant(very!) common directory structure
-for item in itertools.product(*dirs):    
-    os.makedirs(os.path.join(*item))
+#if os.path.exists(dataPath):
+#    shutil.rmtree(dataPath)
+#
+#dirs = [[dataPath],
+#        ['RAW','OSG','POTREE'],
+#        ['PC','MESH','PICT','DOME','BOUND'],
+#        ['BACK', 'SITE'],
+#        ['CURR', 'HIST', 'ARCH_REC']]
+## generate a redundant(very!) common directory structure
+#for item in itertools.product(*dirs):    
+#    os.makedirs(os.path.join(*item))
 
 print "Scripts input parameters loaded."    
-print "Directory structure (redundant) was created." 
+#print "Directory structure (redundant) was created." 
 print "Setting up...DONE."  
 print "-----------------------------------------------------------------------"
+
 ##############################################################################
 #cleanup()
 
@@ -136,9 +140,24 @@ if logFile.count('ERROR') > 0:
     cleanup()
     sys.exit()
 print "The testing of the attributes DB update...DONE."
+print "-----------------------------------------------------------------------"
 
+# update the Z of some sites
+print "Testing updating the Z of given items in the DB... "
 
-# UpdateDBItemZ.py -c 16 -l dataAbsPath
+CreateZArguments = namedtuple("Z_Arguments", "itemid las dbname dbuser dbpass dbhost dbport cores")
+UpdateDBItemZ.run(CreateZArguments(footprints_item_ids, footprints_drive_map, dbName, dbUser, dbPass, dbHost, dbPort, 16))
+
+logFile = 'UpdateDBItemZ.py.log'
+logFileContent = open(logFile,'r').read()
+
+if logFile.count('ERROR') > 0:
+    print 'ERRORs in updating the ItemIdZ. See %s' % logFile
+    cleanup()
+    sys.exit()
+print "The testing of the updating the Z of given items in the DB...DONE."
+print "-----------------------------------------------------------------------"
+
 # UpdateDB.py
 # AddRawDataItem.py a PC BACK (small subset of DRIVE_1_V3 with only two las files)
 # AddRawDataItem.py a PC SITE
