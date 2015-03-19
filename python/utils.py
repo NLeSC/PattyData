@@ -106,9 +106,19 @@ def apply_argument_parser(argumentsParser, options=None):
 
 def start_logging(filename, level=DEFAULT_LOG_LEVEL):
     "Start logging with given filename and level."
-    logging.basicConfig(filename=filename, level=LOG_LEVELS[level], format=LOG_FORMAT, datefmt=DATE_FORMAT)
-    logger = logging.getLogger(__name__)
-    return logger
+    fileh = logging.FileHandler(filename, 'a')
+    formatter = logging.Formatter(LOG_FORMAT)
+    fileh.setFormatter(formatter, datefmt=DATE_FORMAT)
+    fileh.setLevel(LOG_LEVELS[level])
+    log = logging.getLogger()  # root logger
+    for hdlr in log.handlers:  # remove all old handlers
+        log.removeHandler(hdlr)
+    log.addHandler(fileh)      # set the new handler
+    return log
+    
+    #logging.basicConfig(filename=filename, level=LOG_LEVELS[level], format=LOG_FORMAT, datefmt=DATE_FORMAT)
+    #logger = logging.getLogger(__name__)
+    #return logger
 
 
 def isCurrent(absPath):
