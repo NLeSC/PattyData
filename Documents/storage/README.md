@@ -1,3 +1,1 @@
-<object data="https://github.com/NLeSC/PattyData/edit/master/Documents/storage/html_patty/Directory_Structure.html"> 
-    Your browser doesn’t support the object tag. 
-</object>
+![Alt text](https://github.com/NLeSC/PattyData/blob/master/Documents/storage/directory_structure.png "ER diagram")
