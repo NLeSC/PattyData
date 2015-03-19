@@ -11,7 +11,7 @@ scriptsFolder = os.path.abspath(os.path.join(testFolder, '../python'))
 sys.path.append(scriptsFolder)
 
 import utils
-import CreateDB, UpdateDBFootprints
+import CreateDB, UpdateDBFootprints, UpdateDBAttribute
 
 
 # get configuration from an ini file 
@@ -68,6 +68,7 @@ dbPass = config.get('DB','Pass')
 dbPort = config.get('DB','Port')
 
 footprints_file = config.get('Data','Footprints')
+attributes_file = config.get('Data','Attributes')
 
 ####
 dataPath = config.get('Data','Path')
@@ -83,7 +84,8 @@ dirs = [[dataPath],
 # generate a redundant(very!) common directory structure
 for item in itertools.product(*dirs):    
     os.makedirs(os.path.join(*item))
-    
+
+print "Scripts input parameters loaded."    
 print "Directory structure (redundant) was created." 
 print "Setting up...DONE."  
 print "-----------------------------------------------------------------------"
@@ -107,7 +109,7 @@ print "-----------------------------------------------------------------------"
 # update the footprints
 print "Testing updating the DB with the sites' footprints... "
 
-CreateFootprArguments = namedtuple("Update_Footpr_Arguments", "input dbname dbuser dbpass dbhost dbport")
+CreateFootprArguments = namedtuple("Footpr_Arguments", "input dbname dbuser dbpass dbhost dbport")
 UpdateDBFootprints.run(CreateFootprArguments(footprints_file, dbName, dbUser, dbPass, dbHost, dbPort))
 
 logFile = os.path.basename(footprints_file) + '.log'
@@ -120,8 +122,22 @@ if logFile.count('ERROR') > 0:
 print "The testing of the footprints DB update...DONE."
 print "-----------------------------------------------------------------------"
 
+# update the attributes
+print "Testing updating the Attributes in the DB... "
 
-# UpdateDBAttribute.py -i Attributes/20150312/VA2012-2014_12032015.mdb.sql
+CreateAttrArguments = namedtuple("Attr_Arguments", "input dbname dbuser dbpass dbhost dbport log")
+UpdateDBAttribute.run(CreateAttrArguments(attributes_file, dbName, dbUser, dbPass, dbHost, dbPort, logLevel))
+
+logFile = os.path.basename(attributes_file) + '.log'
+logFileContent = open(logFile,'r').read()
+
+if logFile.count('ERROR') > 0:
+    print 'ERRORs in updating the sites attributes. See %s' % logFile
+    cleanup()
+    sys.exit()
+print "The testing of the attributes DB update...DONE."
+
+
 # UpdateDBItemZ.py -c 16 -l dataAbsPath
 # UpdateDB.py
 # AddRawDataItem.py a PC BACK (small subset of DRIVE_1_V3 with only two las files)
@@ -138,5 +154,5 @@ print "-----------------------------------------------------------------------"
 cleanup()
 
 
-print "DONE"
+print "Scripts testing DONE!"
     
