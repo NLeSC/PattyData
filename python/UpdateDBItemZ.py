@@ -8,7 +8,7 @@
 # Modifications:   
 # Notes:            
 ################################################################################
-import os, argparse, utils, psycopg2, time, logging, multiprocessing
+import os, argparse, utils, time, logging, multiprocessing
 import GetItemLAS
 
 BUFFER = 2
