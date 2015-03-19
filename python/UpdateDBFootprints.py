@@ -27,20 +27,6 @@ def getEPSG(shapeprj_path):
    #print 'EPSG is: %s' % srs.GetAuthorityCode(None)
    return srs.GetAuthorityCode(None)
 
-
-def argument_parser():
-    """ Define the arguments and return the parser object"""
-    parser = argparse.ArgumentParser(
-    description="Script to update the sites footprints from an SQL file to the DB")
-    parser.add_argument('-i','--input',help='Input SQL or ShapeFile file. If ShapeFile is provided we also need a prj file (we assume same name as ShapeFile with changing extension from shp to prj',type=str, required=True)
-    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name which should be updated with these footprints ' + utils.DEFAULT_DB + ']',type=str , required=False)
-    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
-    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
-    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
-    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
-        
-    return parser
-
 def clean_temp_table(args):
     
     drop_table_sql = "DROP TABLE IF EXISTS sites_geoms_temp" 
@@ -134,7 +120,6 @@ def run(args):
     # start logging
     logname = os.path.basename(args.input) + '.log'
     logger = utils.start_logging(filename=logname, level=utils.DEFAULT_LOG_LEVEL)
-    utils.checkSuperUser()
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
     msg = os.path.basename(__file__) + ' script starts at %s.' %localtime
@@ -209,16 +194,24 @@ def run(args):
     print(msg)
     logger.info(msg)
     
-    # end logging
-#    localtime = utils.getCurrentTimeAsAscii()  
-#    msg = 'UpdateFootprints script logging ends at %s'% localtime
-#    print(msg)
-#    logger.info(msg)
-    
     return
 
-
-
+def argument_parser():
+    """ Define the arguments and return the parser object"""
+    parser = argparse.ArgumentParser(
+    description="Script to update the sites footprints from an SQL file to the DB")
+    parser.add_argument('-i','--input',help='Input SQL or ShapeFile file. If ShapeFile is provided we also need a prj file (we assume same name as ShapeFile with changing extension from shp to prj',type=str, required=True)
+    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name which should be updated with these footprints ' + utils.DEFAULT_DB + ']',type=str , required=False)
+    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
+    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
+    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
+    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
+        
+    return parser
 
 if __name__ == '__main__':
-    run(utils.apply_argument_parser(argument_parser()))
+    try:
+        utils.checkSuperUser()
+        run(utils.apply_argument_parser(argument_parser()))
+    except Exception as e:
+        pass

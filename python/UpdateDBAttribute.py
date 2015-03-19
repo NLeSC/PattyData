@@ -10,23 +10,9 @@
 ################################################################################
 import os, argparse, utils, time, logging, psycopg2
 
-def argument_parser():
-    """ Define the arguments and return the parser object"""
-    parser = argparse.ArgumentParser(
-    description="Merges AccessDB file with ViaAppia DB (it requires to have converted Access file into SQL dump")
-    parser.add_argument('-i','--input',help='SQL file with dumped Microsoft Access file',type=str, required=True)
-    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name which should be updated with the attribute data ' + utils.DEFAULT_DB + ']',type=str , required=False)
-    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
-    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
-    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
-    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
-    parser.add_argument('--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
-    return parser
-
 def run(args):
     logname = os.path.basename(args.input) + '.log'
     utils.start_logging(filename=logname, level=args.log)
-    utils.checkSuperUser()
     
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
@@ -146,6 +132,26 @@ ON DELETE NO ACTION""")
     print(msg)
     logging.info(msg)
 
+
+def argument_parser():
+    """ Define the arguments and return the parser object"""
+    parser = argparse.ArgumentParser(
+    description="Merges AccessDB file with ViaAppia DB (it requires to have converted Access file into SQL dump")
+    parser.add_argument('-i','--input',help='SQL file with dumped Microsoft Access file',type=str, required=True)
+    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name which should be updated with the attribute data ' + utils.DEFAULT_DB + ']',type=str , required=False)
+    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
+    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
+    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
+    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
+    parser.add_argument('--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
+    return parser
+
+
 if __name__ == '__main__':
-    run(utils.apply_argument_parser(argument_parser()))
+    try:
+        utils.checkSuperUser()
+        run(utils.apply_argument_parser(argument_parser()))
+    except Exception as e:
+        pass
+    
 

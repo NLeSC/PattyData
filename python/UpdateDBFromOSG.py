@@ -135,7 +135,7 @@ def deleteCameras(cursor):
 
 def main(opts):
     # Define logging and start logging
-    logname = os.path.basename(opts.config).split('.')[0] + '.log'
+    logname = os.path.basename(opts.config) + '.log'
     utils.start_logging(filename=logname, level=opts.log)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
@@ -309,8 +309,8 @@ def main(opts):
     print(msg)
     logging.info(msg)
 
-if __name__ == "__main__":
-    # define argument menu
+def argument_parser():
+    """ Define the arguments and return the parser object"""
     description = "Updates DB from the changes in the XML configuration file"
     parser = argparse.ArgumentParser(description=description)
 
@@ -330,12 +330,13 @@ if __name__ == "__main__":
     parser.add_argument('-r', '--dbport', default='', help='DB port',
                         action='store')
     parser.add_argument('-l', '--log', help='Log level',
-                        choices=['debug', 'info', 'warning', 'error',
-                                 'critical'],
+                        choices=utils.LOG_LEVELS_LIST,
                         default=utils.DEFAULT_LOG_LEVEL)
+    return parser
 
-    # extract user entered arguments
-    opts = parser.parse_args()
-
-    # run main
-    main(opts)
+if __name__ == '__main__':
+    try:
+        utils.checkSuperUser()
+        run(utils.apply_argument_parser(argument_parser()))
+    except Exception as e:
+        pass

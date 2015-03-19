@@ -352,17 +352,18 @@ def copy_data(opts, TARGETDIR):
     logger.info("Finished copying data to " + TARGETDIR)
 
 
-def main(opts):
+def run(opts):
     # set logging level
     global logger
-    logname = os.path.basename(__file__).split('.')[0] + '.log'
+    logname = os.path.basename(__file__) + '.log'
     logger = utils.start_logging(filename=logname, level=opts.log)
-    utils.checkSuperUser()
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
     msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
     print msg
     logger.info(msg)
+    
+    opts.file = opts.file.rstrip('/')
     
     # check if all required options are specified
     check_required_options(opts)
@@ -380,58 +381,32 @@ def main(opts):
     print(msg)
     logger.info(msg)
 
-
-if __name__ == "__main__":
-    # define argument menu
+def argument_parser():
+    """ Define the arguments and return the parser object"""
     description = "Add Raw data item to the file structure."
     parser = argparse.ArgumentParser(description=description)
     # create argument groups
     requiredNamed = parser.add_argument_group('required arguments')
-    requiredNamedPCMESH = parser.add_argument_group(
-        'required arguments for ' + utils.PC_FT + ' and ' + utils.MESH_FT)
-    requiredNamedMESHPIC = parser.add_argument_group(
-        'required arguments for ' + utils.MESH_FT + ' and ' + utils.PIC_FT)
-    requiredNamedPC = parser.add_argument_group(
-        'required arguments for ' + utils.PC_FT + ' ' + utils.SITE_FT)
-    requiredNamedSITE = parser.add_argument_group(
-        'required arguments for ' + utils.SITE_FT)
+    requiredNamedPCMESH = parser.add_argument_group('required arguments for ' + utils.PC_FT + ' and ' + utils.MESH_FT)
+    requiredNamedMESHPIC = parser.add_argument_group('required arguments for ' + utils.MESH_FT + ' and ' + utils.PIC_FT)
+    requiredNamedPC = parser.add_argument_group('required arguments for ' + utils.PC_FT + ' ' + utils.SITE_FT)
+    requiredNamedSITE = parser.add_argument_group('required arguments for ' + utils.SITE_FT)
+    
     # fill argument groups
-    parser.add_argument('-i', '--data', default=utils.DEFAULT_RAW_DATA_DIR,
-                        help='RAW data folder [default ' +
-                        utils.DEFAULT_RAW_DATA_DIR + ']')
-    requiredNamed.add_argument('-k', '--kind', action='store',
-                               help='Type of item',
-                               choices=[utils.BG_FT, utils.SITE_FT],
-                               required=True)
-    requiredNamed.add_argument('-t', '--type', action='store',
-                               help='Type of data',
-                               choices=[utils.PC_FT, utils.MESH_FT,
-                                        utils.PIC_FT], required=True)
-    requiredNamed.add_argument('-f', '--file', action='store',
-                               help='Input file/directory name to copy',
-                               required=True)
-    requiredNamedMESHPIC.add_argument('-p', '--period', action='store',
-                                      help='Period (choose from ' +
-                                      utils.MESH_FT + ':' + utils.CURR_FT +
-                                      ',' + utils.ARCREC_FT + '; ' +
-                                      utils.PIC_FT + ':' + utils.CURR_FT +
-                                      ',' + utils.HIST_FT + ')',
-                                      choices=[utils.CURR_FT, utils.HIST_FT,
-                                               utils.ARCREC_FT])
-    parser.add_argument('-s', '--srid', action='store',
-                        help='spatial reference system SRID [' +
-                        'only for MESH SITE]')
-    parser.add_argument('--eight', help='8 bit color [only for PC SITE or ' +
-                        'MESH]', action="store_true")
-    parser.add_argument('-l', '--log', help='Log level',
-                        choices=['debug', 'info', 'warning', 'error',
-                                 'critical'],
-                        default=utils.DEFAULT_LOG_LEVEL)
-    requiredNamedSITE.add_argument('--site', action='store',
-                                   type=int, help='Site number')
-    # extract user entered arguments
-    opts = parser.parse_args()
-    opts.file = opts.file.rstrip('/')  # remove trailing /
+    parser.add_argument('-i', '--data', default=utils.DEFAULT_RAW_DATA_DIR,help='RAW data folder [default ' + utils.DEFAULT_RAW_DATA_DIR + ']')
+    requiredNamed.add_argument('-k', '--kind', action='store', help='Type of item', choices=[utils.BG_FT, utils.SITE_FT], required=True)
+    requiredNamed.add_argument('-t', '--type', action='store', help='Type of data', choices=[utils.PC_FT, utils.MESH_FT, utils.PIC_FT], required=True)
+    requiredNamed.add_argument('-f', '--file', action='store', help='Input file/directory name to copy', required=True)
+    requiredNamedMESHPIC.add_argument('-p', '--period', action='store', help='Period (choose from ' + utils.MESH_FT + ':' + utils.CURR_FT + ',' + utils.ARCREC_FT + '; ' +  utils.PIC_FT + ':' + utils.CURR_FT + ',' + utils.HIST_FT + ')', choices=[utils.CURR_FT, utils.HIST_FT, utils.ARCREC_FT])
+    parser.add_argument('-s', '--srid', action='store', help='spatial reference system SRID [only for MESH SITE]')
+    parser.add_argument('--eight', help='8 bit color [only for PC SITE or MESH]', action="store_true")
+    parser.add_argument('-l', '--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
+    requiredNamedSITE.add_argument('--site', action='store', type=int, help='Site number')
+    return parser
 
-    # run main
-    main(opts)
+if __name__ == "__main__":
+    try:
+        utils.checkSuperUser()
+        run(utils.apply_argument_parser(argument_parser()))
+    except Exception as e:
+        pass
