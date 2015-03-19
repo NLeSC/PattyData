@@ -1,0 +1,16 @@
+2015/03/19/11:57:54 - ERROR - You can only execute this script with user pattydat
+2015/03/19/12:07:51 - ERROR - You can only execute this script with user pattydat
+2015/03/19/12:10:02 - INFO - CreateDB.py script starts at Thu Mar 19 12:10:02 2015.
+2015/03/19/12:10:18 - ERROR - ('Cannot connect to testpatty DB.', '; OperationalError: fe_sendauth: no password supplied\n')
+2015/03/19/12:50:55 - INFO - CreateDB.py script starts at Thu Mar 19 12:50:55 2015.
+2015/03/19/12:50:55 - ERROR - ('Cannot connect to testpatty DB.', '; OperationalError: FATAL:  password authentication failed for user "pattydat"\nFATAL:  password authentication failed for user "pattydat"\n')
+2015/03/19/12:51:40 - INFO - CreateDB.pyc script starts at Thu Mar 19 12:51:40 2015.
+2015/03/19/12:51:40 - ERROR - ('Cannot connect to testpatty DB.', '; OperationalError: FATAL:  password authentication failed for user "pattydat"\nFATAL:  password authentication failed for user "pattydat"\n')
+2015/03/19/12:52:00 - INFO - CreateDB.pyc script starts at Thu Mar 19 12:52:00 2015.
+2015/03/19/12:52:01 - ERROR - ('Cannot connect to testpatty DB.', '; OperationalError: FATAL:  password authentication failed for user "pattydat"\nFATAL:  password authentication failed for user "pattydat"\n')
+2015/03/19/13:05:40 - INFO - CreateDB.pyc script starts at Thu Mar 19 13:05:40 2015.
+2015/03/19/13:05:41 - DEBUG - Successful connection to testpatty DB.
+2015/03/19/13:05:41 - INFO - Adding PostGIS extension
+2015/03/19/13:34:02 - INFO - CreateDB.pyc script starts at Thu Mar 19 13:34:02 2015.
+2015/03/19/13:34:03 - DEBUG - Successful connection to testpatty DB.
+2015/03/19/13:34:03 - INFO - Adding PostGIS extension
