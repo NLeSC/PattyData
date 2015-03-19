@@ -133,7 +133,7 @@ def deleteCameras(cursor):
     utils.dbExecute(cursor, 'DELETE FROM OSG_ITEM_CAMERA CASCADE')
     utils.dbExecute(cursor, 'DELETE FROM OSG_CAMERA CASCADE')
 
-def main(opts):
+def run(opts):
     # Define logging and start logging
     logname = os.path.basename(opts.config) + '.log'
     utils.start_logging(filename=logname, level=opts.log)
