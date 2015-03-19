@@ -4,8 +4,7 @@ PattyData
 [![Join the chat at https://gitter.im/NLeSC/PattyData](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/NLeSC/PattyData?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This repository contains:
- - Attributes: Different versions of Attributes DBs. For each version we need to have the original Access DB file but also the converted SQL dump produced from Bullzip's software ().  
- 
+ - Attributes: Different versions of Attributes DBs. For each version we need to have the original Microsoft Access DB file but also the converted SQL dump produced from Bullzip's software (See Attributes). 
  - Database: folder with the Entity-Relationship diagram used for the ViaAppiaDB as well as a SQL creation script. It also contains a picture and HTML documentation  
  - Documents: folder with documentaiton Software User Manual (SUM), data storage documents, meeting minutes, reports and installation instructions
  - Footprints/20150306: sites footprints data as of 06 March 2015
