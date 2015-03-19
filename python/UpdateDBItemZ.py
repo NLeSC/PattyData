@@ -50,21 +50,6 @@ def runChild(procIndex, itemsQueue, resultsQueue, lasFolder, dbname, dbuser, dbp
             resultsQueue.put((procIndex, itemId))   
     utils.closeConnectionDB(connection, cursor)
 
-def argument_parser():
-    """ Define the arguments and return the parser object"""
-    parser = argparse.ArgumentParser(
-    description="Script to minimum and maximum Z of the items")
-    parser.add_argument('-i','--itemid',default='',help='Comma-separated list of item ids to update their avg. Z from cutouts [default all]',type=str, required=False)
-    parser.add_argument('-l','--las',default=utils.DEFAULT_BACKGROUND_FOLDER,help='Folder that contains the LAS/LAZ files [default ' + utils.DEFAULT_BACKGROUND_FOLDER + ']',type=str, required=False)
-    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name [default ' + utils.DEFAULT_DB + ']',type=str , required=False)
-    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
-    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
-    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
-    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
-    parser.add_argument('-c','--cores',default=1,help='Number of cores to use [default 1]',type=int, required=False)    
-    return parser
-
-
 def run(args): 
     # start logging
     logname = os.path.basename(__file__) + '.log'
@@ -118,7 +103,23 @@ def run(args):
     print(msg)
     logging.info(msg)
 
+def argument_parser():
+    """ Define the arguments and return the parser object"""
+    parser = argparse.ArgumentParser(
+    description="Script to minimum and maximum Z of the items")
+    parser.add_argument('-i','--itemid',default='',help='Comma-separated list of item ids to update their avg. Z from cutouts [default all]',type=str, required=False)
+    parser.add_argument('-l','--las',default=utils.DEFAULT_BACKGROUND_FOLDER,help='Folder that contains the LAS/LAZ files [default ' + utils.DEFAULT_BACKGROUND_FOLDER + ']',type=str, required=False)
+    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name [default ' + utils.DEFAULT_DB + ']',type=str , required=False)
+    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
+    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
+    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
+    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
+    parser.add_argument('-c','--cores',default=1,help='Number of cores to use [default 1]',type=int, required=False)    
+    return parser
+
 if __name__ == '__main__':
-    
-    utils.checkSuperUser()
-    run(utils.apply_argument_parser(argument_parser()))
+    try:
+        utils.checkSuperUser()
+        run(utils.apply_argument_parser(argument_parser()))
+    except Exception as e:
+        pass

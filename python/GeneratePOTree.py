@@ -127,9 +127,9 @@ def getNumLevels(opts, isBackground):
         levels = int(opts.levels)
     return levels
 
-def main(opts):
+def run(opts):
     # Start logging
-    logname = os.path.basename(__file__).split('.')[0] + '.log'
+    logname = os.path.basename(__file__) + '.log'
     utils.start_logging(filename=logname, level=opts.log)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
@@ -179,9 +179,8 @@ WHERE raw_data_item_id NOT IN (
     print(msg)
     logging.info(msg)
 
-if __name__ == "__main__":
-    utils.checkSuperUser()
-    # define argument menu
+def argument_parser():
+# define argument menu
     description = "Generates the POTree data for a raw data item (ONLY FOR PCs)"
     parser = argparse.ArgumentParser(description=description)
 
@@ -204,12 +203,13 @@ if __name__ == "__main__":
     parser.add_argument('--levels',default='',help='Number of levels of the Octree, parameter for PotreeConverter. [default is 4 for Sites and 8 for Backgrounds]',action='store', required=False)
     
     parser.add_argument('-l', '--log', help='Log level',
-                        choices=['debug', 'info', 'warning', 'error',
-                                 'critical'],
+                        choices=utils.LOG_LEVELS_LIST,
                         default=utils.DEFAULT_LOG_LEVEL)
+    return parser
 
-    # extract user entered arguments
-    opts = parser.parse_args()
-
-    # run main
-    main(opts)
+if __name__ == "__main__":
+    try:
+        utils.checkSuperUser()
+        run(utils.apply_argument_parser(argument_parser()))
+    except Exception as e:
+        pass

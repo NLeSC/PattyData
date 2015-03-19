@@ -14,23 +14,6 @@ import os, argparse, psycopg2, time, re, subprocess, glob, logging, utils
 DEFAULT_CONCAVE = 0.9
 DEFAULT_BUFFER = 0
 
-def argument_parser():
-    """ Define the arguments and return the parser object"""
-    parser = argparse.ArgumentParser(
-    description = "Creates a LAS/LAZ file containing the cutout of the points in the bounding box of an area delimited by the footprint of a item/site.\nIt is possible to specify a buffer around the footprint.\nIt also outputs an auxiliary ASCII file with the vertices of the footprint (for the z value we use the average of the z coordinates of the cutout LAS/LAZ file")
-    parser.add_argument('-i','--itemid',help='Item ID',type=int, required=True)
-    parser.add_argument('-o','--output',default='',help='Output LAS/LAZ file',type=str, required=True)
-    parser.add_argument('-l','--las',default=utils.DEFAULT_BACKGROUND_FOLDER,help='Folder that contains the LAS/LAZ files [default ' + utils.DEFAULT_BACKGROUND_FOLDER + ']',type=str, required=False)
-    parser.add_argument('-c','--concave',default=DEFAULT_CONCAVE,help='Target percentage of concavity used by PostGIS when unifying the multipolygons [default ' + str(DEFAULT_CONCAVE) + ']. Must be between 0 and 1 (1 is a convex hull)',type=type(DEFAULT_CONCAVE), required=False)    
-    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB [default ' + utils.DEFAULT_DB + ']',type=str , required=False)
-    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
-    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
-    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
-    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
-    parser.add_argument('-b','--buffer',default=DEFAULT_BUFFER,help='Buffer around the footprint [default ' + str(DEFAULT_BUFFER) + ']',type=type(DEFAULT_BUFFER), required=False)
-    parser.add_argument('--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
-    return parser
-
 def create_cut_out(cursor, inputLAS, output, itemid, buffer, concave):
     
     returnOk = False
@@ -122,7 +105,7 @@ FROM (
     return (returnOk, vertices, minZ, maxZ, avgZ, numpoints)
 
 def run(args):
-    logname = os.path.basename(__file__).split('.')[0] + '.log'
+    logname = os.path.basename(__file__) + '.log'
     utils.start_logging(filename=logname, level=opts.log)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
@@ -150,6 +133,23 @@ def run(args):
     msg = 'Finished. Total elapsed time: %.02f seconds. See %s' % (elapsed_time, logname)
     print(msg)
     logging.info(msg) 
+
+def argument_parser():
+    """ Define the arguments and return the parser object"""
+    parser = argparse.ArgumentParser(
+    description = "Creates a LAS/LAZ file containing the cutout of the points in the bounding box of an area delimited by the footprint of a item/site.\nIt is possible to specify a buffer around the footprint.\nIt also outputs an auxiliary ASCII file with the vertices of the footprint (for the z value we use the average of the z coordinates of the cutout LAS/LAZ file")
+    parser.add_argument('-i','--itemid',help='Item ID',type=int, required=True)
+    parser.add_argument('-o','--output',default='',help='Output LAS/LAZ file',type=str, required=True)
+    parser.add_argument('-l','--las',default=utils.DEFAULT_BACKGROUND_FOLDER,help='Folder that contains the LAS/LAZ files [default ' + utils.DEFAULT_BACKGROUND_FOLDER + ']',type=str, required=False)
+    parser.add_argument('-c','--concave',default=DEFAULT_CONCAVE,help='Target percentage of concavity used by PostGIS when unifying the multipolygons [default ' + str(DEFAULT_CONCAVE) + ']. Must be between 0 and 1 (1 is a convex hull)',type=type(DEFAULT_CONCAVE), required=False)    
+    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB [default ' + utils.DEFAULT_DB + ']',type=str , required=False)
+    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
+    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
+    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
+    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
+    parser.add_argument('-b','--buffer',default=DEFAULT_BUFFER,help='Buffer around the footprint [default ' + str(DEFAULT_BUFFER) + ']',type=type(DEFAULT_BUFFER), required=False)
+    parser.add_argument('--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
+    return parser
 
 if __name__ == '__main__':
     run(utils.apply_argument_parser(argument_parser()))

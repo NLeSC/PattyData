@@ -49,7 +49,7 @@ DEFAULT_PREFENCES = """
 def main(opts):
     global logger
     # Define logger and start logging
-    logname = os.path.basename(opts.output).split('.')[0] + '.log'
+    logname = os.path.basename(opts.output) + '.log'
     logger = utils.start_logging(filename=logname, level=opts.log)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
@@ -321,8 +321,8 @@ def getOSGPosition(x, y, z, ItemSRID=None):
     z_out = z - offset_z
     return x_out, y_out, z_out
 
-if __name__ == "__main__":
-    # define argument menu
+def argument_parser():
+    """ Define the arguments and return the parser object"""
     description = 'Create XML configuration file from OSG data in the DB'
     parser = argparse.ArgumentParser(description=description)
 
@@ -349,8 +349,11 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--output', help='XML file', action='store',
                         required=True)
 
-    # extract user entered arguments
-    opts = parser.parse_args()
+    return parser
 
-    # run main
-    main(opts)
+if __name__ == "__main__":
+    try:
+        utils.checkSuperUser()
+        run(utils.apply_argument_parser(argument_parser()))
+    except Exception as e:
+        pass

@@ -16,40 +16,9 @@
 ##############################################################################
 import argparse, os, utils, time, shutil
 
-
 logger = None
 connection = None
 cursor = None
-
-def argument_parser():
-    description = "Removes a list of Raw data items and their related converted data from the file structure."
-    parser = argparse.ArgumentParser(description=description)
-    # add required argument group
-    requiredNamed = parser.add_argument_group('required arguments')
-    # arguments
-    requiredNamed.add_argument('-i', '--itemid', help='Comma-separated list of Raw Data Item Ids  Raw data item id (with ? the available raw data items are listed)',
-                        action='store', required=True)
-    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name ' + utils.DEFAULT_DB + ']',type=str , required=False)
-    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
-    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
-    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
-    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
-    parser.add_argument('-l', '--log', help='Log level',
-                        choices=['debug', 'info', 'warning', 'error',
-                                 'critical'],
-                        default=utils.DEFAULT_LOG_LEVEL)
-
-    return parser 
- 
-def apply_argument_parser(options=None):
-    """ Apply the argument parser. """
-    parser = argument_parser()
-    if options is not None:
-        args = parser.parse_args(options)
-    else:
-        args = parser.parse_args() 
-            
-    return args
 
 def fetch_abs_path(rawDataItemId):
     """ get the absolute data item path given the rawDataItemId"""
@@ -128,7 +97,7 @@ def run(args):
     global connection
     global cursor
     
-    logname = os.path.basename(__file__).split('.')[0] + '.log'
+    logname = os.path.basename(__file__) + '.log'
     logger = utils.start_logging(filename=logname, level=args.log)
     localtime = utils.getCurrentTimeAsAscii()
     msg = os.path.basename(__file__) + ' script starts at %s.' % localtime
@@ -196,6 +165,27 @@ def run(args):
     print(msg)
     logger.info(msg)
     
+def argument_parser():
+    description = "Removes a list of Raw data items and their related converted data from the file structure."
+    parser = argparse.ArgumentParser(description=description)
+    # add required argument group
+    requiredNamed = parser.add_argument_group('required arguments')
+    # arguments
+    requiredNamed.add_argument('-i', '--itemid', help='Comma-separated list of Raw Data Item Ids  Raw data item id (with ? the available raw data items are listed)',
+                        action='store', required=True)
+    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB name ' + utils.DEFAULT_DB + ']',type=str , required=False)
+    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
+    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
+    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
+    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
+    parser.add_argument('-l', '--log', help='Log level',
+                        choices=utils.LOG_LEVELS_LIST,
+                        default=utils.DEFAULT_LOG_LEVEL)
+    return parser 
+
 if __name__ == '__main__':
-    utils.checkSuperUser()
-    run( apply_argument_parser() )
+    try:
+        utils.checkSuperUser()
+        run(utils.apply_argument_parser(argument_parser()))
+    except Exception as e:
+        pass

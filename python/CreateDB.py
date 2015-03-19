@@ -3,7 +3,7 @@
 #    Created by Oscar Martinez                                                 #
 #    o.rubi@esciencecenter.nl                                                  #
 ################################################################################
-import os, optparse,logging, time, utils
+import os, argparse, logging, time, utils
 
 def run(opts):
     # Set logging
@@ -48,20 +48,22 @@ def run(opts):
     print msg
 
 
+def argument_parser():
+    """ Define the arguments and return the parser object"""
+    parser = argparse.ArgumentParser(
+    description="Create the DB")
+    parser.add_argument('-f','--sql',default='',help='File with the SQL commands to create the DB',type=str, required=True)
+    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB,help='Postgres DB name [default ' + utils.DEFAULT_DB + ']',type=str)
+    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str)
+    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str)
+    parser.add_argument('-b','--dbhost',default='',help='DB host',type=str)
+    parser.add_argument('-r','--dbport',default='',help='DB port',type=str)
+    parser.add_argument('--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
+    return parser
+
 if __name__ == "__main__":
-    usage = 'Usage: %prog [options]'
-    description = "Create the DB"
-    op = optparse.OptionParser(usage=usage, description=description)
-    op.add_option('-f','--sql',default='',help='File with the SQL commands to create the DB',type='string')
-    op.add_option('-d','--dbname',default=utils.DEFAULT_DB,help='Postgres DB name [default ' + utils.DEFAULT_DB + ']',type='string')
-    op.add_option('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type='string')
-    op.add_option('-p','--dbpass',default='',help='DB pass',type='string')
-    op.add_option('-b','--dbhost',default='',help='DB host',type='string')
-    op.add_option('-r','--dbport',default='',help='DB port',type='string')
-    op.add_option('-l','--log',help='Logging level (choose from ' + ','.join(utils.LOG_LEVELS_LIST) + ' ; default ' + utils.DEFAULT_LOG_LEVEL + ')',type='choice', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
-    (opts, args) = op.parse_args()
     try:
         utils.checkSuperUser()
-        run(opts)
+        run(utils.apply_argument_parser(argument_parser()))
     except Exception as e:
         pass

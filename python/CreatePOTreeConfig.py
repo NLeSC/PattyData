@@ -12,29 +12,6 @@
 import argparse, json, utils, glob, os, time
 logger = None
 
-def argument_parser():
-    """ Define the arguments and return the parser object"""
-    parser = argparse.ArgumentParser(
-    description="Script to generate a JSON file from the ViaAppiaDB for the ViaAppia POtree web-based visualization")
-    parser.add_argument('-o','--output',help='Output JSON file [Log of operation is stored in [output].log]',type=str, required=True)
-    parser.add_argument('-s','--srid',default=utils.SRID, help='SRID used in POtree visualization [default ' + str(utils.SRID) + ']',type=int , required=False)
-    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB [default ' + utils.DEFAULT_DB + ']',type=str , required=False)
-    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
-    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
-    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
-    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
-    parser.add_argument('--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
-    return parser
-    
-def apply_argument_parser(options=None):
-    """ Apply the argument parser. """
-    parser = argument_parser()
-    if options is not None:
-        args = parser.parse_args(options)
-    else:
-        args = parser.parse_args()    
-    return args
-
 def addThumbnail(cursor, itemId, jsonSite):
     query = 'SELECT A.abs_path, B.thumbnail FROM raw_data_item A, raw_data_item_picture B WHERE A.raw_data_item_id = B.raw_data_item_id AND A.item_id = %s'
     queryArgs = [itemId,]
@@ -213,7 +190,7 @@ def save2JSON(outFileName, jsonData):
 #------------------------------------------------------------------------------        
 def run(args):    
     global logger
-    logname = os.path.basename(args.output).split('.')[0] + '.log'
+    logname = os.path.basename(args.output) + '.log'
     logger = utils.start_logging(filename=logname, level=args.log)
 
     # start logging    
@@ -259,7 +236,24 @@ def run(args):
     print(msg)
     logger.info(msg)
 
+def argument_parser():
+    """ Define the arguments and return the parser object"""
+    parser = argparse.ArgumentParser(
+    description="Script to generate a JSON file from the ViaAppiaDB for the ViaAppia POtree web-based visualization")
+    parser.add_argument('-o','--output',help='Output JSON file [Log of operation is stored in [output].log]',type=str, required=True)
+    parser.add_argument('-s','--srid',default=utils.SRID, help='SRID used in POtree visualization [default ' + str(utils.SRID) + ']',type=int , required=False)
+    parser.add_argument('-d','--dbname',default=utils.DEFAULT_DB, help='PostgreSQL DB [default ' + utils.DEFAULT_DB + ']',type=str , required=False)
+    parser.add_argument('-u','--dbuser',default=utils.USERNAME,help='DB user [default ' + utils.USERNAME + ']',type=str, required=False)
+    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str, required=False)
+    parser.add_argument('-t','--dbhost',default='',help='DB host',type=str, required=False)
+    parser.add_argument('-r','--dbport',default='',help='DB port',type=str, required=False)
+    parser.add_argument('--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
+    return parser
+
 if __name__ == '__main__':
+    try:
+        utils.checkSuperUser()
+        run(utils.apply_argument_parser(argument_parser()))
+    except Exception as e:
+        pass
     
-    utils.checkSuperUser()
-    run( apply_argument_parser() )

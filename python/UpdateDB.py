@@ -3,7 +3,7 @@
 #    Created by Oscar Martinez                                                 #
 #    o.rubi@esciencecenter.nl                                                  #
 ################################################################################
-import os, optparse, psycopg2, time, logging, glob, json
+import os, argparse, psycopg2, time, logging, glob, json
 from utils import *
 import liblas
 from osgeo import osr
@@ -182,7 +182,7 @@ def getXMLAbsPath(absPath):
             logging.warn('multiple XMLs file were found in ' + outFolder + '. Using ' + xmlPath)
         return xmlPath
 
-def main(opts):
+def run(opts):
     # Set logging
     logname = os.path.basename(__file__) + '.log'
     start_logging(filename=logname, level=opts.log)
@@ -556,19 +556,23 @@ def addPOTDataItem(absPath, itemId, dataItemType):
                 logging.warn('POTREE data item in ' + sAbsPath + ' may have been updated and it may not be reflected in the DB.')
             dbExecute(cursor, 'UPDATE POTREE_DATA_ITEM_PC SET last_check=%s WHERE potree_data_item_pc_id = %s', [initialTime, potreeDataItemId])
 
+def argument_parser():
+    parser = argparse.ArgumentParser(description="Updates the DB from the content of the data folder")
+    
+    parser.add_argument('-i','--data',default=DEFAULT_DATA_DIR,help='Data folder [default ' + DEFAULT_DATA_DIR + ']',type=str)
+    parser.add_argument('-t','--types',default=TYPES,help='What types of data is to be updated? r for RAW, o for OSG, p for POTREE [default all is checked, i.e. ' + TYPES + ']',type=str)
+    parser.add_argument('-e','--ditypes',default=DATA_ITEM_TYPES_CHARS,help='What types of data items are updated (for the types of data selected with option types)? p for point clouds, m for meshes, i for images [default all is checked, i.e. ' + DATA_ITEM_TYPES_CHARS + ']',type=str)
+    parser.add_argument('-d','--dbname',default=DEFAULT_DB,help='Postgres DB name [default ' + DEFAULT_DB + ']',type=str)
+    parser.add_argument('-u','--dbuser',default=USERNAME,help='DB user [default ' + USERNAME + ']',type=str)
+    parser.add_argument('-p','--dbpass',default='',help='DB pass',type=str)
+    parser.add_argument('-b','--dbhost',default='',help='DB host',type=str)
+    parser.add_argument('-r','--dbport',default='',help='DB port',type=str)
+    parser.add_argument('--log', help='Log level', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
+    return parser
+
 if __name__ == "__main__":
-    checkSuperUser()
-    usage = 'Usage: %prog [options]'
-    description = "Updates the DB from the content of the data folder"
-    op = optparse.OptionParser(usage=usage, description=description)
-    op.add_option('-i','--data',default=DEFAULT_DATA_DIR,help='Data folder [default ' + DEFAULT_DATA_DIR + ']',type='string')
-    op.add_option('-t','--types',default=TYPES,help='What types of data is to be updated? r for RAW, o for OSG, p for POTREE [default all is checked, i.e. ' + TYPES + ']',type='string')
-    op.add_option('-e','--ditypes',default=DATA_ITEM_TYPES_CHARS,help='What types of data items are updated (for the types of data selected with option types)? p for point clouds, m for meshes, i for images [default all is checked, i.e. ' + DATA_ITEM_TYPES_CHARS + ']',type='string')
-    op.add_option('-d','--dbname',default=DEFAULT_DB,help='Postgres DB name [default ' + DEFAULT_DB + ']',type='string')
-    op.add_option('-u','--dbuser',default=USERNAME,help='DB user [default ' + USERNAME + ']',type='string')
-    op.add_option('-p','--dbpass',default='',help='DB pass',type='string')
-    op.add_option('-b','--dbhost',default='',help='DB host',type='string')
-    op.add_option('-r','--dbport',default='',help='DB port',type='string')
-    op.add_option('-l','--log',help='Logging level (choose from ' + ','.join(LOG_LEVELS) + ' ; default ' + DEFAULT_LOG_LEVEL + ')',type='choice', choices=['debug', 'info', 'warning', 'error','critical'], default=DEFAULT_LOG_LEVEL)
-    (opts, args) = op.parse_args()
-    main(opts)
+    try:
+        checkSuperUser()
+        run(apply_argument_parser(argument_parser()))
+    except Exception as e:
+        pass

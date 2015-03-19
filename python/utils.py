@@ -69,7 +69,6 @@ LOG_LEVELS = {'debug': logging.DEBUG,
               'critical': logging.CRITICAL}
 LOG_LEVELS_LIST = LOG_LEVELS.keys()
 #LOG_FORMAT = '%(asctime)-15s %(message)s'
-LOG_FILENAME = '/tmp/patty.log'
 LOG_FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
 DATE_FORMAT = "%Y/%m/%d/%H:%M:%S"
 
@@ -90,11 +89,27 @@ AO_TYPE_LAB = 'LAB'
 AO_TYPE_OBJ = 'OBJ'
 
 def checkSuperUser():
+    """ Check that current OS user name is the SuperUser."""
     if USERNAME != SUPERUSERNAME:
         msg = 'You can only execute this script with user %s' % SUPERUSERNAME
         #logging.error(msg)
         print msg
         raise Exception(msg)
+
+def apply_argument_parser(argumentsParser, options=None):
+    """ Apply the argument parser. """
+    if options is not None:
+        args = argumentsParser.parse_args(options)
+    else:
+        args = argumentsParser.parse_args() 
+    return args
+
+def start_logging(filename, level=DEFAULT_LOG_LEVEL):
+    "Start logging with given filename and level."
+    logging.basicConfig(filename=filename, level=LOG_LEVELS[level], format=LOG_FORMAT, datefmt=DATE_FORMAT)
+    logger = logging.getLogger(__name__)
+    return logger
+
 
 def isCurrent(absPath):
     return (absPath.count(CURR_FT) > 0)
@@ -280,13 +295,6 @@ def listRawDataItems(cursor, itemIds = None):
             print m
             logging.info(m)
 
-def start_logging(filename=LOG_FILENAME, level=DEFAULT_LOG_LEVEL):
-    "Start logging with given filename and level."
-    logging.basicConfig(filename=filename, level=LOG_LEVELS[level],
-                        format=LOG_FORMAT, datefmt=DATE_FORMAT)
-    logger = logging.getLogger(__name__)
-    return logger
-
 def readSRID(lasHeader):
     
     from osgeo import osr
@@ -295,13 +303,7 @@ def readSRID(lasHeader):
     #osrs.AutoIdentifyEPSG()
     return osrs.GetAttrValue( 'AUTHORITY', 1 )
 
-def apply_argument_parser(argumentsParser, options=None):
-    """ Apply the argument parser. """
-    if options is not None:
-        args = argumentsParser.parse_args(options)
-    else:
-        args = argumentsParser.parse_args() 
-    return args
+
 
 def load_sql_file(cursor, sqlFile):
     success = False
