@@ -5,7 +5,7 @@
 ################################################################################
 import os, optparse,logging, time, utils
 
-def main(opts):
+def run(opts):
     # Set logging
     logname = os.path.basename(opts.sql) + '.log'
     utils.start_logging(filename=logname, level=opts.log)
@@ -49,7 +49,6 @@ def main(opts):
 
 
 if __name__ == "__main__":
-    utils.checkSuperUser()
     usage = 'Usage: %prog [options]'
     description = "Create the DB"
     op = optparse.OptionParser(usage=usage, description=description)
@@ -61,4 +60,8 @@ if __name__ == "__main__":
     op.add_option('-r','--dbport',default='',help='DB port',type='string')
     op.add_option('-l','--log',help='Logging level (choose from ' + ','.join(utils.LOG_LEVELS_LIST) + ' ; default ' + utils.DEFAULT_LOG_LEVEL + ')',type='choice', choices=utils.LOG_LEVELS_LIST, default=utils.DEFAULT_LOG_LEVEL)
     (opts, args) = op.parse_args()
-    main(opts)
+    try:
+        utils.checkSuperUser()
+        run(opts)
+    except Exception as e:
+        pass

@@ -92,7 +92,7 @@ AO_TYPE_OBJ = 'OBJ'
 def checkSuperUser():
     if USERNAME != SUPERUSERNAME:
         msg = 'You can only execute this script with user %s' % SUPERUSERNAME
-        logging.error(msg)
+        #logging.error(msg)
         print msg
         raise Exception(msg)
 
