@@ -3,7 +3,7 @@
 #    Created by Oscar Martinez                                                 #
 #    o.rubi@esciencecenter.nl                                                  #
 ################################################################################
-import os, optparse, psycopg2, logging, time, utils
+import os, optparse,logging, time, utils
 
 def main(opts):
     # Set logging

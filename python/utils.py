@@ -5,7 +5,6 @@
 ################################################################################
 import os, time, calendar, logging
 import psycopg2
-from osgeo import osr
 
 # Python Module containing methods used in other scripts
 
@@ -289,6 +288,8 @@ def start_logging(filename=LOG_FILENAME, level=DEFAULT_LOG_LEVEL):
     return logger
 
 def readSRID(lasHeader):
+    
+    from osgeo import osr
     osrs = osr.SpatialReference()
     osrs.SetFromUserInput(lasHeader.get_srs().get_wkt())
     #osrs.AutoIdentifyEPSG()
