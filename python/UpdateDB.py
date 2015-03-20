@@ -3,10 +3,10 @@
 #    Created by Oscar Martinez                                                 #
 #    o.rubi@esciencecenter.nl                                                  #
 ################################################################################
-import os, argparse, psycopg2, time, logging, glob, json
+import os, argparse, time, logging, glob, json
 from utils import *
 import liblas
-from osgeo import osr
+#from osgeo import osr
 
 # TODO: Checking for addRawDataItem:
 # SRID for PCs must not be null
