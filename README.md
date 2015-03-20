@@ -157,7 +157,7 @@ Unsynchronized viewer
  
 **Installation**
 
-In addition to download this repository in your Windows machine you also need to install:
+In addition to download the Via Appia OSG repository in your Windows machine you also need to install:
  - The latest drivers of your Graphics card
  - Microsoft Visual Studio C++ Redistributable 2012 and 2013. You can use the installers in `viewer/EXTRA_LIB`
  - Java SE development kit:
@@ -173,8 +173,9 @@ In order for the viewer to work you need to:
   - Have a linux OS account in the Via Appia Linux server (ask the administrator to create it for you)
   - Have a PostgreSQL account in DB running in the Via Appia Linux server (ask the DB administrator to create it for you)
   - Create directory in your Windows system where all the ViaAppia data will be stored. We recommend (and use in the examples in this page) `C:/Users/[user name]/ViaAppia` where user name is the name of your user.
-  - Download this repository:
-     * Click in Download ZIP in https://github.com/NLeSC/Via-Appia
+  - Download the Via Appia OSG repository:
+     * If you are a member click in Download ZIP in https://github.com/NLeSC/Via-Appia
+     * If you do not have access please contact some member of the project to get a copy of the repository
      * We recommend saving the ZIP file in C:/Users/[user name]/ViaAppia
      * Uncompress the ZIP file. This should create a folder in `C:/Users/[user name]/ViaAppia/Via-Appia-master`
      * You can now remove the ZIP file
