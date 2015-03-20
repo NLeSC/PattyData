@@ -32,7 +32,7 @@ This repository contains:
 
 In https://github.com/NLeSC/PattyData/blob/master/Documents/SUM/patty.pdf you can find the Software User Manual of the 4D GIS system with an overview of the systems and special focus on the data management (DB and data structure).
 
-In https://github.com/NLeSC/PattyData/blob/master/Documents/SUM_viewer/viewer_sum.pdf you can find the Software User Manual for the OSG desktop-based viewer/editor. For the installing ans setting up of the OSG viewer/editor plese see https://github.com/NLeSC/Via-Appia.
+In https://github.com/NLeSC/PattyData/blob/master/Documents/SUM_viewer/viewer_sum.pdf you can find the Software User Manual for the OSG desktop-based viewer/editor. In the bottom of this page you can find information about installing and setting up of the OSG viewer/editor. The code is in the private repository https://github.com/NLeSC/Via-Appia.
 
 The web-based Potree viewer is also available. Please contact the administrator if you wish to have access to the web visualization.
 
@@ -133,3 +133,75 @@ This will list the raw data items (i.e. not the converted OSG or Potree versions
 - We generate the configuration file for the Potree viewer:
   
   `CreatePOTreeConfig.py -o /home/pattydat/DATA/POTREE/CONF.json`
+
+
+OSG Via Appia viewer
+===================
+
+The OSG viewer requires to have a local copy of all the OSG data in your computer as well as the latest XML configuration file.
+
+You can use the viewer/editor with DB/Data synchronization and without it.
+To use the synchronized viewer you need to use the `launcher/binary/ViaAppia.bat`, to use the unsynchronized viewer use `viewer/viewer/startViewer.bat`
+
+Synchronized viewer
+ - Set you configuration parameters in a file named `config.properties` in the folder `launcher/binary` (you can use the template `config_template.properties`, for more information see below in Setting up section)  
+ - After the `config.properties` is in its place run the `launcher/binary/ViaAppia.bat`
+ - This will synchronize the data in your local Windows machine with the OSG data in the server and download the latest viewer XML configuration file (this is a different file to the previous `config.properties`)
+ - After the synchronization is done the viewer is opened.
+ - When you close the viewer please be sure to Save your changes. Then, the tool will ask you if you want to commit your changes to the DB in the server.
+
+Unsynchronized viewer
+ - You can start the unsynchronized viewer with `viewer/viewer/startViewer.bat`
+ - Be aware that in this case the latest data won't be available in your system and that any changes you do in this mode won't be committed to the DB
+ - Obviously the first time that you use the viewer you should use the synchronized viewer, otherwise there won't be any local data to visualize
+ 
+Installation
+------------
+
+In addition to download this repository in your Windows machine you also need to install:
+ - The latest drivers of your Graphics card
+ - Microsoft Visual Studio C++ Redistributable 2012 and 2013. You can use the installers in `viewer/EXTRA_LIB`
+ - Java SE development kit:
+    * Browse to http://www.oracle.com/technetwork/java/javase/downloads/index.html
+    * Download the Java SDK.
+    * Install it (follow the instructions).
+ - Putty (http://winscp.net/download/putty.exe)
+ - WinSCP (http://winscp.net/download/winscp570.zip)
+
+Setting up
+----------
+In order for the viewer to work you need to:
+  - Have a linux OS account in the Via Appia Linux server (ask the administrator to create it for you)
+  - Have a PostgreSQL account in DB running in the Via Appia Linux server (ask the DB administrator to create it for you)
+  - Create directory in your Windows system where all the ViaAppia data will be stored. We recommend (and use in the examples in this page) `C:/Users/[user name]/ViaAppia` where user name is the name of your user.
+  - Download this repository:
+     * Click in Download ZIP in https://github.com/NLeSC/Via-Appia
+     * We recommend saving the ZIP file in C:/Users/[user name]/ViaAppia
+     * Uncompress the ZIP file. This should create a folder in `C:/Users/[user name]/ViaAppia/Via-Appia-master`
+     * You can now remove the ZIP file
+  - Generate a SSH key in the Via Appia Linux server and download the private key to your Windows system:
+    * Log in into the Linux Via Appia Server with Putty. For the IP address of the Via Appia Linux server contact the administrator, use the credentials (user name and password) given to you by the administrator
+    * Create a key pair in the linux server (Do not enter a passphrase, i.e. press Enter three times): 
+    
+      `ssh-keygen -t rsa`
+    * Add the public key as authoirzed key in the linux server (replace user name accordingly):
+    
+      `cat  /home/[user name]/.ssh/id_rsa.pub >> /home/[user name]/.ssh/authorized_keys`
+    * Change permissions of ssh directory: 
+    
+      `chmod 700  /home/[user name]/.ssh/`
+    * Change permissions of all files in ssh:
+    
+      `chmod 600  /home/[user name]/.ssh/*`
+    * Copy the private key into your Windows machine with WinSCP:
+       - Host name is the IP address of the Via Appia Linux server, use the same credentials as in Putty
+       - We need to be able to see hidden folders. Go to Options/Preferences/Panels and tick the check box for Show hidden files
+       - Go to .ssh folder in the server and select and drag the id_rsa file to your local Windows machine and store it in your Via Appia directory (`C:/Users/[user name]/ViaAppia`)
+    * Fill in a `config.properties` file from the `config_template.properties`:
+       - Create a `config.properties` with the same content as the file in `C:/Users/[user name]/ViaAppia/Via-Appia-master/launcher/binary/config_template.properties` and store it in `C:/Users/[user name]/ViaAppia/Via-Appia-master/launcher/binary`
+       - Change the tags <UserRemote>, <UserLocal>, <localPrivateKey>
+          - `<UserRemote>` is your user name in the Linux server
+          - `<UserLocal>` is your Windows user name in the local machine
+          - `<localPrivateKey>` is the file name of private key that you copied from the Linux server (as explained in the previous step)
+          - `<IPRemote>` is the IP address of the Via Appia server
+       - This rest of parameters in this configuration file assume that you are setting your Via Appia system to use in `C:\Users\<UserLocal>\ViaAppia`. If that is not the case you may need to explicitly change some other properties
