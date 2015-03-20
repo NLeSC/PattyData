@@ -2,7 +2,7 @@
 from ConfigParser import ConfigParser
 import os, sys, shutil
 from collections import namedtuple
-#import itertools
+import itertools
 
 # import the tested modules
 testFolder = os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
@@ -76,20 +76,20 @@ footprints_drive_map = config.get('Data', 'FootprintsDriveMap')
 ####
 dataPath = config.get('Data','Path')
 # clean everything
-#if os.path.exists(dataPath):
-#    shutil.rmtree(dataPath)
-#
-#dirs = [[dataPath],
-#        ['RAW','OSG','POTREE'],
-#        ['PC','MESH','PICT','DOME','BOUND'],
-#        ['BACK', 'SITE'],
-#        ['CURR', 'HIST', 'ARCH_REC']]
-## generate a redundant(very!) common directory structure
-#for item in itertools.product(*dirs):    
-#    os.makedirs(os.path.join(*item))
+if os.path.exists(dataPath):
+    shutil.rmtree(dataPath)
+
+dirs = [[dataPath],
+        ['RAW','OSG','POTREE'],
+        ['PC','MESH','PICT','DOME','BOUND'],
+        ['BACK', 'SITE'],
+        ['CURR', 'HIST', 'ARCH_REC']]
+# generate a redundant(very!) common directory structure
+for item in itertools.product(*dirs):    
+    os.makedirs(os.path.join(*item))
 
 print "Scripts input parameters loaded."    
-#print "Directory structure (redundant) was created." 
+print "Directory structure (redundant) was created." 
 print "Setting up...DONE."  
 print "-----------------------------------------------------------------------"
 
