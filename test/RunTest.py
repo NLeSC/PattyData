@@ -34,7 +34,7 @@ def cleanup():
 
     for f in files:
         if os.path.isfile(f) & f.endswith('.log'):
-            print "Generated log file during this test: ", f
+            print "Cleanedup log file: ", f
             os.remove(f)
 # drop the test DB
     os.system('dropdb ' + utils.postgresConnectString(dbName, dbUser, dbPass, dbHost, dbPort, True))   
@@ -94,7 +94,7 @@ print "Setting up...DONE."
 print "-----------------------------------------------------------------------"
 
 ##############################################################################
-#cleanup()
+cleanup()
 
 # create test  DB
 print "Testing creation of the DB ..."
@@ -148,7 +148,7 @@ print "Testing updating the Z of given items in the DB... "
 CreateZArguments = namedtuple("Z_Arguments", "itemid las dbname dbuser dbpass dbhost dbport cores")
 UpdateDBItemZ.run(CreateZArguments(footprints_item_ids, footprints_drive_map, dbName, dbUser, dbPass, dbHost, dbPort, 16))
 
-logFile = 'UpdateDBItemZ.py.log'
+logFile = 'UpdateDBItemZ.log'
 logFileContent = open(logFile,'r').read()
 
 if logFile.count('ERROR') > 0:
