@@ -136,7 +136,7 @@ This will list the raw data items (i.e. not the converted OSG or Potree versions
 
 
 OSG Via Appia viewer
-===================
+-------------------
 
 The OSG viewer requires to have a local copy of all the OSG data in your computer as well as the latest XML configuration file.
 
@@ -155,8 +155,7 @@ Unsynchronized viewer
  - Be aware that in this case the latest data won't be available in your system and that any changes you do in this mode won't be committed to the DB
  - Obviously the first time that you use the viewer you should use the synchronized viewer, otherwise there won't be any local data to visualize
  
-Installation
-------------
+**Installation**
 
 In addition to download this repository in your Windows machine you also need to install:
  - The latest drivers of your Graphics card
@@ -168,8 +167,8 @@ In addition to download this repository in your Windows machine you also need to
  - Putty (http://winscp.net/download/putty.exe)
  - WinSCP (http://winscp.net/download/winscp570.zip)
 
-Setting up
-----------
+**Setting up**
+
 In order for the viewer to work you need to:
   - Have a linux OS account in the Via Appia Linux server (ask the administrator to create it for you)
   - Have a PostgreSQL account in DB running in the Via Appia Linux server (ask the DB administrator to create it for you)
