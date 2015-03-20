@@ -1,5 +1,10 @@
+Attributes management
+=====================
+
+In thi folder we keep track of different versions of attribute data
+
 Convert Attribute Microsoft Access file to PostgreSQL
-=====================================================
+-----------------------------------------------------
 
 We use Bullzip Access to PostgreSQL http://www.bullzip.com/products/a2p/info.php.
 
