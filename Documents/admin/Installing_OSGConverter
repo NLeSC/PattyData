@@ -1,6 +1,8 @@
 OSG Converter build instructions
 ================================
 
+The OSG converter is available in https://github.com/NLeSC/Via-Appia/tree/master/converter
+
 In order to install the OSG converter:
  - install latest libLAS (which requires proj, tiff, geotiff, gdal and laszip) 
  - install latest OpenSceneGraph

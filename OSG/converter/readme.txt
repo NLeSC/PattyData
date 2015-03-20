@@ -1,1 +1,0 @@
-This is the Via Appia parser that parses .las files and generates a quadtree pointcloud to load into osg.
