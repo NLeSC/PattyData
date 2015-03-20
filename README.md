@@ -5,7 +5,7 @@ PattyData
 
 This repository contains:
 
-- Attributes: Different versions of Attributes DBs. For each version we need to have the original Microsoft Access DB file but also the converted SQL dump produced from Bullzip's software (See Attributes). 
+- Attributes: Explanation about the Attributes management. 
  
 - Database: folder with the Entity-Relationship diagram used for the ViaAppiaDB as well as a SQL creation script. It also contains a picture and HTML documentation. 
  
@@ -22,7 +22,7 @@ This repository contains:
 
   - Reports (PID, user requirements, tools analysis, ...)
  
-- Footprints: Different versions of the footprints (current version 06 March 2015)
+- Footprints: Explanation about the footprints management
 
 - OSG converter code and XSD/XML for the OSG viewer configuration file (from which a python API can be created)
 
