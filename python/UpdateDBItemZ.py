@@ -52,7 +52,7 @@ def runChild(procIndex, itemsQueue, resultsQueue, lasFolder, dbname, dbuser, dbp
 
 def run(args): 
     # start logging
-    logname = os.path.basename(__file__) + '.log'
+    logname = os.path.splitext(os.path.basename(__file__))[0] + '.log'
     utils.start_logging(filename=logname, level=utils.DEFAULT_LOG_LEVEL)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
