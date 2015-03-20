@@ -30,13 +30,21 @@ This repository contains:
 
 - test: simple testing framework
 
+In https://github.com/NLeSC/PattyData/blob/master/Documents/SUM/patty.pdf you can find the Software User Manual of the 4D GIS system with an overview of the systems and special focus on the data management (DB and data structure).
+
+In https://github.com/NLeSC/PattyData/blob/master/Documents/SUM_viewer/viewer_sum.pdf you can find the Software User Manual for the OSG desktop-based viewer/editor. For the installing ans setting up of the OSG viewer/editor plese see https://github.com/NLeSC/Via-Appia.
+
+The web-based Potree viewer is also available. Please contact the administrator if you wish to have access to the web visualization.
+
+
 Managing data
 -------------
 In this section we shortly describe how to manage data, i.e. add new data (point clouds, meshes, pictures) or how to remove it. 
 
+
 **Add data**
 
-- For addition of new data the data has to be transfered to the Via Appia Linux server. Use WinSCP for this purpose, the Host Name is the IP address of the Via Appia Linux server and the user and password and your user name and password as provided by the administrator. We suggest to move the data (LAS/LAZ file for point cloud, a folder with OBJ and textures files for meshes and a PNG/JPG for picures) to your default home directory in the Via Appia Linux server.
+- For the addition of new data (mesh, point cloud or image) the data has to be transfered to the Via Appia Linux server. Use WinSCP for this purpose, the Host Name is the IP address of the Via Appia Linux server are the user and password and your user name and password as provided by the administrator. We suggest to move the data (LAS/LAZ file for point cloud, a folder with OBJ and textures files for meshes and a PNG/JPG for picures) to your default home directory in the Via Appia Linux server.
 
 - After the data is in the server you have to log in with Putty. Use same credentials as in WinSCP.
 
@@ -95,3 +103,32 @@ In this section we shortly describe how to manage data, i.e. add new data (point
   `CreatePOTreeConfig.py -o /home/pattydat/DATA/POTREE/CONF.json`
 
 -  We can start the synchronized viewer to doenload the latest data and configuration file
+
+
+**List data**
+In order to see the data that is currently available in the Via Appia data structure you have to log in the the Via Appia Linux server with Putty (as explained in the previous section) and use:
+
+  `ListRawDataItem.py`
+
+This will list the raw data items (i.e. not the converted OSG or Potree versions), for each data item the ID and the PATH is shown.
+
+
+**Remove data**
+
+-  If you want to remove some data you need to log in in the Via Appia Linux server with Putty and change user to `pattydat` as described in th eprevious steps.
+
+- Use `ListRawDataItem.py` to find the ID of the raw data item that you wish to delete
+
+- Delete the raw data item (also the related OSG nd Potree data will be deleted). For example:
+
+ `RemoveRawDataItem.py -i 43` 
+
+ This will delete raw data item with ID 43 and all its related OSG and Potree data
+ 
+ - As every time that there is a change in the data structure, we need to update de DB again with the latest changes:
+  
+  `UpdateDB.py`
+
+- We generate the configuration file for the Potree viewer:
+  
+  `CreatePOTreeConfig.py -o /home/pattydat/DATA/POTREE/CONF.json`
