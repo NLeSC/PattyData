@@ -55,7 +55,9 @@ In this section we shortly describe how to manage data, i.e. add new data (point
    - An example for adding a new point cloud with previous setting of SRID is:
 
     `UpdateLASSRID.py  -i /home/oscarr/SITE_41.las -o /home/pattydat/SITE_41.las -s 32633`
+    
     `AddRawDataItem.py -f /home/pattydat/SITE_41.las -k SITE -t PC --site 41`
+    
     `rm /home/pattydat/SITE_41.las`
 
    In this example we add a point cloud of site 41. IMPORTANT: If a point cloud has been aligned with the background you have to make sure that the spatial reference system has been added (Some alignement tools do not set the SRID). Use `UpdateLASSRID.py -s ? -i /home/oscarr/SITE_41.las` to check current value of the SRID in the LAS file and set it if necessary (you will need to create a temporal new file with option `-o` as in the example). Note that in the example we remove the temporal file after adding it in the Data structure (when adding new data in the Data structure a copy is made so you can remove additional copies even though we always recommend to have at least one copy of the data in some other location)
