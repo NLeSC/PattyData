@@ -106,6 +106,7 @@ In this section we shortly describe how to manage data, i.e. add new data (point
 
 
 **List data**
+
 In order to see the data that is currently available in the Via Appia data structure you have to log in the the Via Appia Linux server with Putty (as explained in the previous section) and use:
 
   `ListRawDataItem.py`
