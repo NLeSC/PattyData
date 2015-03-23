@@ -1,6 +1,6 @@
 # import general modules
 from ConfigParser import ConfigParser
-import os, sys, shutil
+import os, sys, shutil, errno
 from collections import namedtuple
 import itertools
 
@@ -45,6 +45,19 @@ def cleanup():
     print "Cleaning up...DONE"
     print "-----------------------------------------------------------------------"
     
+def fillTestData(localDataPath, serverDataPath):
+    """ copies some test data from the server data path to the local data path"""
+    try:
+        dest =  os.path.join(localDataPath,'OSG', 'PC','SITE','S13')
+        #os.mkdir(dest)
+        src = os.path.join(serverDataPath, 'OSG', 'PC','SITE','S13')
+        shutil.copytree(src, dest)
+    except OSError as exc: # python >2.5
+        if exc.errno == errno.ENOTDIR:
+            shutil.copy(src, dest)
+        else: raise
+            
+    
 ##############################################################################
 ### Setup ###
 
@@ -75,6 +88,8 @@ footprints_drive_map = config.get('Data', 'FootprintsDriveMap')
 
 ####
 dataPath = config.get('Data','Path')
+serverDataPath = config.get('Data','ServerPath')
+
 # clean everything
 if os.path.exists(dataPath):
     shutil.rmtree(dataPath)
@@ -94,8 +109,11 @@ print "Setting up...DONE."
 print "-----------------------------------------------------------------------"
 
 ##############################################################################
-cleanup()
+#cleanup()
 
+fillTestData(dataPath, serverDataPath)
+
+exit(1)
 # create test  DB
 print "Testing creation of the DB ..."
 sqlFile = os.path.abspath(os.path.join(testFolder, '../Database/ERDB.sql'))
