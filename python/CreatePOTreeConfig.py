@@ -69,7 +69,6 @@ WHERE A.raw_data_item_id = B.raw_data_item_id AND
     site_pcs, num_site_pcs = utils.fetchDataFromDB(cursor, query,  queryArgs)
     
     pcData = []
-    
     if num_site_pcs:
         for (pcAbsPath, pcSRID, pcMinx, pcMiny, pcMinz, pcMaxx, pcMaxy, pcMaxz, osgSRID, x, y, z, xs, ys, zs, h, p, r) in site_pcs:
             pData = {}
@@ -89,9 +88,7 @@ WHERE A.raw_data_item_id = B.raw_data_item_id AND
             pcData.append(pData)
     else:
         logger.warning('No potree point cloud found for item %d SRID %d' % (itemId, srid))
-        
-    if meshData != None:
-        dataSite["pointcloud"] = pcData
+    dataSite["pointcloud"] = pcData
 
 def getOSGPosition(cursor, srid, osgLocationSRID, x, y, z, xs, ys, zs, h, p, r):
     osgPosition = {}
@@ -151,7 +148,6 @@ WHERE
             
     else:
         logger.warning('No meshes found for item %d SRID %d' % (itemId, srid))
-    
     dataSite["mesh"] = meshesData
     dataSite["reconstruction_mesh"] = recMeshesData
 
@@ -292,5 +288,5 @@ if __name__ == '__main__':
         utils.checkSuperUser()
         run(utils.apply_argument_parser(argument_parser()))
     except Exception as e:
-        pass
+        print e
     

@@ -188,4 +188,4 @@ if __name__ == '__main__':
         utils.checkSuperUser()
         run(utils.apply_argument_parser(argument_parser()))
     except Exception as e:
-        pass
+        print e

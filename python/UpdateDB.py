@@ -576,4 +576,3 @@ if __name__ == "__main__":
         run(apply_argument_parser(argument_parser()))
     except Exception as e:
         print e
-        pass
