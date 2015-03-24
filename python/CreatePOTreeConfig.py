@@ -10,7 +10,10 @@
 # Notes:            Based on createjson.py from the Patty FFWD, October 2014
 ################################################################################
 import argparse, json, utils, glob, os, time
+
+# Global variables
 logger = None
+(offsetX,offsetY,offsetZ) = (0,0,0)
 
 def addThumbnail(cursor, itemId, jsonSite):
     query = 'SELECT A.abs_path, B.thumbnail FROM raw_data_item A, raw_data_item_picture B WHERE A.raw_data_item_id = B.raw_data_item_id AND A.item_id = %s'
@@ -50,48 +53,66 @@ def addSiteMetaData(cursor, itemId, dataSite):
         logger.warning('No meta-data found for item %d' % itemId)
 
 def addPointCloud(cursor, itemId, dataSite, srid):
-    query = 'SELECT C.abs_path, B.minx, B.miny, B.minz, B.maxx, B.maxy, B.maxz FROM raw_data_item A, raw_data_item_pc B, potree_data_item_pc C WHERE A.raw_data_item_id = B.raw_data_item_id AND B.raw_data_item_id = C.raw_data_item_id AND A.item_id = %s AND A.srid = %s'
-    queryArgs = [itemId,srid]
+    query = """
+SELECT C.abs_path, A.srid, B.minx, B.miny, B.minz, B.maxx, B.maxy, B.maxz,
+       F.srid, F.x, F.y, F.z, F.xs, F.ys, F.zs, F.h, F.p, F.r
+FROM raw_data_item A, raw_data_item_pc B, potree_data_item_pc C, 
+     osg_data_item_pc_site D, osg_data_item E, osg_location F
+WHERE A.raw_data_item_id = B.raw_data_item_id AND 
+      B.raw_data_item_id = C.raw_data_item_id AND 
+      B.raw_data_item_id = D.raw_data_item_id AND 
+      D.osg_data_item_id = E.osg_data_item_id AND 
+      E.osg_location_id  = F.osg_location_id AND 
+      A.item_id = %s"""
+
+    queryArgs = [itemId,]
     site_pcs, num_site_pcs = utils.fetchDataFromDB(cursor, query,  queryArgs)
+    
+    pcData = []
+    
     if num_site_pcs:
-        (pcAbsPath, pcMinx, pcMiny, pcMinz, pcMaxx, pcMaxy, pcMaxz) = site_pcs[0] # We only use first PC
-        dataSite["pointcloud_bbox"] = [pcMinx, pcMiny, pcMinz, pcMaxx, pcMaxy, pcMaxz]
-        dataSite["pointcloud"] = utils.POTREE_DATA_URL_PREFIX + pcAbsPath.replace(utils.POTREE_SERVER_DATA_ROOT,'') + "/cloud.js"
+        for (pcAbsPath, pcSRID, pcMinx, pcMiny, pcMinz, pcMaxx, pcMaxy, pcMaxz, osgSRID, x, y, z, xs, ys, zs, h, p, r) in site_pcs:
+            pData = {}
+            pData["id"] = len(pcData) + 1
+            pData["dataLocation"] = utils.POTREE_DATA_URL_PREFIX + pcAbsPath.replace(utils.POTREE_SERVER_DATA_ROOT,'') + "/cloud.js"
+            osgPosition = getOSGPosition(cursor, srid, osgSRID, x, y, z, xs, ys, zs, h, p, r)
+            pData["osg_position"] = osgPosition
+            if pcSRID == srid:
+                pData["bbox"] = [pcMinx, pcMiny, pcMinz, pcMaxx, pcMaxy, pcMaxz]
+            else:
+                pData["bbox"] = [osgPosition['x'] - (osgPosition['xs']/2.), 
+                                 osgPosition['y'] - (osgPosition['ys']/2.), 
+                                 osgPosition['z'] - (osgPosition['zs']/2.),
+                                 osgPosition['x'] + (osgPosition['xs']/2.), 
+                                 osgPosition['y'] + (osgPosition['ys']/2.), 
+                                 osgPosition['z'] + (osgPosition['zs']/2.)]
+            pcData.append(pData)
     else:
         logger.warning('No potree point cloud found for item %d SRID %d' % (itemId, srid))
+        
+    if meshData != None:
+        dataSite["pointcloud"] = pcData
 
 def getOSGPosition(cursor, srid, osgLocationSRID, x, y, z, xs, ys, zs, h, p, r):
     osgPosition = {}
-    if srid == osgLocationSRID:
-        osgPosition['x'] = x
-        osgPosition['y'] = y
-        osgPosition['z'] = z
-        osgPosition['xs'] = xs
-        osgPosition['ys'] = ys
-        osgPosition['zs'] = zs
-        osgPosition['h'] = h
-        osgPosition['p'] = p
-        osgPosition['r'] = r
-    else:
+    osgPosition['x'] = x
+    osgPosition['y'] = y
+    osgPosition['z'] = z
+    osgPosition['xs'] = xs
+    osgPosition['ys'] = ys
+    osgPosition['zs'] = zs
+    osgPosition['h'] = h
+    osgPosition['p'] = p
+    osgPosition['r'] = r
+
+    if srid != osgLocationSRID:
         if osgLocationSRID != None:
             logger.warning('Found SRID %d (instead of %d). Treating it as None SRID' % (osgLocationSRID, srid))
         # We assume the osg location is relative
-        # We need to make it absolute by adding the offset of the background with srid as provided
-        query = 'SELECT C.offset_x, C.offset_y, C.offset_z from raw_data_item A, raw_data_item_pc B, osg_data_item_pc_background C WHERE A.raw_data_item_id = B.raw_data_item_id AND B.raw_data_item_id = C.raw_data_item_id AND A.srid = %s'
-        queryArgs = [srid,]
-        backgroundOffsets, num_backgrounds = utils.fetchDataFromDB(cursor, query,  queryArgs)
-        (offsetX,offsetY,offsetZ) = (0,0,0)
-        if num_backgrounds:
-            (offsetX,offsetY,offsetZ) = backgroundOffsets[0]
-        osgPosition['x'] = x + offsetX
-        osgPosition['y'] = y + offsetY
-        osgPosition['z'] = z + offsetZ
-        osgPosition['xs'] = xs
-        osgPosition['ys'] = ys
-        osgPosition['zs'] = zs
-        osgPosition['h'] = h
-        osgPosition['p'] = p
-        osgPosition['r'] = r
+        osgPosition['x'] += offsetX
+        osgPosition['y'] += offsetY
+        osgPosition['z'] += offsetZ
+    
     return osgPosition
 
 def addMeshes(cursor, itemId, dataSite, srid):
@@ -112,27 +133,26 @@ WHERE
 
     site_meshes, num_site_meshes = utils.fetchDataFromDB(cursor, query,  queryArgs)
     
-    meshData = None
+    meshesData = []
     recMeshesData = []
     
     if num_site_meshes:
         for (absPath, mtlAbsPath, current, meshSrid, x, y, z, xs, ys, zs, h, p ,r) in site_meshes:
-            if not current or (current and meshData == None):
-                mData = {}
-                mData["data_location"] = utils.POTREE_DATA_URL_PREFIX + (glob.glob(absPath + '/*.obj') + glob.glob(absPath + '/*.OBJ'))[0].replace(utils.POTREE_SERVER_DATA_ROOT,'')
-                if mtlAbsPath != None:
-                    mData["mtl_location"] = utils.POTREE_DATA_URL_PREFIX + mtlAbsPath.replace(utils.POTREE_SERVER_DATA_ROOT,'')
-                mData['osg_position'] = getOSGPosition(cursor, srid, meshSrid, x, y, z, xs, ys, zs, h, p, r)
-                if current:
-                    meshData = mData
-                else:
-                    mData['id'] = len(recMeshesData) + 1
-                    recMeshesData.append(mData)
+            mData = {}
+            if current:
+                mData['id'] = len(meshesData) + 1
+                meshesData.append(mData)
+            else:
+                mData['id'] = len(recMeshesData) + 1
+                recMeshesData.append(mData)
+            mData["data_location"] = utils.POTREE_DATA_URL_PREFIX + (glob.glob(absPath + '/*.obj') + glob.glob(absPath + '/*.OBJ'))[0].replace(utils.POTREE_SERVER_DATA_ROOT,'')
+            mData["mtl_location"] = utils.POTREE_DATA_URL_PREFIX + mtlAbsPath.replace(utils.POTREE_SERVER_DATA_ROOT,'')
+            mData['osg_position'] = getOSGPosition(cursor, srid, meshSrid, x, y, z, xs, ys, zs, h, p, r)
+            
     else:
         logger.warning('No meshes found for item %d SRID %d' % (itemId, srid))
     
-    if meshData != None:
-        dataSite["mesh"] = meshData
+    dataSite["mesh"] = meshesData
     dataSite["reconstruction_mesh"] = recMeshesData
 
 def addObjectsMetaData(cursor, itemId, jsonSite, srid):
@@ -190,6 +210,10 @@ def save2JSON(outFileName, jsonData):
 #------------------------------------------------------------------------------        
 def run(args):    
     global logger
+    global offsetX
+    global offsetY
+    global offsetZ
+    
     logname = os.path.basename(args.output) + '.log'
     logger = utils.start_logging(filename=logname, level=args.log)
 
@@ -202,6 +226,19 @@ def run(args):
        
     # connect to DB and get a cursor   
     connection, cursor = utils.connectToDB(args.dbname, args.dbuser, args.dbpass, args.dbhost)
+    
+    # We assume the osg location is relative
+    # We need to make it absolute by adding the offset of the background with srid as provided
+    query = """
+SELECT C.offset_x, C.offset_y, C.offset_z 
+FROM raw_data_item A, raw_data_item_pc B, osg_data_item_pc_background C 
+WHERE A.raw_data_item_id = B.raw_data_item_id AND 
+      B.raw_data_item_id = C.raw_data_item_id AND 
+      A.srid = %s"""
+    queryArgs = [args.srid,]
+    backgroundOffsets, num_backgrounds = utils.fetchDataFromDB(cursor, query,  queryArgs)
+    if num_backgrounds:
+        (offsetX,offsetY,offsetZ) = backgroundOffsets[0]
         
     # get all items         
     query = 'SELECT item_id, ST_ASGEOJSON(geom), min_z, max_z FROM item WHERE NOT background ORDER BY item_id'
