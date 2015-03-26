@@ -45,24 +45,26 @@ def cleanup():
     print "Cleaning up...DONE"
     print "-----------------------------------------------------------------------"
     
-def fillTestData(localDataPath, serverDataPath):
-    """ copies some test data from the server data path to the local data path"""
+def fillOSGData(localDataPath, serverDataPath):    
+    """ copies some OSG test data from the server data path to the local data path"""
     # set up some paths shortcuts
     
     OSGLocalDataPath = os.path.join(localDataPath, 'OSG')
     OSGServerDataPath =os.path.join(serverDataPath, 'OSG')
     PCOsgLocalDataPath = os.path.join(OSGLocalDataPath, 'PC')
     PCOsgServerDataPath = os.path.join(OSGServerDataPath, 'PC')
-    BGOsgLocalDataPath = os.path.join(PCOsgLocalDataPath, 'BACK')
-    BGOsgServerDataPath = os.path.join(PCOsgServerDataPath, 'BACK')
+    SitePCOsgLocalDataPath = os.path.join(PCOsgLocalDataPath, 'SITE')
+    SitePCOsgServerDataPath = os.path.join(PCOsgServerDataPath, 'SITE')
+    BGPCOsgLocalDataPath = os.path.join(PCOsgLocalDataPath, 'BACK')
+    BGPCOsgServerDataPath = os.path.join(PCOsgServerDataPath, 'BACK')
     
     
     # copy OSG data    
     # 2 PC for 2 sites
     try:
-        dest =  os.path.join(PCOsgLocalDataPath, 'SITE','S13')
+        dest =  os.path.join(SitePCOsgLocalDataPath,'S13')
         #os.mkdir(dest)
-        src = os.path.join(PCOsgServerDataPath, 'SITE','S13')
+        src = os.path.join(SitePCOsgServerDataPath,'S13')
         shutil.copytree(src, dest)
     except OSError as exc: # python >2.5
         if exc.errno == errno.ENOTDIR:
@@ -70,9 +72,9 @@ def fillTestData(localDataPath, serverDataPath):
         else: raise
             
     try:
-        dest =  os.path.join(PCOsgLocalDataPath,'SITE','S162')
+        dest =  os.path.join(SitePCOsgLocalDataPath,'S162')
         #os.mkdir(dest)
-        src = os.path.join(PCOsgServerDataPath,'SITE','S162')
+        src = os.path.join(SitePCOsgServerDataPath,'S162')
         shutil.copytree(src, dest)
     except OSError as exc: # python >2.5
         if exc.errno == errno.ENOTDIR:
@@ -82,15 +84,20 @@ def fillTestData(localDataPath, serverDataPath):
      # BG
 
     try:
-        dest =  os.path.join(BGOsgLocalDataPath,'DRIVE_1_V3')
+        dest =  os.path.join(BGPCOsgLocalDataPath,'DRIVE_1_V3')
         #os.mkdir(dest)
-        src = os.path.join(BGOsgServerDataPath,'DRIVE_1_V3')
+        src = os.path.join(BGPCOsgServerDataPath,'DRIVE_1_V3')
         shutil.copytree(src, dest)
     except OSError as exc: # python >2.5
         if exc.errno == errno.ENOTDIR:
             shutil.copy(src, dest)
         else: raise  
-        
+            
+    
+def fillTestData(localDataPath, serverDataPath):
+    """ copies some test data from the server data path to the local data path"""
+    fillOSGData(localDataPath, serverDataPath)
+    
 ##############################################################################
 ### Setup ###
 
