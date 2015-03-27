@@ -26,7 +26,7 @@ def getConfig(testFolder, iniFileName):
 def cleanup():
 # clean everything
     print "Cleaning up..."
-# cleanup the local test data directory sttructure 
+# cleanup the local test data directory structure 
     if os.path.exists(dataPath):
        shutil.rmtree(dataPath)
        
@@ -34,7 +34,7 @@ def cleanup():
 
     for f in files:
         if os.path.isfile(f) & f.endswith('.log'):
-            print "Cleanedup log file: ", f
+            print "Cleaned up log file: ", f
             os.remove(f)
 # drop the test DB
     os.system('dropdb ' + utils.postgresConnectString(dbName, dbUser, dbPass, dbHost, dbPort, True))   
@@ -44,7 +44,24 @@ def cleanup():
     print "Test DB has been dropped."
     print "Cleaning up...DONE"
     print "-----------------------------------------------------------------------"
-
+    
+def fillTestData(localDataPath, serverDataPath):
+    """ copies some test data from the server data path to the local data path"""
+    print "Copying test data locally ..."
+    fillOSGData(localDataPath, serverDataPath)
+    fillRAWData(localDataPath, serverDataPath)
+    fillPOTREEData(localDataPath, serverDataPath)
+    print "Copying test data locally ... DONE"
+    print "-----------------------------------------------------------------------"  
+    
+def fillPOTREEData(localDataPath, serverDataPath):    
+    """ copies some POTREE test data from the server data path to the local data path"""
+    
+    POTREELocalDataPath = os.path.join(localDataPath, 'POTREE')
+    POTREEServerDataPath =os.path.join(serverDataPath, 'POTREE')
+    
+    fillPcData(POTREELocalDataPath, POTREEServerDataPath)
+    
 def fillOSGData(localDataPath, serverDataPath):    
     """ copies some OSG test data from the server data path to the local data path"""
     
@@ -54,6 +71,16 @@ def fillOSGData(localDataPath, serverDataPath):
     fillPcData(OSGLocalDataPath, OSGServerDataPath)
     fillMeshData(OSGLocalDataPath, OSGServerDataPath)
     fillPictData(OSGLocalDataPath, OSGServerDataPath)
+
+def fillRAWData(localDataPath, serverDataPath):    
+    """ copies some RAW test data from the server data path to the local data path"""
+    
+    RAWLocalDataPath = os.path.join(localDataPath, 'RAW')
+    RAWServerDataPath =os.path.join(serverDataPath, 'RAW')
+    
+    fillPcData(RAWLocalDataPath, RAWServerDataPath)
+    fillMeshData(RAWLocalDataPath, RAWServerDataPath)
+    fillPictData(RAWLocalDataPath, RAWServerDataPath)
     
 def fillPcData(LocalDataPath, ServerDataPath):    
     """ copies some PC test data from the server data path to the local data path"""
@@ -67,7 +94,7 @@ def fillPcData(LocalDataPath, ServerDataPath):
     BGPCServerDataPath = os.path.join(PCServerDataPath, 'BACK')
     
     
-    # copy OSG data    
+    # copy data    
     # 2 PC for 2 sites
     try:
         dest =  os.path.join(SitePCLocalDataPath,'S13')
@@ -183,10 +210,7 @@ def fillPictData(LocalDataPath, ServerDataPath):
             shutil.copy(src, dest)
         else: raise  
         
-def fillTestData(localDataPath, serverDataPath):
-    """ copies some test data from the server data path to the local data path"""
-    fillOSGData(localDataPath, serverDataPath)
-    
+  
 ##############################################################################
 ### Setup ###
 
@@ -219,15 +243,17 @@ footprints_drive_map = config.get('Data', 'FootprintsDriveMap')
 dataPath = config.get('Data','Path')
 serverDataPath = config.get('Data','ServerPath')
 
-# clean everything
-if os.path.exists(dataPath):
-    shutil.rmtree(dataPath)
+## clean everything
+#print dataPath
+#print os.path.exists(dataPath)
+#if os.path.exists(dataPath):
+#    shutil.rmtree(dataPath)
 
-dirs = [[dataPath],
-        ['RAW','OSG','POTREE'],
-        ['PC','MESH','PICT','DOME','BOUND'],
-        ['BACK', 'SITE'],
-        ['CURR', 'HIST', 'ARCH_REC']]
+#dirs = [[dataPath],
+#        ['RAW','OSG','POTREE'],
+#        ['PC','MESH','PICT','DOME','BOUND'],
+#        ['BACK', 'SITE'],
+#        ['CURR', 'HIST', 'ARCH_REC']]
 ## generate a redundant(very!) common directory structure
 #for item in itertools.product(*dirs):    
 #    os.makedirs(os.path.join(*item))
@@ -238,11 +264,11 @@ print "Setting up...DONE."
 print "-----------------------------------------------------------------------"
 
 ##############################################################################
-cleanup()
+#cleanup()
 
-fillTestData(dataPath, serverDataPath)
+if not os.path.exists(dataPath):
+    fillTestData(dataPath, serverDataPath)
 
-exit(1)
 # create test  DB
 print "Testing creation of the DB ..."
 sqlFile = os.path.abspath(os.path.join(testFolder, '../Database/ERDB.sql'))
@@ -317,7 +343,7 @@ print "-----------------------------------------------------------------------"
 # CreateOSGConfig.py
 # CreatePotreeConfig.p
 
-cleanup()
+#cleanup()
 
 
 print "Scripts testing DONE!"
