@@ -44,13 +44,22 @@ def cleanup():
     print "Test DB has been dropped."
     print "Cleaning up...DONE"
     print "-----------------------------------------------------------------------"
-    
+
 def fillOSGData(localDataPath, serverDataPath):    
     """ copies some OSG test data from the server data path to the local data path"""
-    # set up some paths shortcuts
     
     OSGLocalDataPath = os.path.join(localDataPath, 'OSG')
     OSGServerDataPath =os.path.join(serverDataPath, 'OSG')
+    
+    fillPcOsgGData(OSGLocalDataPath, OSGServerDataPath)
+    fillMeshOsgGData(OSGLocalDataPath, OSGServerDataPath)
+    fillPictOsgGData(OSGLocalDataPath, OSGServerDataPath)
+    
+def fillPcOsgGData(OSGLocalDataPath, OSGServerDataPath):    
+    """ copies some PC OSG test data from the server data path to the local data path"""
+    # set up some paths shortcuts
+    
+    
     PCOsgLocalDataPath = os.path.join(OSGLocalDataPath, 'PC')
     PCOsgServerDataPath = os.path.join(OSGServerDataPath, 'PC')
     SitePCOsgLocalDataPath = os.path.join(PCOsgLocalDataPath, 'SITE')
@@ -82,7 +91,6 @@ def fillOSGData(localDataPath, serverDataPath):
         else: raise  
         
      # BG
-
     try:
         dest =  os.path.join(BGPCOsgLocalDataPath,'DRIVE_1_V3')
         #os.mkdir(dest)
@@ -94,6 +102,88 @@ def fillOSGData(localDataPath, serverDataPath):
         else: raise  
             
     
+def fillMeshOsgGData(OSGLocalDataPath, OSGServerDataPath):    
+    """ copies some MESH OSG test data from the server data path to the local data path"""
+    # set up some paths shortcuts
+    curr = 'CURR'
+    arch = 'ARCH_REC'
+    MeshOsgLocalDataPath = os.path.join(OSGLocalDataPath, 'MESH')
+    MeshOsgServerDataPath = os.path.join(OSGServerDataPath, 'MESH')
+    SiteMeshOsgLocalDataPath = os.path.join(MeshOsgLocalDataPath, 'SITE')
+    SiteMeshOsgServerDataPath = os.path.join(MeshOsgServerDataPath, 'SITE')
+    CurrSiteMeshOsgLocalDataPath = os.path.join(SiteMeshOsgLocalDataPath, curr)
+    CurrSiteMeshOsgServerDataPath = os.path.join(SiteMeshOsgServerDataPath, curr)
+    ArchSiteMeshOsgLocalDataPath = os.path.join(SiteMeshOsgLocalDataPath, arch)
+    ArchSiteMeshOsgServerDataPath = os.path.join(SiteMeshOsgServerDataPath, arch)
+    
+    
+#    BGMeshOsgLocalDataPath = os.path.join(MeshOsgLocalDataPath, 'BACK')
+#    BGMeshOsgServerDataPath = os.path.join(MeshOsgServerDataPath, 'BACK')
+#    CurrBGMeshOsgLocalDataPath = os.path.join(BGMeshOsgLocalDataPath, curr)
+#    CurrBGMeshOsgServerDataPath = os.path.join(BGMeshOsgServerDataPath, curr)    
+#    ArchBGMeshOsgLocalDataPath = os.path.join(BGMeshOsgLocalDataPath, arch)
+#    ArchBGMeshOsgServerDataPath = os.path.join(BGMeshOsgServerDataPath, arch)
+    
+    # copy OSG data    
+    # 2 PC for 2 sites
+    try:
+        dest =  os.path.join(CurrSiteMeshOsgLocalDataPath,'S13')
+        #os.mkdir(dest)
+        src = os.path.join(CurrSiteMeshOsgServerDataPath,'S13')
+        shutil.copytree(src, dest)
+    except OSError as exc: # python >2.5
+        if exc.errno == errno.ENOTDIR:
+            shutil.copy(src, dest)
+        else: raise
+            
+    try:
+        dest =  os.path.join(ArchSiteMeshOsgLocalDataPath,'S162')
+        #os.mkdir(dest)
+        src = os.path.join(ArchSiteMeshOsgServerDataPath,'S162')
+        shutil.copytree(src, dest)
+    except OSError as exc: # python >2.5
+        if exc.errno == errno.ENOTDIR:
+            shutil.copy(src, dest)
+        else: raise  
+        
+     # BG
+
+def fillPictOsgGData(OSGLocalDataPath, OSGServerDataPath):    
+    """ copies some Pict OSG test data from the server data path to the local data path"""
+    # set up some paths shortcuts
+    curr = 'CURR'
+    arch = 'HIST'
+    PictOsgLocalDataPath = os.path.join(OSGLocalDataPath, 'PICT')
+    PictOsgServerDataPath = os.path.join(OSGServerDataPath, 'PICT')
+    SitePictOsgLocalDataPath = os.path.join(PictOsgLocalDataPath, 'SITE')
+    SitePictOsgServerDataPath = os.path.join(PictOsgServerDataPath, 'SITE')
+    CurrSitePictOsgLocalDataPath = os.path.join(SitePictOsgLocalDataPath, curr)
+    CurrSitePictOsgServerDataPath = os.path.join(SitePictOsgServerDataPath, curr)
+    ArchSitePictOsgLocalDataPath = os.path.join(SitePictOsgLocalDataPath, arch)
+    ArchSitePictOsgServerDataPath = os.path.join(SitePictOsgServerDataPath, arch)
+
+    # copy OSG data
+
+    try:
+        dest =  os.path.join(CurrSitePictOsgLocalDataPath,'S13')
+        #os.mkdir(dest)
+        src = os.path.join(CurrSitePictOsgServerDataPath,'S13')
+        shutil.copytree(src, dest)
+    except OSError as exc: # python >2.5
+        if exc.errno == errno.ENOTDIR:
+            shutil.copy(src, dest)
+        else: raise
+            
+    try:
+        dest =  os.path.join(ArchSitePictOsgLocalDataPath,'S162')
+        #os.mkdir(dest)
+        src = os.path.join(ArchSitePictOsgServerDataPath,'S162')
+        shutil.copytree(src, dest)
+    except OSError as exc: # python >2.5
+        if exc.errno == errno.ENOTDIR:
+            shutil.copy(src, dest)
+        else: raise  
+        
 def fillTestData(localDataPath, serverDataPath):
     """ copies some test data from the server data path to the local data path"""
     fillOSGData(localDataPath, serverDataPath)
