@@ -27,8 +27,8 @@ def cleanup():
 # clean everything
     print "Cleaning up..."
 # cleanup the local test data directory structure 
-#    if os.path.exists(dataPath):
-#       shutil.rmtree(dataPath)
+    if os.path.exists(dataPath):
+       shutil.rmtree(dataPath)
        
     files = os.listdir(currentFolder)
 
@@ -259,88 +259,110 @@ cleanup()
 if not os.path.exists(dataPath):
     fillTestData(dataPath, serverDataPath)
 
-# create test  DB
-print "Testing creation of the DB ..."
-sqlFile = os.path.abspath(os.path.join(testFolder, '../Database/ERDB.sql'))
+## create test  DB
+#print "Testing creation of the DB ..."
+#sqlFile = os.path.abspath(os.path.join(testFolder, '../Database/ERDB.sql'))
+#
+#DBargs = testArguments(sql=sqlFile, dbname=dbName, dbuser = dbUser, \
+#                dbpass =dbPass, dbhost = dbHost, dbport = dbPort, log=logLevel)
+#CreateDB.run(DBargs)
+#
+#logFile = os.path.basename(sqlFile)  + '.log'
+#logFileContent = open(logFile,'r').read()
+#if logFile.count('ERROR') > 0:
+#    print 'ERRORs in CreateDB.py. See %s' % logFile
+#    cleanup()
+#    sys.exit()
+#print "The testing of the creation of the DB...DONE."
+#print "-----------------------------------------------------------------------"
 
-DBargs = testArguments(sql=sqlFile, dbname=dbName, dbuser = dbUser, \
-                dbpass =dbPass, dbhost = dbHost, dbport = dbPort, log=logLevel)
-CreateDB.run(DBargs)
+## update the footprints
+#print "Testing updating the DB with the sites' footprints... "
+#
+#footprArgs = testArguments(input = footprints_file, dbname=dbName, dbuser=dbUser,\
+#                            dbpass=dbPass, dbhost=dbHost, dbport=dbPort)
+#UpdateDBFootprints.run(footprArgs)
+#
+#logFile = os.path.basename(footprints_file) + '.log'
+#logFileContent = open(logFile,'r').read()
+#
+#if logFile.count('ERROR') > 0:
+#    print 'ERRORs in updating the sites footprints. See %s' % logFile
+#    cleanup()
+#    sys.exit()
+#print "The testing of the footprints DB update...DONE."
+#print "-----------------------------------------------------------------------"
+#
+## update the attributes
+#print "Testing updating the Attributes in the DB... "
+#
+#attrArgs = testArguments(input = attributes_file, dbname=dbName, dbuser=dbUser,\
+#                            dbpass=dbPass, dbhost=dbHost, dbport=dbPort, log =logLevel)
+#UpdateDBAttribute.run(attrArgs)
+#
+#logFile = os.path.basename(attributes_file) + '.log'
+#logFileContent = open(logFile,'r').read()
+#
+#if logFile.count('ERROR') > 0:
+#    print 'ERRORs in updating the sites attributes. See %s' % logFile
+#    cleanup()
+#    sys.exit()
+#print "The testing of the attributes DB update...DONE."
+#print "-----------------------------------------------------------------------"
+#
+## update the Z of some sites
+#print "Testing updating the Z of given items in the DB... "
+#
+#ZArgs = testArguments(itemid=footprints_item_ids, las= footprints_drive_map,\
+#                     dbname= dbName, dbuser=dbUser, dbpass= dbPass,\
+#                     dbhost=dbHost, dbport= dbPort, cores= 16)
+#UpdateDBItemZ.run(ZArgs)
+#
+#logFile = 'UpdateDBItemZ.log'
+#logFileContent = open(logFile,'r').read()
+#
+#if logFile.count('ERROR') > 0:
+#    print 'ERRORs in updating the ItemIdZ. See %s' % logFile
+#    cleanup()
+#    sys.exit()
+#print "The testing of the updating the Z of given items in the DB...DONE."
+#print "-----------------------------------------------------------------------"
+#
 
-logFile = os.path.basename(sqlFile)  + '.log'
-logFileContent = open(logFile,'r').read()
-if logFile.count('ERROR') > 0:
-    print 'ERRORs in CreateDB.py. See %s' % logFile
-    cleanup()
-    sys.exit()
-print "The testing of the creation of the DB...DONE."
-print "-----------------------------------------------------------------------"
 
-# update the footprints
-print "Testing updating the DB with the sites' footprints... "
+print "Testing adding raw data items..."
 
-footprArgs = testArguments(input = footprints_file, dbname=dbName, dbuser=dbUser,\
-                            dbpass=dbPass, dbhost=dbHost, dbport=dbPort)
-UpdateDBFootprints.run(footprArgs)
+# AddRawDataItem.py a PC BACK (small subset of DRIVE_1_V3 with only two las files)
+print "Adding BG PC data ..."
+PCBGArgs=testArguments(data=os.path.join(dataPath,'RAW'), kind=utils.BG_FT, type=utils.PC_FT, \
+                        file="/home/pattydat/DATA/RAW/PC/BACK/DRIVE_1_V4", \
+                        log=logLevel, eight=False, srid='')
+AddRawDataItem.run(PCBGArgs)
+print "Adding BG PC data ...DONE"
 
-logFile = os.path.basename(footprints_file) + '.log'
-logFileContent = open(logFile,'r').read()
+# AddRawDataItem.py a PC SITE
+print "Adding SITE PC data ..."
+PCSiteArgs=testArguments(data=os.path.join(dataPath,'RAW'), kind=utils.SITE_FT, type=utils.PC_FT, \
+                        file="/home/pattydat/DATA/RAW/PC/SITE/S1", \
+                        log=logLevel, eight=False, srid='', site = '1')
+AddRawDataItem.run(PCSiteArgs)
+print "Adding SITE PC data ...DONE"
 
-if logFile.count('ERROR') > 0:
-    print 'ERRORs in updating the sites footprints. See %s' % logFile
-    cleanup()
-    sys.exit()
-print "The testing of the footprints DB update...DONE."
-print "-----------------------------------------------------------------------"
+# AddRawDataItem.py a PICT
 
-# update the attributes
-print "Testing updating the Attributes in the DB... "
 
-attrArgs = testArguments(input = attributes_file, dbname=dbName, dbuser=dbUser,\
-                            dbpass=dbPass, dbhost=dbHost, dbport=dbPort, log =logLevel)
-UpdateDBAttribute.run(attrArgs)
-
-logFile = os.path.basename(attributes_file) + '.log'
-logFileContent = open(logFile,'r').read()
-
-if logFile.count('ERROR') > 0:
-    print 'ERRORs in updating the sites attributes. See %s' % logFile
-    cleanup()
-    sys.exit()
-print "The testing of the attributes DB update...DONE."
-print "-----------------------------------------------------------------------"
-
-# update the Z of some sites
-print "Testing updating the Z of given items in the DB... "
-
-ZArgs = testArguments(itemid=footprints_item_ids, las= footprints_drive_map,\
-                     dbname= dbName, dbuser=dbUser, dbpass= dbPass,\
-                     dbhost=dbHost, dbport= dbPort, cores= 16)
-UpdateDBItemZ.run(ZArgs)
-
-logFile = 'UpdateDBItemZ.log'
-logFileContent = open(logFile,'r').read()
-
-if logFile.count('ERROR') > 0:
-    print 'ERRORs in updating the ItemIdZ. See %s' % logFile
-    cleanup()
-    sys.exit()
-print "The testing of the updating the Z of given items in the DB...DONE."
+print "Testing adding raw data items...DONE"
 print "-----------------------------------------------------------------------"
 
 exit(1)
 
-# AddRawDataItem.py a PC BACK (small subset of DRIVE_1_V3 with only two las files)
-# AddRawDataItem.py a PC SITE
-# AddRawDataItem.py a PIC
+
+
 # AddRawDataItem.py a MESH
+
+
 # UpdateDB.py
-print "Testing adding raw data items and updating the DB... "
-
-#print "Adding BG PC data ..."
-PCBGArguments=namedtuple("PCBG_Arg","data, kind, type, file, period, srid,  eight, log, site")
-AddRawDataItem.run(PCBGArguments([],utils.BG_FT, utils.PC_FT,"/home/pattydat/DATA/RAW/PC/BACK/DRIVE_1_V4",[],[],[],logLevel, []))
-
+print " Tetsing updating the DB... "
 CreateDBArguments = namedtuple("DB_Arguments", "data types ditypes  dbname dbuser dbpass dbhost dbport log")
 UpdateDB.run(CreateDBArguments(dataPath,[],[],dbName, dbUser, dbPass, dbHost, dbPort, logLevel))
 
@@ -361,7 +383,7 @@ print "-----------------------------------------------------------------------"
 # CreateOSGConfig.py
 # CreatePotreeConfig.p
 
-#cleanup()
+cleanup()
 
 
 print "Scripts testing DONE!"
