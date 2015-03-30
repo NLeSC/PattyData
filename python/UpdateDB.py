@@ -184,7 +184,7 @@ def getXMLAbsPath(absPath):
 
 def run(opts):
     # Set logging
-    logname = os.path.basename(__file__) + '.log'
+    logname = os.path.splitext(os.path.basename(__file__))[0] + '.log'
     start_logging(filename=logname, level=opts.log)
     # Establish connection with DB
     global cursor
