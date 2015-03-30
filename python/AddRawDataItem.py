@@ -44,7 +44,7 @@
 #                       |- Sn
 ###############################################################################
 
-import re, time, os, shutil, argparse, utils, json, liblas, glob
+import time, os, shutil, argparse, utils, json, liblas, glob
 
 logger = None
 
@@ -94,10 +94,12 @@ def check_directory_structure(RAW_BASEDIR):
     # check if the directory structure exist, raise IOError if needed
     for directory in DIRS:
         if not os.path.isdir(directory):
-            # os.makedirs(directory) # create directories recursively
-            logger.error(
-                "Required directory does not exist: " + directory)
-            raise IOError("Required directory does not exist: " + directory)
+            os.makedirs(directory) # create directories recursively
+            logger.info(
+                "Required directory created: " + directory)            
+#            logger.error(
+#                "Required directory does not exist: " + directory)
+#            raise IOError("Required directory does not exist: " + directory)
 
 
 def check_input_data(opts):
@@ -355,7 +357,8 @@ def copy_data(opts, TARGETDIR):
 def run(opts):
     # set logging level
     global logger
-    logname = os.path.basename(__file__) + '.log'
+    #logname = os.path.basename(__file__) + '.log'
+    logname = os.path.splitext(os.path.basename(__file__))[0] + '.log'
     logger = utils.start_logging(filename=logname, level=opts.log)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
