@@ -7,6 +7,7 @@ import os, argparse, logging, time, utils
 
 def run(opts):
     # Set logging
+    #logname = os.path.splitext(os.path.basename(opts.sql))[0] + '.log'
     logname = os.path.basename(opts.sql) + '.log'
     utils.start_logging(filename=logname, level=opts.log)
    
