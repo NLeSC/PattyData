@@ -376,12 +376,14 @@ if logFile.count('ERROR') > 0:
 print "Testing adding raw data items...DONE"
 print "-----------------------------------------------------------------------"
 
-exit(1)
 
 # UpdateDB.py
-print " Tetsing updating the DB... "
-CreateDBArguments = namedtuple("DB_Arguments", "data types ditypes  dbname dbuser dbpass dbhost dbport log")
-UpdateDB.run(CreateDBArguments(dataPath,[],[],dbName, dbUser, dbPass, dbHost, dbPort, logLevel))
+print " Testing updating the DB... "
+UpdateDBArgs = testArguments(data=dataPath, types='rop', ditypes='pmi',\
+                  dbname=dbName, dbuser=dbUser, dbpass=dbPass,\
+                  dbhost=dbHost, dbport=dbPort, log=logLevel)
+
+UpdateDB.run(UpdateDBArgs)
 
 logFile = 'UpdateDB.log'
 logFileContent = open(logFile,'r').read()
@@ -393,7 +395,7 @@ if logFile.count('ERROR') > 0:
 print "The testing of the updating the DB...DONE."
 print "-----------------------------------------------------------------------"
 
-
+exit(1)
 # GeneratePOTree.py
 # GenerateOSG.py
 # UpdateDB.py
