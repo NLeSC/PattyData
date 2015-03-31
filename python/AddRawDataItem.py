@@ -303,6 +303,7 @@ def copy_data(opts, TARGETDIR):
                     if not os.path.isdir(os.path.join
                                          (TARGETDIR, basedir + srid8bit)):
                         os.mkdir(os.path.join(TARGETDIR, basedir + srid8bit))
+                        #print file_name
                         shutil.copyfile(os.path.join(opts.file, file_name),
                                         os.path.join(TARGETDIR, basedir +
                                                      srid8bit, file_name))
@@ -316,6 +317,7 @@ def copy_data(opts, TARGETDIR):
         else:
             for file_name in src_files:
                 if (os.path.isfile(os.path.join(opts.file, file_name))):
+                    #print file_name
                     shutil.copy(os.path.join(opts.file, file_name), TARGETDIR)
     elif (os.path.isfile(opts.file) and opts.type != utils.MESH_FT):
         # if input was a file:
