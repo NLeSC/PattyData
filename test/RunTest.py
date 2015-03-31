@@ -329,7 +329,6 @@ print "The testing of the updating the Z of given items in the DB...DONE."
 print "-----------------------------------------------------------------------"
 
 
-
 print "Testing adding raw data items..."
 
 # AddRawDataItem.py a PC BACK (small subset of DRIVE_1_V3 with only two las files)
@@ -368,16 +367,16 @@ MeshArgs=testArguments(data=os.path.join(dataPath,'RAW'), kind=utils.SITE_FT, \
 AddRawDataItem.run(MeshArgs)
 print "Adding MESH SITE data ...DONE"
 
-
+logFile = 'AddRawDataItem.log'
+logFileContent = open(logFile,'r').read()
+if logFile.count('ERROR') > 0:
+    print 'ERRORs in AddRawDataItem.py. See %s' % logFile
+    cleanup()
+    sys.exit()
 print "Testing adding raw data items...DONE"
 print "-----------------------------------------------------------------------"
 
 exit(1)
-
-
-
-# AddRawDataItem.py a MESH
-
 
 # UpdateDB.py
 print " Tetsing updating the DB... "
