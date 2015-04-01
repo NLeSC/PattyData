@@ -129,7 +129,7 @@ def getNumLevels(opts, isBackground):
 
 def run(opts):
     # Start logging
-    logname = os.path.basename(__file__) + '.log'
+    logname = os.path.splitext(os.path.basename(__file__))[0] + '.log'
     utils.start_logging(filename=logname, level=opts.log)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
