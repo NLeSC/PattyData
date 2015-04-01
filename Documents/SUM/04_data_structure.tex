@@ -78,32 +78,48 @@ are found in the verbatim below. The script automatically creates a destination
 folder with the required naming, as specified in section \ref{sec:descriptiondata},
 using the supplied arguments.
 
-For MESH and PICT, the (\textit{-f, -\hspace{0cm}-file}) argument can be either
-a file, or a folder containing files with the correct extension. For a PC the
-argument must always be a folder.
+For PC of sites the (\textit{-f, -\hspace{0cm}-file}) argument should be the path 
+to the LAS/LAZ file. For background PC it should be the folder. 
+For PICT it should be the path to the png/jpg/jpeg file. 
+For MESH the argument should be the path to the OBJ file (the textures contained in the same folder as the OBJ will also be copied)
 
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
 usage: AddRawDataItem.py [-h] [-i DATA] -k {BACK,SITE} -t {PC,MESH,PICT} -f
-FILE
-[-p {CURR,HIST,ARCH_REC}] [-s SRID] [--eight] [-l
-{debug,info,warning,error,critical}] [--site SITE]
+                         FILE [-p {CURR,HIST,ARCH_REC}] [-s SRID] [--eight]
+                         [-l {debug,info,warning,critical,error}]
+                         [--site SITE]
 
 Add Raw data item to the file structure.
 
-optional arguments: -h, --help            show this help message and exit -i
-DATA, --data DATA  RAW data folder [default /home/pattydat/DATA/RAW] -s SRID,
---srid SRID  spatial reference system SRID [only for MESH SITE] --eight
-8 bit color [only for PC SITE or MESH] -l {debug,info,warning,error,critical},
---log {debug,info,warning,error,critical} Log level
+optional arguments:
+  -h, --help            show this help message and exit
+  -i DATA, --data DATA  RAW data folder [default /home/pattydat/DATA/RAW]
+  -s SRID, --srid SRID  spatial reference system SRID [only for MESH SITE]
+  --eight               8 bit color [only for PC SITE or MESH]
+  -l {debug,info,warning,critical,error}, --log {debug,info,warning,critical,error}
+                        Log level
 
-required arguments: -k {BACK,SITE}, --kind {BACK,SITE} Type of item -t
-{PC,MESH,PICT}, --type {PC,MESH,PICT} Type of data -f FILE, --file FILE  Input
-file/directory name to copy
+required arguments:
+  -k {BACK,SITE}, --kind {BACK,SITE}
+                        Type of item
+  -t {PC,MESH,PICT}, --type {PC,MESH,PICT}
+                        Type of data
+  -f FILE, --file FILE  Input file/directory name to copy. For point clouds of
+                        sites specify the path to the LAS/LAZ file. For
+                        background point clouds specify the folder. For
+                        pictures the path to the png/jpg/jpeg file. For meshes
+                        specify the path to the OBJ file (the textures
+                        contained in the same folder as the OBJ will also be
+                        copied)
 
-required arguments for MESH and PICT: -p {CURR,HIST,ARCH_REC}, --period
-{CURR,HIST,ARCH_REC} Period (choose from MESH:CURR,ARCH_REC; PICT:CURR,HIST)
+required arguments for MESH and PICT:
+  -p {CURR,HIST,ARCH_REC}, --period {CURR,HIST,ARCH_REC}
+                        Period (choose from MESH:CURR,ARCH_REC;
+                        PICT:CURR,HIST)
 
-required arguments for SITE: --site SITE           Site number \end{Verbatim}
+required arguments for SITE:
+  --site SITE           Site number
+\end{Verbatim}
 
 \subsubsection{Removing raw data items}
 \label{sec:removeraw} 
@@ -111,20 +127,32 @@ The \textit{RemoveRawDataItem.py} is used to remove raw data items from the file
 structure. 
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
 usage: RemoveRawDataItem.py [-h] -i ITEMID [-d DBNAME] [-u DBUSER] [-p DBPASS]
-[-t DBHOST] [-r DBPORT] [-l {debug,info,warning,error,critical}]
+                            [-t DBHOST] [-r DBPORT]
+                            [-l {debug,info,warning,critical,error}]
 
-Removes a list of Raw data items and their related converted data from the file
-structure.
+Removes a list of Raw data items and their related converted data from the
+file structure.
 
-optional arguments: -h, --help            show this help message and exit -d
-DBNAME, --dbname DBNAME PostgreSQL DB name viaappiadb] -u DBUSER, --dbuser
-DBUSER DB user [default ronald] -p DBPASS, --dbpass DBPASS DB pass -t DBHOST,
---dbhost DBHOST DB host -r DBPORT, --dbport DBPORT DB port -l
-{debug,info,warning,error,critical}, --log {debug,info,warning,error,critical}
-Log level
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DBNAME, --dbname DBNAME
+                        PostgreSQL DB name viaappiadb]
+  -u DBUSER, --dbuser DBUSER
+                        DB user [default \$USERNAME]
+  -p DBPASS, --dbpass DBPASS
+                        DB pass
+  -t DBHOST, --dbhost DBHOST
+                        DB host
+  -r DBPORT, --dbport DBPORT
+                        DB port
+  -l {debug,info,warning,critical,error}, --log {debug,info,warning,critical,error}
+                        Log level
 
-required arguments: -i ITEMID, --itemid ITEMID Comma-separated list of Raw Data
-Item Ids Raw data item id (with ? the available raw data items are listed)
+required arguments:
+  -i ITEMID, --itemid ITEMID
+                        Comma-separated list of Raw Data Item Ids Raw data
+                        item id (with ? the available raw data items are
+                        listed)
 \end{Verbatim}
 
 \subsubsection{Listing raw data items}
@@ -133,18 +161,28 @@ The script \textit{ListRawDataItem.py} lists the raw data items currently in the
 file structure.
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
 usage: ListRawDataItem.py [-h] [-i ITEMID] [-d DBNAME] [-u DBUSER] [-p DBPASS]
-[-t DBHOST] [-r DBPORT] [-l {debug,info,warning,error,critical}]
+                          [-t DBHOST] [-r DBPORT]
+                          [-l {debug,info,warning,critical,error}]
 
 List the Raw data items that are in the DB.
 
-optional arguments: -h, --help            show this help message and exit -i
-ITEMID, --itemid ITEMID List the Raw Data Item Ids related to a list of items
-(comma-separated) [default list all raw data items] -d DBNAME, --dbname DBNAME
-PostgreSQL DB name viaappiadb] -u DBUSER, --dbuser DBUSER DB user [default
-$USERNAME] -p DBPASS, --dbpass DBPASS DB pass -t DBHOST, --dbhost DBHOST DB
-host -r DBPORT, --dbport DBPORT DB port -l {debug,info,warning,error,critical},
---log {debug,info,warning,error,critical} Log level
-
+optional arguments:
+  -h, --help            show this help message and exit
+  -i ITEMID, --itemid ITEMID
+                        List the Raw Data Item Ids related to a list of items
+                        (comma-separated) [default list all raw data items]
+  -d DBNAME, --dbname DBNAME
+                        PostgreSQL DB name viaappiadb]
+  -u DBUSER, --dbuser DBUSER
+                        DB user [default \$USERNAME]
+  -p DBPASS, --dbpass DBPASS
+                        DB pass
+  -t DBHOST, --dbhost DBHOST
+                        DB host
+  -r DBPORT, --dbport DBPORT
+                        DB port
+  -l {debug,info,warning,critical,error}, --log {debug,info,warning,critical,error}
+                        Log level
 \end{Verbatim}
 
 \subsubsection{Generating OSG data}
@@ -160,22 +198,36 @@ the Potree data tree, with the naming as specified in figure
 \label{fig:directory_structure_overview_osg} \end{figure}
 
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
-usage: GenerateOSG.py [-h] [-i ITEMID] [-d DBNAME] [-u DBUSER] [-p DBPASS] [-t
-DBHOST] [-r DBPORT] [-o OSGDIR] [-l {debug,info,warning,error,critical}]
+usage: GenerateOSG.py [-h] [-i ITEMID] [-d DBNAME] [-u DBUSER] [-p DBPASS]
+                      [-t DBHOST] [-r DBPORT] [-o OSGDIR]
+                      [-l {debug,info,warning,critical,error}]
 
 Generates the OSG data for a raw data item.
 
-optional arguments: -h, --help            show this help message and exit -i
-ITEMID, --itemid ITEMID Comma-separated list of Raw Data Item Ids [default is
-to convert all raw data items related to sites that do not have a related OSG
-data item] (with ? the available raw data items are listed, with ! the list all
-the raw data items without any related OSG data item) -d DBNAME, --dbname
-DBNAME Postgres DB name [default viaappiadb] -u DBUSER, --dbuser DBUSER DB user
-[default $USERNAME] -p DBPASS, --dbpass DBPASS DB pass -t DBHOST, --dbhost
-DBHOST DB host -r DBPORT, --dbport DBPORT DB port -o OSGDIR, --osgDir OSGDIR
-OSG data directory [default /home/pattydat/DATA/OSG] -l
-{debug,info,warning,error,critical}, --log {debug,info,warning,error,critical}
-Log level \end{Verbatim}
+optional arguments:
+  -h, --help            show this help message and exit
+  -i ITEMID, --itemid ITEMID
+                        Comma-separated list of Raw Data Item Ids [default is
+                        to convert all raw data items related to sites that do
+                        not have a related OSG data item] (with ? the
+                        available raw data items are listed, with ! the list
+                        all the raw data items without any related OSG data
+                        item)
+  -d DBNAME, --dbname DBNAME
+                        Postgres DB name [default viaappiadb]
+  -u DBUSER, --dbuser DBUSER
+                        DB user [default \$USERNAME]
+  -p DBPASS, --dbpass DBPASS
+                        DB pass
+  -t DBHOST, --dbhost DBHOST
+                        DB host
+  -r DBPORT, --dbport DBPORT
+                        DB port
+  -o OSGDIR, --osgDir OSGDIR
+                        OSG data directory [default /home/pattydat/DATA/OSG]
+  -l {debug,info,warning,critical,error}, --log {debug,info,warning,critical,error}
+                        Log level
+\end{Verbatim}
 
 \subsubsection{Generating Potree data}
 \label{sec:generatePotree} 
@@ -190,22 +242,37 @@ in the Potree data tree, with the naming as specified in figure
 \label{fig:directory_structure_overview_potree} \end{figure}
 
 \begin{Verbatim}[fontfamily=courier,commandchars=\\\{\},fontsize=\footnotesize]
-usage: GeneratePotree.py [-h] [-i ITEMID] [-d DBNAME] [-u DBUSER] [-p DBPASS]
-[-t DBHOST] [-r DBPORT] [-o POTREEDIR] [--levels LEVELS] [-l
-{debug,info,warning,error,critical}]
+usage: GeneratePOTree.py [-h] [-i ITEMID] [-d DBNAME] [-u DBUSER] [-p DBPASS]
+                         [-t DBHOST] [-r DBPORT] [-o POTREEDIR]
+                         [--levels LEVELS]
+                         [-l {debug,info,warning,critical,error}]
 
-Generates the Potree data for a raw data item (ONLY FOR PCs)
+Generates the POTree data for a raw data item (ONLY FOR PCs)
 
-optional arguments: -h, --help            show this help message and exit -i
-ITEMID, --itemid ITEMID Comma-separated list of PointCloud Raw Data Item Ids
-[default is to convert all raw data items that do not have a related Potree
-data item] (with ? the available raw data items are listed, with ! the list all
-the raw data items without any related Potree data item) -d DBNAME, --dbname
-DBNAME Postgres DB name [default viaappiadb] -u DBUSER, --dbuser DBUSER DB user
-[default $USERNAME] -p DBPASS, --dbpass DBPASS DB pass -t DBHOST, --dbhost
-DBHOST DB host -r DBPORT, --dbport DBPORT DB port -o POTREEDIR, --potreeDir
-POTREEDIR POTREE data directory [default /home/pattydat/DATA/POTREE] --levels
-LEVELS       Number of levels of the Octree, parameter for PotreeConverter.
-[default is 4 for Sites and 8 for Backgrounds] -l
-{debug,info,warning,error,critical}, --log {debug,info,warning,error,critical}
-Log level \end{Verbatim}
+optional arguments:
+  -h, --help            show this help message and exit
+  -i ITEMID, --itemid ITEMID
+                        Comma-separated list of PointCloud Raw Data Item Ids
+                        [default is to convert all raw data items that do not
+                        have a related POtree data item] (with ? the available
+                        raw data items are listed, with ! the list all the raw
+                        data items without any related POTree data item)
+  -d DBNAME, --dbname DBNAME
+                        Postgres DB name [default viaappiadb]
+  -u DBUSER, --dbuser DBUSER
+                        DB user [default \$USERNAME]
+  -p DBPASS, --dbpass DBPASS
+                        DB pass
+  -t DBHOST, --dbhost DBHOST
+                        DB host
+  -r DBPORT, --dbport DBPORT
+                        DB port
+  -o POTREEDIR, --potreeDir POTREEDIR
+                        POTREE data directory [default
+                        /home/pattydat/DATA/POTREE]
+  --levels LEVELS       Number of levels of the Octree, parameter for
+                        PotreeConverter. [default is 4 for Sites and 8 for
+                        Backgrounds]
+  -l {debug,info,warning,critical,error}, --log {debug,info,warning,critical,error}
+                        Log level
+\end{Verbatim}
