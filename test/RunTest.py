@@ -19,7 +19,8 @@ def checkLogFile(logFile, scriptName):
         open(logFile,'r').read()
         if logFile.count('ERROR') > 0:
             print 'ERRORs in %s. See %s' %(scriptName,logFile)
-            cleanup()
+            cleanup_data()
+            cleanup_db()
             sys.exit()
     else:
         print 'Could not open the %s logfile' %logFile    
@@ -33,7 +34,7 @@ def getConfig(testFolder, iniFileName):
     
     return config
 
-def cleanup():
+def cleanup_data():
 # clean everything
     print "Cleaning up..."
 # cleanup the local test data directory structure 
@@ -47,15 +48,18 @@ def cleanup():
         if os.path.isfile(f) & f.endswith('.log'):
             print "Cleaned up log file: ", f
             os.remove(f)
-# drop the test DB
-    os.system('dropdb ' + utils.postgresConnectString(dbName, dbUser, dbPass, dbHost, dbPort, True))   
-    print "If exisiting:"
+    print "If existing:"
     print "Log files have been removed." 
     print "DATA folder has been removed."
     print "PC (Potree) folder has been removed."
-    print "Test DB has been dropped."
+    
     print "Cleaning up...DONE"
     print "-----------------------------------------------------------------------"
+    
+def cleanup_db():
+# drop the test DB
+    os.system('dropdb ' + utils.postgresConnectString(dbName, dbUser, dbPass, dbHost, dbPort, True))   
+    print "Test DB has been dropped."
     
 def fillTestData(localDataPath, serverDataPath):
     """ copies some test data from the server data path to the local data path"""
@@ -267,7 +271,8 @@ print " Setting up...DONE."
 print "-----------------------------------------------------------------------"
 
 ##############################################################################
-cleanup()
+cleanup_data()
+cleanup_db()
 
 if not os.path.exists(dataPath):
     fillTestData(dataPath, serverDataPath)
@@ -479,7 +484,8 @@ checkLogFile(logFile, scriptName)
 print " The testing of creating the POTree configuration...DONE."
 print "-----------------------------------------------------------------------"
 
-cleanup()
+cleanup_db()
+cleanup_data()
 
 
 print "Scripts testing DONE!"
