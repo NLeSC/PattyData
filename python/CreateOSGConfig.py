@@ -11,12 +11,8 @@
 ##############################################################################
 
 import os
-import psycopg2
 import time
-import re
-import multiprocessing
 import glob
-import shutil
 import utils
 import argparse
 import viewer_conf_api
@@ -49,7 +45,8 @@ DEFAULT_PREFENCES = """
 def run(opts):
     global logger
     # Define logger and start logging
-    logname = os.path.basename(opts.output) + '.log'
+    #logname = os.path.basename(opts.output) + '.log'
+    logname = os.path.splitext(os.path.basename(__file__))[0] + '.log'
     logger = utils.start_logging(filename=logname, level=opts.log)
     localtime = utils.getCurrentTimeAsAscii()
     t0 = time.time()
