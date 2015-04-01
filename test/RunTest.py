@@ -11,7 +11,7 @@ sys.path.append(scriptsFolder)
 
 import utils
 import CreateDB, UpdateDBFootprints, UpdateDBAttribute, UpdateDBItemZ, UpdateDB
-import AddRawDataItem, GeneratePOTree
+import AddRawDataItem, GeneratePOTree, GenerateOSG
 
 # get configuration from an ini file 
 def getConfig(testFolder, iniFileName):
@@ -384,47 +384,60 @@ if True:
     print "-----------------------------------------------------------------------"
 
 
-# UpdateDB.py
-print " Testing updating the DB... "
-UpdateDBArgs = testArguments(data=dataPath, types='rop', ditypes='pmi',\
+    # UpdateDB.py
+    print " Testing updating the DB... "
+    UpdateDBArgs = testArguments(data=dataPath, types='rop', ditypes='pmi',\
+                      dbname=dbName, dbuser=dbUser, dbpass=dbPass,\
+                      dbhost=dbHost, dbport=dbPort, log=logLevel)
+    
+    UpdateDB.run(UpdateDBArgs)
+    
+    logFile = 'UpdateDB.log'
+    logFileContent = open(logFile,'r').read()
+    
+    if logFile.count('ERROR') > 0:
+        print 'ERRORs in updating the DB. See %s' % logFile
+        cleanup()
+        sys.exit()
+    print " The testing of the updating the DB...DONE."
+    print "-----------------------------------------------------------------------"
+    
+    
+    # GeneratePOTree.py
+    print " Testing generating POTree... "
+    PotreeArgs = testArguments(itemid='', potreeDir='',levels=4, \
+                      dbname=dbName, dbuser=dbUser, dbpass=dbPass,\
+                      dbhost=dbHost, dbport=dbPort, log=logLevel)
+    
+    GeneratePOTree.run(PotreeArgs)
+    
+    logFile = 'GeneratePOTree.log'
+    logFileContent = open(logFile,'r').read()
+    
+    if logFile.count('ERROR') > 0:
+        print 'ERRORs in generating the POTree. See %s' % logFile
+        cleanup()
+        sys.exit()
+    print " The testing of generating the POTree...DONE."
+    print "-----------------------------------------------------------------------"
+    
+# GenerateOSG.py
+print " Testing generating OSG... "
+OSGArgs = testArguments(itemid='', osgDir='',\
                   dbname=dbName, dbuser=dbUser, dbpass=dbPass,\
                   dbhost=dbHost, dbport=dbPort, log=logLevel)
 
-UpdateDB.run(UpdateDBArgs)
+GenerateOSG.run(OSGArgs)
 
-logFile = 'UpdateDB.log'
+logFile = 'GenerateOSG.log'
 logFileContent = open(logFile,'r').read()
 
 if logFile.count('ERROR') > 0:
-    print 'ERRORs in updating the DB. See %s' % logFile
+    print 'ERRORs in generating the OSG. See %s' % logFile
     cleanup()
     sys.exit()
-print " The testing of the updating the DB...DONE."
+print " The testing of generating the OSG...DONE."
 print "-----------------------------------------------------------------------"
-
-
-# GeneratePOTree.py
-print " Testing generating POTree... "
-PotreeArgs = testArguments(itemid='', potreeDir='',levels=4, \
-                  dbname=dbName, dbuser=dbUser, dbpass=dbPass,\
-                  dbhost=dbHost, dbport=dbPort, log=logLevel)
-
-GeneratePOTree.run(PotreeArgs)
-
-logFile = 'GeneratePOTree.log'
-try:
-    logFileContent = open(logFile,'r').read()
-except:
-    print "Coudn't open logFile name: %s", logFile
-
-if logFile.count('ERROR') > 0:
-    print 'ERRORs in generating the POTree. See %s' % logFile
-    cleanup()
-    sys.exit()
-print " The testing of generating the POTree...DONE."
-print "-----------------------------------------------------------------------"
-
-# GenerateOSG.py
 
 # UpdateDB.py
 print " Testing again updating the DB... "
@@ -443,12 +456,13 @@ if logFile.count('ERROR') > 0:
     sys.exit()
 print " The second testing of the updating the DB...DONE."
 print "-----------------------------------------------------------------------"
-exit(1)
 
 # CreateOSGConfig.py
+
+
 # CreatePotreeConfig.p
 
-cleanup()
+#cleanup()
 
 
 print "Scripts testing DONE!"
