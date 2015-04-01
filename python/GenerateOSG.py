@@ -22,6 +22,8 @@ import shutil, os, time, utils, glob, subprocess, argparse, shlex, logging
 
 CONVERTER_COMMAND = 'ViaAppia'
 
+cwd = None
+
 def getOSGFileFormat(inType):
     return 'osgb'
 
@@ -42,7 +44,7 @@ def updateXMLDescription(xmlPath, cursor, aoType, rawDataItemId):
 
 
 def createOSG(cursor, itemId, osgDir):
-    
+    global cwd
     (mainOsgb, xmlPath, offsets) = (None, None, (0, 0, 0))
     
     # extract abspath using raw_data_item_id
@@ -86,7 +88,8 @@ def createOSG(cursor, itemId, osgDir):
     if len(data_items) > 0:
         aligned = True
         (abOffsetX, abOffsetY, abOffsetZ) = data_items[0]
-
+    
+    cwd = os.getcwd()
     if os.path.isfile(inFile):
         # input was a file -> raise IOError
         error('Database key abspath should define a directory, ' +
@@ -182,6 +185,8 @@ def createOSG(cursor, itemId, osgDir):
                 offsets[i] = float(offsets[i])
         elif aligned:
             logging.warn('No offset file was found and it was expected!')
+    # We move back to the current working directory
+    os.chdir(cwd)
     
 def extract_inType(abspath, site_id, osgDir):
     '''
@@ -243,10 +248,12 @@ def extract_inType(abspath, site_id, osgDir):
     return inType, inKind, outFolder
 
 def error(errorMessage, outFolder):
-     logging.error(errorMessage)
-     logging.info('Removing %s ' % outFolder)
-     shutil.rmtree(outFolder)
-     raise Exception(errorMessage)
+    logging.error(errorMessage)
+    logging.info('Removing %s ' % outFolder)
+    shutil.rmtree(outFolder)
+    # We move back to the current working directory
+    os.chdir(cwd)
+    raise Exception(errorMessage)
 
 
 def run(opts):
