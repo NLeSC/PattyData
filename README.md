@@ -92,7 +92,7 @@ In this section we shortly describe how to manage data, i.e. add new data (point
 
 - We also generate the Potree data for the web-based viewer:
   
-  `GeneratePotree.py`
+  `GeneratePOtree.py`
 
 - We update de DB again with the latest changes:
   
