@@ -16,7 +16,7 @@ import liblas
 
 # TODO: RemoeRawDataItem should also remove the related OSG and POTREE data
 
-TYPES = 'rop'
+TYPES = 'ropn'
 DATA_ITEM_TYPES_CHARS = 'pmi'
 
 # Get time when we start the update process
@@ -198,6 +198,8 @@ def run(opts):
     rawDataAbsPath = dataAbsPath + '/' + RAW_FT
     osgDataAbsPath = dataAbsPath + '/' + OSG_FT
     potDataAbsPath = dataAbsPath + '/' + POT_FT
+    nexDataAbsPath = dataAbsPath + '/' + NEX_FT
+    
 
     localtime = getCurrentTimeAsAscii()
     t0 = time.time()
@@ -213,11 +215,17 @@ def run(opts):
     if 'p' in opts.types:
         process(potDataAbsPath, dataItemTypes, addPOTDataItem)
     
+    if 'n' in opts.types:
+        process(nexDataAbsPath, dataItemTypes, addNEXDataItem)
+    
     if 'p' in opts.types:
         cleanPOT(dataItemTypes)
     
     if 'o' in opts.types:
         cleanOSG(dataItemTypes)
+    
+    if 'n' in opts.types:
+        cleanNEX(dataItemTypes)
     
     if 'r' in opts.types:
         cleanRaw(dataItemTypes)
@@ -378,12 +386,19 @@ def cleanPOT(dataItemTypes):
                 logging.error('POTREE data item in ' + absPath + ' has not been checked!')
             else: # There is not any file or folder in that location -> we can delete this entry
                 dbExecute(cursor, 'DELETE FROM POTREE_DATA_ITEM_PC WHERE potree_data_item_pc_id = %s', [potreeDataItemPCId,])
-                
-    #if MESH_FT in dataItemTypes:
-    #    pass
-    #if PIC_FT in dataItemTypes:
-    #    pass
 
+
+def cleanNEX(dataItemTypes):
+    logging.info('Cleaning NEXUS data items...') 
+    if MESH_FT in dataItemTypes:
+        dbExecute(cursor, 'SELECT nexus_data_item_mesh_id, abs_path FROM NEXUS_DATA_ITEM_MESH WHERE last_check < %s', [initialTime,])
+        rows = cursor.fetchall()
+        for (necusDataItemMeshId, absPath) in rows:
+            if os.path.isfile(absPath) or os.path.isdir(absPath):
+                logging.error('NEXUS data item in ' + absPath + ' has not been checked!')
+            else: # There is not any file or folder in that location -> we can delete this entry
+                dbExecute(cursor, 'DELETE FROM NEXUS_DATA_ITEM_MESH WHERE nexus_data_item_mesh_id = %s', [necusDataItemMeshId,])
+                
 def addRawDataItem(absPath, itemId, dataItemType):
     if os.path.isdir(absPath) and len(os.listdir(absPath)) == 0:
         logging.warn('Skipping ' + absPath + '. Empty directory')
@@ -555,6 +570,32 @@ def addPOTDataItem(absPath, itemId, dataItemType):
             if modTime > lastModDB: #Data has changed
                 logging.warn('POTREE data item in ' + sAbsPath + ' may have been updated and it may not be reflected in the DB.')
             dbExecute(cursor, 'UPDATE POTREE_DATA_ITEM_PC SET last_check=%s WHERE potree_data_item_pc_id = %s', [initialTime, potreeDataItemId])
+
+def addNEXDataItem(absPath, itemId, dataItemType):
+    if dataItemType != MESH_FT:
+        logging.error('Skipping ' + sAbsPath + '. Only Nexus meshes are added')
+        return
+    
+    rawAbsPath = absPath.replace(NEX_FT, RAW_FT)
+    dbExecute(cursor, 'SELECT raw_data_item_id FROM RAW_DATA_ITEM WHERE abs_path = %s', [rawAbsPath,])
+    row = cursor.fetchone()
+    if row == None:
+        logging.error('Skipping ' + absPath + '. None related RAW data item found in ' + rawAbsPath)
+        return
+    rawDataItemId = row[0]
+    
+    modTime = getCurrentTime(getLastModification(absPath))
+    dbExecute(cursor, 'SELECT nexus_data_item_mesh_id, last_mod FROM NEXUS_DATA_ITEM_MESH WHERE abs_path = %s', [absPath,])
+    row = cursor.fetchone()
+    if row == None: #This folder has been added recently
+        dbExecute(cursor, "INSERT INTO NEXUS_DATA_ITEM_MESH (nexus_data_item_mesh_id, raw_data_item_id, abs_path, last_mod, last_check) VALUES (DEFAULT,%s,%s,%s,%s)", 
+                [rawDataItemId, absPath, modTime, initialTime])
+    else:
+        (nexusDataItemId, lastModDB) = row
+        if modTime > lastModDB: #Data has changed
+            logging.warn('NEXUS data item in ' + absPath + ' may have been updated and it may not be reflected in the DB.')
+        dbExecute(cursor, 'UPDATE NEXUS_DATA_ITEM_MESH SET last_check=%s WHERE nexus_data_item_mesh_id = %s', [initialTime, nexusDataItemId])
+
 
 def argument_parser():
     parser = argparse.ArgumentParser(description="Updates the DB from the content of the data folder")

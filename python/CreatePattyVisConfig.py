@@ -29,7 +29,7 @@ def addThumbnail(cursor, itemId, jsonSite):
         if imageAbsPath == None:
             (absPath, thumbnail) = site_images[0] 
             imageAbsPath = absPath
-        jsonSite["thumbnail"] = utils.POTREE_DATA_URL_PREFIX + imageAbsPath.replace(utils.POTREE_SERVER_DATA_ROOT,'') + '/' + os.listdir(imageAbsPath)[0]
+        jsonSite["thumbnail"] = utils.PATTYVIS_DATA_URL_PREFIX + imageAbsPath.replace(utils.PATTYVIS_SERVER_DATA_ROOT,'') + '/' + os.listdir(imageAbsPath)[0]
     else:
         logger.warning('No image found for item %d' % itemId)
 
@@ -73,7 +73,7 @@ WHERE A.raw_data_item_id = B.raw_data_item_id AND
         for (pcAbsPath, pcSRID, pcMinx, pcMiny, pcMinz, pcMaxx, pcMaxy, pcMaxz, osgSRID, x, y, z, xs, ys, zs, h, p, r) in site_pcs:
             pData = {}
             pData["id"] = len(pcData) + 1
-            pData["dataLocation"] = utils.POTREE_DATA_URL_PREFIX + pcAbsPath.replace(utils.POTREE_SERVER_DATA_ROOT,'') + "/cloud.js"
+            pData["dataLocation"] = utils.PATTYVIS_DATA_URL_PREFIX + pcAbsPath.replace(utils.PATTYVIS_SERVER_DATA_ROOT,'') + "/cloud.js"
             osgPosition = getOSGPosition(cursor, srid, osgSRID, x, y, z, xs, ys, zs, h, p, r)
             pData["osg_position"] = osgPosition
             if pcSRID == srid:
@@ -115,15 +115,16 @@ def getOSGPosition(cursor, srid, osgLocationSRID, x, y, z, xs, ys, zs, h, p, r):
 def addMeshes(cursor, itemId, dataSite, srid):
     query = """
 SELECT 
-    A.abs_path, B.mtl_abs_path, B.current_mesh, E.srid, 
+    A.abs_path, B.mtl_abs_path, F.abs_path, B.current_mesh, E.srid, 
     E.x, E.y, E.z, E.xs, E.ys, E.zs, E.h, E.p, E.r
 FROM 
     raw_data_item A, raw_data_item_mesh B, osg_data_item_mesh C, 
-    osg_data_item D, osg_location E 
+    osg_data_item D, osg_location E, nexus_data_item_mesh F
 WHERE 
     A.raw_data_item_id = B.raw_data_item_id AND
     B.raw_data_item_id = C.raw_data_item_id AND
     C.osg_data_item_id = D.osg_data_item_id AND
+    A.raw_data_item_id = F.raw_data_item_id AND
     D.osg_location_id = E.osg_location_id AND
     A.item_id = %s"""
     queryArgs = [itemId,]
@@ -134,7 +135,7 @@ WHERE
     recMeshesData = []
     
     if num_site_meshes:
-        for (absPath, mtlAbsPath, current, meshSrid, x, y, z, xs, ys, zs, h, p ,r) in site_meshes:
+        for (absPath, mtlAbsPath, nexusAbsPath, current, meshSrid, x, y, z, xs, ys, zs, h, p ,r) in site_meshes:
             mData = {}
             if current:
                 mData['id'] = len(meshesData) + 1
@@ -142,8 +143,8 @@ WHERE
             else:
                 mData['id'] = len(recMeshesData) + 1
                 recMeshesData.append(mData)
-            mData["data_location"] = utils.POTREE_DATA_URL_PREFIX + (glob.glob(absPath + '/*.obj') + glob.glob(absPath + '/*.OBJ'))[0].replace(utils.POTREE_SERVER_DATA_ROOT,'')
-            mData["mtl_location"] = utils.POTREE_DATA_URL_PREFIX + mtlAbsPath.replace(utils.POTREE_SERVER_DATA_ROOT,'')
+            mData["data_location"] = utils.PATTYVIS_DATA_URL_PREFIX + glob.glob(nexusAbsPath + '/*.nxs')[0].replace(utils.PATTYVIS_SERVER_DATA_ROOT,'')
+            mData["mtl_location"] = utils.PATTYVIS_DATA_URL_PREFIX + mtlAbsPath.replace(utils.PATTYVIS_SERVER_DATA_ROOT,'')
             mData['osg_position'] = getOSGPosition(cursor, srid, meshSrid, x, y, z, xs, ys, zs, h, p, r)
             
     else:

@@ -39,6 +39,16 @@ def fetch_potree_abs_paths(rawDataItemId):
         
     
     return abs_paths, num   
+
+def fetch_nexus_abs_paths(rawDataItemId):
+    """ get the absolute data item paths for the nexus converted data given the rawDataItemId"""
+    abs_paths = ""
+    
+    fetch_nexus_abs_path_statement = 'select abs_path from nexus_data_item_mesh natural join raw_data_item_pc where raw_data_item_id = %s'
+    abs_paths,num = utils.fetchDataFromDB(cursor, fetch_nexus_abs_path_statement, [rawDataItemId,],[], False)
+        
+    
+    return abs_paths, num   
     
 def fetch_osg_abs_paths_pc(rawDataItemId):
     """ get the absolute data item paths for the osg PC data given the rawDataItemId"""
@@ -127,6 +137,12 @@ def run(args):
             print msg
             logger.info(msg)
     
+            # fetch the nexus abs_paths
+            abs_nexus_paths, num_nexus = fetch_nexus_abs_paths(rawDataItemId)
+            msg = '%s abs nexus paths fetched %s' %(num_nexus, abs_nexus_paths)
+            print msg
+            logger.info(msg)
+    
             # fetch the OSG abs_paths PC
             abs_osg_pc_paths, num_osg_pc = fetch_osg_abs_paths_pc(rawDataItemId)        
             msg = '%s abs OSG paths for PC fetched: %s' %(num_osg_pc, abs_osg_pc_paths)
@@ -152,7 +168,7 @@ def run(args):
             logger.info(msg)
     
             # remove the files related to the above absolute paths
-            for abs_paths_to_remove in (abs_paths, abs_potree_paths, abs_osg_pc_paths, abs_osg_mesh_paths, abs_osg_picture_paths, abs_osg_pc_bg_paths):
+            for abs_paths_to_remove in (abs_paths, abs_potree_paths, abs_nexus_paths, abs_osg_pc_paths, abs_osg_mesh_paths, abs_osg_picture_paths, abs_osg_pc_bg_paths):
                 remove_data(abs_paths_to_remove)
     
             msg = 'Removed data locations related to raw data item %s (%s)!' % (rawDataItemId, abs_paths[0])
