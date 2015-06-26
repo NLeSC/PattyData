@@ -41,13 +41,12 @@ def createNexus(cursor, itemId, nexusDir):
     outputPrefix = 'data'
 
     logFile = os.path.join(outFolder, outputPrefix + '.log')
-    
-    tempPly = inputFile + '.ply'
+    os.system('mkdir -p ' + outFolder)
+    tempPly = os.path.basename(inputFile) + '.ply'
     
     meshlabserverScriptFileAbsPath = 'transfer_textures.mlx'
     meshlabserverScriptFile = open(meshlabserverScriptFileAbsPath, 'w')
-    meshlabserverScriptFile.write("""
-<!DOCTYPE FilterScript>
+    meshlabserverScriptFile.write("""<!DOCTYPE FilterScript>
 <FilterScript>
  <filter name="Texture to Vertex Color (between 2 meshes)">
   <Param description="Source Mesh" name="sourceMesh" value="0" tooltip="The mesh with associated texture that we want to sample from" type="RichMesh"/>
@@ -56,13 +55,19 @@ def createNexus(cursor, itemId, nexusDir):
  </filter>
 </FilterScript>
 """)
+
     meshlabserverScriptFile.close()
-    command1 = 'docker run oscarmartinezrubi/meshlab -i ' + inputFile + ' -o ' + tempPly + ' -s ' + meshlabserverScriptFileAbsPath + ' -om vc'
-    
-    
-    command = 'docker run oscarmartinezrubi/nxsbuild -o ' + outFolder + '/' + os.path.basename(inputFile) + '.nxs' + ' ' + tempPly
-    
-    os.system('rm ' + tempPly)
+    command1 = """docker run -u $UID -v $PWD:/data oscarmartinezrubi/meshlab meshlabserver -i /data/""" + os.path.basename(inputFile) + ' -o /data/' + tempPly + ' -s /data/' + meshlabserverScriptFileAbsPath + ' -om vc'
+    command1 += ' &> ' + logFile
+    logging.info(command1)
+    args = shlex.split(command1) 
+    subprocess.Popen(args, stdout=subprocess.PIPE,
+                     stderr=subprocess.PIPE).communicate()
+
+    if not os.path.isfile(tempPly):
+        error('none PLY file was genreated. Check log ' + logFile, outFolder)
+ 
+    command = """docker run -u $UID -v $PWD:/data oscarmartinezrubi/nxsbuild nxsbuild -o /data/""" + os.path.basename(inputFile) + '.nxs' + ' /data/' + tempPly
     
     command += ' &> ' + logFile
     logging.info(command)
@@ -70,6 +75,10 @@ def createNexus(cursor, itemId, nexusDir):
     subprocess.Popen(args, stdout=subprocess.PIPE,
                      stderr=subprocess.PIPE).communicate()
 
+    os.system('rm -f ' + tempPly)
+    os.system('rm -f ' + meshlabserverScriptFileAbsPath)
+
+    os.system('mv ' + os.path.basename(inputFile) + '.nxs ' + outFolder)
     ofiles = sorted(glob.glob(os.path.join(outFolder, '*')))
     if len(ofiles) == 0:
         error('none Nexus file was generated (found in ' + outFolder +
@@ -79,7 +88,7 @@ def extract_inType(abspath, site_id, nexusDir):
     '''
     Checks the type of the input file using the file location
     '''
-    if any(substring in abspath for substring in ['/MESH/']):
+    if abspath.count('/MESH/'):
         inType = utils.MESH_FT
     else:
         logging.error("Nexus converter should one be used on meshes")
@@ -102,11 +111,11 @@ def extract_inType(abspath, site_id, nexusDir):
 
     
     # define outFolder from potreeDir and inType
-    if (inType == utils.PC_FT and inKind == utils.SITE_FT):
+    if (inType == utils.MESH_FT and inKind == utils.SITE_FT):
         outFolder = os.path.join(os.path.abspath(nexusDir), utils.MESH_FT, inKind,
                                  period, 'S'+str(site_id),
                                  os.path.basename(os.path.normpath(abspath)))
-    elif (inType == utils.PC_FT and inKind == utils.BG_FT):
+    elif (inType == utils.MESH_FT and inKind == utils.BG_FT):
         outFolder = os.path.join(os.path.abspath(nexusDir), utils.MESH_FT, inKind,
                                  period, os.path.basename(os.path.normpath(abspath)))
     else:
@@ -125,7 +134,7 @@ def extract_inType(abspath, site_id, nexusDir):
 def error(errorMessage, outFolder):
      logging.error(errorMessage)
      logging.info('Removing %s ' % outFolder)
-     shutil.rmtree(outFolder)
+#     shutil.rmtree(outFolder)
      raise Exception(errorMessage)
  
 def run(opts):
@@ -149,7 +158,7 @@ def run(opts):
         query = """
 SELECT raw_data_item_id,abs_path 
 FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) JOIN RAW_DATA_ITEM_MESH USING (raw_data_item_id) 
-WHERE srid = NULL AND raw_data_item_id NOT IN (
+WHERE srid is NULL AND raw_data_item_id NOT IN (
           SELECT raw_data_item_id FROM NEXUS_DATA_ITEM_MESH)"""
         # Get the list of items that are not converted yet (we sort by background to have the background converted first)
         raw_data_items, num_raw_data_items = utils.fetchDataFromDB(cursor, query)
