@@ -44,7 +44,7 @@ In this section we shortly describe how to manage data, i.e. add new data (point
 
 **Add data**
 
-- For the addition of new data (mesh, point cloud or image) the data has to be transfered to the Via Appia Linux server. Use WinSCP for this purpose, the Host Name is the IP address of the Via Appia Linux server are the user and password and your user name and password as provided by the administrator. We suggest to move the data (LAS/LAZ file for point cloud, a folder with OBJ and textures files for meshes and a PNG/JPG for picures) to your default home directory in the Via Appia Linux server.
+- For the addition of new data (mesh, point cloud or image) the data has to be transfered to the Via Appia Linux server. Use WinSCP for this purpose, the Host Name is the IP address of the Via Appia Linux server are the user and password and your user name and password as provided by the administrator. We suggest to move the data (LAS/LAZ file for point cloud, a folder with OBJ, textures and PLY files for meshes and a PNG/JPG for picures) to your default home directory in the Via Appia Linux server.
 
 - After the data is in the server you have to log in with Putty. Use same credentials as in WinSCP.
 
@@ -68,13 +68,13 @@ In this section we shortly describe how to manage data, i.e. add new data (point
     
     `rm /home/pattydat/SITE_41.las`
 
-   In this example we add a point cloud of site 41. IMPORTANT: If a point cloud has been aligned with the background you have to make sure that the spatial reference system has been added (Some alignement tools do not set the SRID). Use `UpdateLASSRID.py -s ? -i /home/oscarr/SITE_41.las` to check current value of the SRID in the LAS file and set it if necessary (you will need to create a temporal new file with option `-o` as in the example). Note that in the example we remove the temporal file after adding it in the Data structure (when adding new data in the Data structure a copy is made so you can remove additional copies even though we always recommend to have at least one copy of the data in some other location)
+   In this example we add a point cloud of site 41. IMPORTANT: If a point cloud has been aligned with the background you have to make sure that the spatial reference system has been added (Some alignment tools do not set the SRID). Use `UpdateLASSRID.py -s ? -i /home/oscarr/SITE_41.las` to check current value of the SRID in the LAS file and set it if necessary (you will need to create a temporal new file with option `-o` as in the example). Note that in the example we remove the temporal file after adding it in the Data structure (when adding new data in the Data structure a copy is made so you can remove additional copies even though we always recommend to have at least one copy of the data in some other location)
    
    - An example of adding an aligned mesh:
    
     `AddRawDataItem.py -f SITE_932_MESH/SITE_932_O_2_VSFM_TEXTURE_aligned_DRIVE_1_V3.obj -k SITE -t MESH -p CURR -s 32633 --site 932`
    
-   In this example note that since the mesh is aligned we need to use option `-s 32633`. This is different in point cloud case where if a point cloud is aligned we need to use `UpdateLASSRID.py`. Also note that in meshes we need to specify if the mesh is of current period or an archeological reconstruction.
+   In this example note that since the mesh is aligned we need to use option `-s 32633`. This is different in point cloud case where if a point cloud is aligned we need to use `UpdateLASSRID.py`. Also note that in meshes we need to specify if the mesh is of current period or an archaeological reconstruction. For meshes there is also the option to have a PLY file in the same folder as the OBJ. Meshes which are not aligned and which have a PLY will end up having a NEXUS file (to be displayed in the PattyVis)
 
    - An example of adding a picture:
    
@@ -90,9 +90,13 @@ In this section we shortly describe how to manage data, i.e. add new data (point
   
   `GenerateOSG.py` 
 
-- We also generate the Potree data for the web-based viewer:
+- We also generate the Potree data for the web-based viewer. Only point clouds of sites are converted to Potree data:
   
   `GeneratePOtree.py`
+  
+- We also generate the Nexus data for the web-based viewer. Only meshes which have a PLY file and are not aligned are converted to Nexus data:
+  
+  `GenerateNexus.py`
 
 - We update de DB again with the latest changes:
   
@@ -100,9 +104,9 @@ In this section we shortly describe how to manage data, i.e. add new data (point
  
 - We generate the configuration file for the Potree viewer:
   
-  `CreatePOTreeConfig.py -o /home/pattydat/DATA/POTREE/CONF.json`
+  `CreatePattyVisConfig.py -o /home/pattydat/DATA/POTREE/CONF.json`
 
--  We can start the synchronized viewer to doenload the latest data and configuration file
+-  We can start the synchronized viewer to download the latest data and configuration file
 
 
 **List data**
@@ -132,7 +136,7 @@ This will list the raw data items (i.e. not the converted OSG or Potree versions
 
 - We generate the configuration file for the Potree viewer:
   
-  `CreatePOTreeConfig.py -o /home/pattydat/DATA/POTREE/CONF.json`
+  `CreatePattyVisConfig.py -o /home/pattydat/DATA/POTREE/CONF.json`
 
 
 OSG Via Appia viewer

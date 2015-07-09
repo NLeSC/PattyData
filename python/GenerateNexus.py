@@ -46,11 +46,17 @@ def createNexus(cursor, itemId, nexusDir):
     logFile = os.path.join(outFolder, outputPrefix + '.log')
     os.system('mkdir -p ' + outFolder)
     
-    command = """docker run -u $UID -v $PWD:/data oscarmartinezrubi/nxsbuild nxsbuild -o /data/""" + os.path.basename(inputFile) + '.nxs' + ' /data/' + tempPly
+    "docker-machine inspect mesh | grep SSHPort"
+    "scp -P 55481 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.docker/machine/machines/mesh/id_rsa SITE_158_O_1_VSFM_TEXTURE.ply docker@localhost:/home/docker/data/"
+    "docker run -v /home/docker/data:/data nxs nxsbuild /data/SITE_158_O_1_VSFM_TEXTURE.ply -o /data/SITE_158_O_1_VSFM_TEXTURE.nxs"
+    "scp -P 55481 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.docker/machine/machines/mesh/id_rsa docker@localhost:/home/docker/data/SITE_158_O_1_VSFM_TEXTURE.nxs ."
+    "docker-machine ssh mesh rm /home/docker/data/SITE_158_O_1_VSFM_TEXTURE.*"
+
+    
+    command = """docker run -u $UID -v $PWD:/data oscarmartinezrubi/nxsbuild nxsbuild -o /data/""" + os.path.basename(inputFile) + '.nxs' + ' /data/' + os.path.basename(inputFile)
     command += ' &> ' + logFile
     logging.info(command)
-    args = shlex.split(command)
-    subprocess.Popen(args, stdout=subprocess.PIPE,
+    subprocess.Popen(command, stdout=subprocess.PIPE,
                      stderr=subprocess.PIPE).communicate()
 
     os.system('mv ' + os.path.basename(inputFile) + '.nxs ' + outFolder)
