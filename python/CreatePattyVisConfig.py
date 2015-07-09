@@ -144,7 +144,7 @@ WHERE
                 mData['id'] = len(recMeshesData) + 1
                 recMeshesData.append(mData)
             mData["data_location"] = utils.PATTYVIS_DATA_URL_PREFIX + glob.glob(nexusAbsPath + '/*.nxs')[0].replace(utils.PATTYVIS_SERVER_DATA_ROOT,'')
-            mData["mtl_location"] = utils.PATTYVIS_DATA_URL_PREFIX + mtlAbsPath.replace(utils.PATTYVIS_SERVER_DATA_ROOT,'')
+            #mData["mtl_location"] = utils.PATTYVIS_DATA_URL_PREFIX + mtlAbsPath.replace(utils.PATTYVIS_SERVER_DATA_ROOT,'')
             mData['osg_position'] = getOSGPosition(cursor, srid, meshSrid, x, y, z, xs, ys, zs, h, p, r)
             
     else:

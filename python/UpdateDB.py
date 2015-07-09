@@ -171,7 +171,17 @@ def getMTLAbsPath(absPath):
         if len(mtlfiles) > 1:
             logging.warn('multiple MTLs file were found in ' + absPath + '. Using ' + mtlPath)
         return mtlPath       
- 
+
+def getPlyAbsPath(absPath):
+    plyfiles = glob.glob(absPath + '/*ply')
+    if len(plyfiles) == 0:
+        return None
+    else:
+        plyPath = plyfiles[0]
+        if len(plyfiles) > 1:
+            logging.warn('multiple PLYs file were found in ' + absPath + '. Using ' + plyPath)
+        return plyPath  
+
 def getXMLAbsPath(absPath):
     xmlfiles = glob.glob(absPath + '/*xml')
     if len(xmlfiles) == 0:
@@ -314,8 +324,11 @@ def cleanRaw(dataItemTypes):
             if os.path.isfile(absPath) or os.path.isdir(absPath):
                 logging.error('Raw data item in ' + absPath + ' has not been checked!')
             else: # There is not any file or folder in that location -> we try to delete all references of this one
+                num_dependancies = 0
                 cursor.execute('SELECT count(*) FROM OSG_DATA_ITEM_MESH WHERE raw_data_item_id = %s', [rawDataItemId,])
-                num_dependancies = cursor.fetchone()[0]
+                num_dependancies += cursor.fetchone()[0]
+                cursor.execute('SELECT count(*) FROM NEXUS_DATA_ITEM_MESH WHERE raw_data_item_id = %s', [rawDataItemId,])
+                num_dependancies += cursor.fetchone()[0]
                 if num_dependancies == 0:
                     dbExecute(cursor, 'DELETE FROM RAW_DATA_ITEM_MESH WHERE raw_data_item_id = %s', [rawDataItemId,])
                     dbExecute(cursor, 'DELETE FROM RAW_DATA_ITEM WHERE raw_data_item_id = %s', [rawDataItemId,])
@@ -428,9 +441,10 @@ def addRawDataItem(absPath, itemId, dataItemType):
             current = isCurrent(absPath)
             srid = getMeshSRID(absPath)
             mtlAbsPath = getMTLAbsPath(absPath)
+            plyAbsPath = getPlyAbsPath(absPath)
             color8bit = is8BitColor(absPath)
-            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_MESH (raw_data_item_id, current_mesh, mtl_abs_path, color_8bit) VALUES (%s,%s,%s,%s)", 
-                            [rawDataItemId, current, mtlAbsPath, color8bit])
+            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_MESH (raw_data_item_id, current_mesh, mtl_abs_path, ply_abs_path, color_8bit) VALUES (%s,%s,%s,%s)", 
+                            [rawDataItemId, current, mtlAbsPath, plyAbsPath, color8bit])
         else:
             current = isCurrent(absPath)
             thumbnail = isThumbnail(absPath)

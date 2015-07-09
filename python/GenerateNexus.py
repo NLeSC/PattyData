@@ -24,7 +24,7 @@ def createNexus(cursor, itemId, nexusDir):
         "raw_data_item_id = %s", (itemId,))
     abspath, site_id = data_items[0]
     
-    inputFile = (glob.glob(abspath + '/*.obj') + glob.glob(abspath + '/*.OBJ'))[0] 
+    inputFile = (glob.glob(abspath + '/*.ply') + glob.glob(abspath + '/*.PLY'))[0] 
     
     # extract inType & outFolder, create outFolder in non-existent
     inType, inKind, outFolder = extract_inType(abspath, site_id,
@@ -38,45 +38,20 @@ def createNexus(cursor, itemId, nexusDir):
         # input is already a directory
         os.chdir(abspath)
 
+    if not os.path.isfile(inputFile):
+        error('none PLY file was found. Check log ' + logFile, outFolder)
+
     outputPrefix = 'data'
 
     logFile = os.path.join(outFolder, outputPrefix + '.log')
     os.system('mkdir -p ' + outFolder)
-    tempPly = os.path.basename(inputFile) + '.ply'
     
-    meshlabserverScriptFileAbsPath = 'transfer_textures.mlx'
-    meshlabserverScriptFile = open(meshlabserverScriptFileAbsPath, 'w')
-    meshlabserverScriptFile.write("""<!DOCTYPE FilterScript>
-<FilterScript>
- <filter name="Texture to Vertex Color (between 2 meshes)">
-  <Param description="Source Mesh" name="sourceMesh" value="0" tooltip="The mesh with associated texture that we want to sample from" type="RichMesh"/>
-  <Param description="Target Mesh" name="targetMesh" value="0" tooltip="The mesh whose vertex color will be filled according to source mesh texture" type="RichMesh"/>
-  <Param description="Max Dist Search" name="upperBound" min="0" max="31.0839" value="0.62168" tooltip="Sample points for which we do not find anything whithin this distance are rejected and not considered for recovering color" type="RichAbsPerc"/>
- </filter>
-</FilterScript>
-""")
-
-    meshlabserverScriptFile.close()
-    command1 = """docker run -u $UID -v $PWD:/data oscarmartinezrubi/meshlab meshlabserver -i /data/""" + os.path.basename(inputFile) + ' -o /data/' + tempPly + ' -s /data/' + meshlabserverScriptFileAbsPath + ' -om vc'
-    command1 += ' &> ' + logFile
-    logging.info(command1)
-    args = shlex.split(command1) 
-    subprocess.Popen(args, stdout=subprocess.PIPE,
-                     stderr=subprocess.PIPE).communicate()
-
-    if not os.path.isfile(tempPly):
-        error('none PLY file was genreated. Check log ' + logFile, outFolder)
- 
     command = """docker run -u $UID -v $PWD:/data oscarmartinezrubi/nxsbuild nxsbuild -o /data/""" + os.path.basename(inputFile) + '.nxs' + ' /data/' + tempPly
-    
     command += ' &> ' + logFile
     logging.info(command)
     args = shlex.split(command)
     subprocess.Popen(args, stdout=subprocess.PIPE,
                      stderr=subprocess.PIPE).communicate()
-
-    os.system('rm -f ' + tempPly)
-    os.system('rm -f ' + meshlabserverScriptFileAbsPath)
 
     os.system('mv ' + os.path.basename(inputFile) + '.nxs ' + outFolder)
     ofiles = sorted(glob.glob(os.path.join(outFolder, '*')))
@@ -156,9 +131,9 @@ def run(opts):
         return
     elif opts.itemid == '' or opts.itemid == '!':
         query = """
-SELECT raw_data_item_id,abs_path 
+SELECT raw_data_item_id,abs_path
 FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) JOIN RAW_DATA_ITEM_MESH USING (raw_data_item_id) 
-WHERE srid is NULL AND raw_data_item_id NOT IN (
+WHERE srid is NULL AND ply_abs_path is NOT NULL AND raw_data_item_id NOT IN (
           SELECT raw_data_item_id FROM NEXUS_DATA_ITEM_MESH)"""
         # Get the list of items that are not converted yet (we sort by background to have the background converted first)
         raw_data_items, num_raw_data_items = utils.fetchDataFromDB(cursor, query)
@@ -193,7 +168,7 @@ def argument_parser():
 
     # fill argument groups
     parser.add_argument('-i','--itemid',default='',
-                       help='Comma-separated list of Meshes Raw Data Item Ids [default is to convert all raw unreferenced (srid=null) meshes data items that do not have a related 3DHop data item] (with ? the available raw data items are listed, with ! the list of all the raw unreferenced meshes data items without any related 3DHop data item)',
+                       help='Comma-separated list of Meshes Raw Data Item Ids [default is to convert all raw meshes data items which are unreferenced (srid=null) and have a PLY file and that do not have a related 3DHop data item] (with ? the available raw data items are listed, with ! the list of all the raw unreferenced meshes data items with PLY and without any related 3DHop data item)',
                        type=str, required=False)
     parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
                         help='Postgres DB name [default ' + utils.DEFAULT_DB +
