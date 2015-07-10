@@ -1,0 +1,10 @@
+In order to run the nxbuild we use a docker-machine and docker containers
+
+If the machine is rebooted as pattydat we need to do:
+
+docker-machine create --driver virtualbox mesh
+eval "$(docker-machine env mesh)"
+cd /opt/NLESC/PattyData/docker/nxsbuild
+docker build  -t nxs .
+
+docker-machine ssh mesh mkdir /home/docker/data

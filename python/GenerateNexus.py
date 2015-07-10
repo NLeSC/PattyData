@@ -24,42 +24,56 @@ def createNexus(cursor, itemId, nexusDir):
         "raw_data_item_id = %s", (itemId,))
     abspath, site_id = data_items[0]
     
-    inputFile = (glob.glob(abspath + '/*.ply') + glob.glob(abspath + '/*.PLY'))[0] 
+    inputFiles = (glob.glob(abspath + '/*.ply') + glob.glob(abspath + '/*.PLY'))
+    if len(inputFiles):
+        inputFile = inputFiles[0]
+    else:
+        error('none PLY file was found.', outFolder)
+    
+    if not os.path.isfile(inputFile):
+        error('none PLY file was found.' , outFolder)
+         
+    inputFileName = os.path.basename(inputFile)
+    outputFileName = inputFileName + '.nxs'
     
     # extract inType & outFolder, create outFolder in non-existent
-    inType, inKind, outFolder = extract_inType(abspath, site_id,
-                                               nexusDir)
+    inType, inKind, outFolder = extract_inType(abspath, site_id,nexusDir)
     if os.path.isfile(abspath):
         # input was a file -> raise IOError
-        error('Database key abspath should define a directory, ' +
+        error('Database key absPath should define a directory, ' +
                       'file detected: ' + abspath, outFolder)
         # os.chdir(os.path.dirname(inFile))
     else:
         # input is already a directory
         os.chdir(abspath)
 
-    if not os.path.isfile(inputFile):
-        error('none PLY file was found. Check log ' + logFile, outFolder)
-
-    outputPrefix = 'data'
-
-    logFile = os.path.join(outFolder, outputPrefix + '.log')
+    # create the output folder
     os.system('mkdir -p ' + outFolder)
     
-    "docker-machine inspect mesh | grep SSHPort"
-    "scp -P 55481 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.docker/machine/machines/mesh/id_rsa SITE_158_O_1_VSFM_TEXTURE.ply docker@localhost:/home/docker/data/"
-    "docker run -v /home/docker/data:/data nxs nxsbuild /data/SITE_158_O_1_VSFM_TEXTURE.ply -o /data/SITE_158_O_1_VSFM_TEXTURE.nxs"
-    "scp -P 55481 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.docker/machine/machines/mesh/id_rsa docker@localhost:/home/docker/data/SITE_158_O_1_VSFM_TEXTURE.nxs ."
-    "docker-machine ssh mesh rm /home/docker/data/SITE_158_O_1_VSFM_TEXTURE.*"
+    # Get the SSH port where the docker-machine is running 
+    port = int(os.popen('docker-machine inspect mesh | grep SSHPort').read().split(':')[-1].split(',')[0])
 
-    
-    command = """docker run -u $UID -v $PWD:/data oscarmartinezrubi/nxsbuild nxsbuild -o /data/""" + os.path.basename(inputFile) + '.nxs' + ' /data/' + os.path.basename(inputFile)
-    command += ' &> ' + logFile
+    # Copy the data from local machine to the docker-machine   
+    command = "scp -P " + port + " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.docker/machine/machines/mesh/id_rsa " + inputFileName + " docker@localhost:/home/docker/data/"
     logging.info(command)
-    subprocess.Popen(command, stdout=subprocess.PIPE,
-                     stderr=subprocess.PIPE).communicate()
+    os.system(command)
 
-    os.system('mv ' + os.path.basename(inputFile) + '.nxs ' + outFolder)
+    # Run the nxsbuild in the docker container nxs in the docker-machine    
+    command = "docker run -v /home/docker/data:/data nxs nxsbuild /data/" + inputFileName + " -o /data/" + outputFileName
+    logging.info(command)
+    os.system(command)
+
+    # Copy the data out of the docker-machine back into the CWD
+    command = "scp -P " + port + " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.docker/machine/machines/mesh/id_rsa docker@localhost:/home/docker/data/" + outputFileName + " ."
+    logging.info(command)
+    os.system(command)
+
+    # Remove the temporal files used in the docker-container
+    command = "docker-machine ssh mesh rm /home/docker/data/" + inputFileName + ".*"
+    logging.info(command)
+    os.system(command)
+
+    os.system('mv ' + outputFileName+ ' ' + outFolder)
     ofiles = sorted(glob.glob(os.path.join(outFolder, '*')))
     if len(ofiles) == 0:
         error('none Nexus file was generated (found in ' + outFolder +
