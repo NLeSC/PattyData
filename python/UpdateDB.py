@@ -162,6 +162,17 @@ def getPOTNumberLevels(absPath):
         numLevels = int(absPath[absPath.index('_levels_') + len('_levels_'):].split('_')[0])
     return numLevels
 
+def getFileWithExtensionAbsPath(absPath, extension):
+    extfiles = glob.glob(absPath + '/*' + extension)
+    if len(extfiles) == 0:
+        return None
+    else:
+        extPath = extfiles[0]
+        if len(extfiles) > 1:
+            logging.warn('multiple ' + extension + 's file were found in ' + absPath + '. Using ' + extPath)
+        return extPath       
+
+
 def getMTLAbsPath(absPath):
     mtlfiles = glob.glob(absPath + '/*mtl')
     if len(mtlfiles) == 0:
@@ -440,11 +451,12 @@ def addRawDataItem(absPath, itemId, dataItemType):
         elif dataItemType == MESH_FT:
             current = isCurrent(absPath)
             srid = getMeshSRID(absPath)
-            mtlAbsPath = getMTLAbsPath(absPath)
-            plyAbsPath = getPlyAbsPath(absPath)
+            objAbsPath = getFileWithExtensionAbsPath(absPath, 'obj')
+            mtlAbsPath = getFileWithExtensionAbsPath(absPath, 'mtl')
+            plyAbsPath = getFileWithExtensionAbsPath(absPath, 'ply')
             color8bit = is8BitColor(absPath)
-            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_MESH (raw_data_item_id, current_mesh, mtl_abs_path, ply_abs_path, color_8bit) VALUES (%s,%s,%s,%s)", 
-                            [rawDataItemId, current, mtlAbsPath, plyAbsPath, color8bit])
+            dbExecute(cursor, "INSERT INTO RAW_DATA_ITEM_MESH (raw_data_item_id, current_mesh, obj_abs_path, ply_abs_path, mtl_abs_path, color_8bit) VALUES (%s,%s,%s,%s,%s,%s)", 
+                            [rawDataItemId, current, objAbsPath, plyAbsPath, mtlAbsPath, color8bit])
         else:
             current = isCurrent(absPath)
             thumbnail = isThumbnail(absPath)

@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>OSG_ITEM_OBJECT</title>
+		<title>NEXUS_DATA_ITEM_MESH</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="OSG_ITEM_OBJECT";
+	parent.document.title="NEXUS_DATA_ITEM_MESH";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   OSG_ITEM_OBJECT</h2>
+		<h2>Table   NEXUS_DATA_ITEM_MESH</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>OSG_ITEM_OBJECT<br><br></dd>
+		<dd>NEXUS_DATA_ITEM_MESH<br><br></dd>
 </dl>
 
 <dl>
@@ -101,31 +101,49 @@ function asd() {
 	</tr>
 	<tr>
 	<tr>
+	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#257">item_id</a>&nbsp;</td>
-	<td>item_id&nbsp;</td>
-	<td>int&nbsp;</td>
-	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
-</tr>
-<tr>
-	<td align="center">&nbsp;</td>
-	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#258">object_number</a>&nbsp;</td>
-	<td>object_number&nbsp;</td>
-	<td>int&nbsp;</td>
+	<td><a href="#297">nexus_data_item_mesh_id</a>&nbsp;</td>
+	<td>nexus_data_item_mesh_id&nbsp;</td>
+	<td>serial&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#219">osg_location_id</a>&nbsp;</td>
-	<td>osg_location_id&nbsp;</td>
+	<td><a href="#298">raw_data_item_id</a>&nbsp;</td>
+	<td>raw_data_item_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#299">abs_path</a>&nbsp;</td>
+	<td>abs_path&nbsp;</td>
+	<td>text&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">NOT NULL&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#300">last_mod</a>&nbsp;</td>
+	<td>last_mod&nbsp;</td>
+	<td>int&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#301">last_check</a>&nbsp;</td>
+	<td>last_check&nbsp;</td>
+	<td>int&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
 </tr>
 
 	</tr>
@@ -150,31 +168,13 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#257">item_id&nbsp;</a></td>
-	<td><a href="../table/15.html">ITEM_OBJECT&nbsp;</a></td>
-	<td><a href="../table/15.html#196">item_id&nbsp;</a></td>
+	<td><a href="#298">raw_data_item_id&nbsp;</a></td>
+	<td><a href="../table/23.html">RAW_DATA_ITEM_MESH&nbsp;</a></td>
+	<td><a href="../table/23.html#230">raw_data_item_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
-	<td align="center">0..1&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#258">object_number&nbsp;</a></td>
-	<td><a href="../table/15.html">ITEM_OBJECT&nbsp;</a></td>
-	<td><a href="../table/15.html#197">object_number&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">0..1&nbsp;</td>
-</tr>
-<tr>
-	<td><a href="#219">osg_location_id&nbsp;</a></td>
-	<td><a href="../table/8.html">OSG_LOCATION&nbsp;</a></td>
-	<td><a href="../table/8.html#163">osg_location_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">1&nbsp;</td>
-	<td align="center">0..1&nbsp;</td>
+	<td align="center">0..n&nbsp;</td>
 </tr>
 
 </table>
@@ -252,11 +252,32 @@ function asd() {
 	</tr>
 </table>
 
-<a name="257"></a>
-<h3> <img src="../image/icons/foreign_key.gif"> item_id</h3>
+<a name="297"></a>
+<h3><img src="../image/icons/pkey.gif">  nexus_data_item_mesh_id</h3>
 
 <dl>
-	<dd>item_id
+	<dd>nexus_data_item_mesh_id
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>serial<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="298"></a>
+<h3> <img src="../image/icons/foreign_key.gif"> raw_data_item_id</h3>
+
+<dl>
+	<dd>raw_data_item_id
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -273,17 +294,38 @@ function asd() {
 <p>
 
 <hr>
-<a name="258"></a>
-<h3> <img src="../image/icons/foreign_key.gif"> object_number</h3>
+<a name="299"></a>
+<h3>  abs_path</h3>
 
 <dl>
-	<dd>object_number
+	<dd>abs_path
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>Type : </b>text<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="300"></a>
+<h3>  last_mod</h3>
+
+<dl>
+	<dd>last_mod
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
 		<dt><b>Type : </b>int<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
@@ -294,17 +336,17 @@ function asd() {
 <p>
 
 <hr>
-<a name="219"></a>
-<h3> <img src="../image/icons/foreign_key.gif"> osg_location_id</h3>
+<a name="301"></a>
+<h3>  last_check</h3>
 
 <dl>
-	<dd>osg_location_id
+	<dd>last_check
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
 		<dt><b>Type : </b>int<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>

@@ -108,10 +108,11 @@ def check_input_data(opts):
     """
     logger.info('Checking input data.')
     # name of Raw Data item may not contain (CURR, BACK, OSG)
+    reservedKeys = [utils.RAW_FT, utils.OSG_FT, utils.POT_FT, utils.NEX_FT, utils.BG_FT, utils.CURR_FT, utils.ARCREC_FT, utils.HIST_FT]
     if any(substring in os.path.basename(opts.file) for substring
-           in ['CURR', 'BACK', 'OSG']):
-        logger.error("Input data may not contain (CURR, BACK, OSG)")
-        raise IOError("Input data may not contain (CURR, BACK, OSG)")
+           in reservedKeys):
+        logger.error("Input data may not contain " + ','.join(reservedKeys))
+        raise IOError("Input data may not contain " + ','.join(reservedKeys))
     # All pictures must have JSON file with same name (.png.json)
     # with at least srid, x, y, z
     if (opts.type == utils.PIC_FT):
@@ -160,19 +161,20 @@ def check_input_data(opts):
     if (opts.type == utils.MESH_FT):
         # if input is a file it should have obj extension:
         if (os.path.isfile(opts.file) and not os.path.splitext(
-              opts.file)[1][1:].lower() in ['obj']):
+              opts.file)[1][1:].lower() in ['obj', 'ply', 'OBJ', 'PLY']):
             logger.error('File ' + opts.file +
-                         '  has no required obj extension')
+                         '  has no required obj/ply extension')
             raise IOError('File ' + opts.file
-                          + ' has no required obj extension')
+                          + ' has no required obj/ply extension')
         # if input is a directory, then
         # check if there is an obj file in the directory
         elif os.path.isdir(opts.file):
-            files = glob.glob(opts.file + '/*.obj')
-            if ('.obj' not in [os.path.splitext(x)[1][:] for x in files]):
-                logger.error('No file with required obj extension found in ' +
+            objFiles = glob.glob(opts.file + '/*.obj') + glob.glob(opts.file + '/*.OBJ')
+            plyFiles = glob.glob(opts.file + '/*.ply') + glob.glob(opts.file + '/*.PLY')
+            if len(objFiles) == 0 and len(plyFiles) == 0:
+                logger.error('No file with required obj/ply extension found in ' +
                              'directory ' + opts.file)
-                raise IOError('No file with required obj extension found in ' +
+                raise IOError('No file with required obj/ply extension found in ' +
                               'directory ' + opts.file)
 
 def check_json_file(jsonfile):
@@ -401,7 +403,7 @@ def argument_parser():
     parser.add_argument('-i', '--data', default=utils.DEFAULT_RAW_DATA_DIR,help='RAW data folder [default ' + utils.DEFAULT_RAW_DATA_DIR + ']')
     requiredNamed.add_argument('-k', '--kind', action='store', help='Type of item', choices=[utils.BG_FT, utils.SITE_FT], required=True)
     requiredNamed.add_argument('-t', '--type', action='store', help='Type of data', choices=[utils.PC_FT, utils.MESH_FT, utils.PIC_FT], required=True)
-    requiredNamed.add_argument('-f', '--file', action='store', help='Input file/directory name to copy. For point clouds of sites specify the path to the LAS/LAZ file. For background point clouds specify the folder. For pictures specify the path to the png/jpg/jpeg file (you can also specify a folder with several pictures if they are all related to the same site). For meshes specify the path to the OBJ file (the textures and ply contained in the same folder as the OBJ will also be copied)', required=True)
+    requiredNamed.add_argument('-f', '--file', action='store', help='Input file/directory name to copy. For point clouds of sites specify the path to the LAS/LAZ file. For background point clouds specify the folder. For pictures specify the path to the png/jpg/jpeg file (you can also specify a folder with several pictures if they are all related to the same site). For meshes specify the folder where the OBJ and/or PLY files and/or textures files are located', required=True)
     requiredNamedMESHPIC.add_argument('-p', '--period', action='store', help='Period (choose from ' + utils.MESH_FT + ':' + utils.CURR_FT + ',' + utils.ARCREC_FT + '; ' +  utils.PIC_FT + ':' + utils.CURR_FT + ',' + utils.HIST_FT + ')', choices=[utils.CURR_FT, utils.HIST_FT, utils.ARCREC_FT])
     parser.add_argument('-s', '--srid', action='store', help='spatial reference system SRID [only for MESH SITE]')
     parser.add_argument('--eight', help='8 bit color [only for PC SITE or MESH]', action="store_true")

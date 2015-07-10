@@ -51,12 +51,43 @@ def createOSG(cursor, itemId, osgDir):
     data_items, num_items = utils.fetchDataFromDB(
         cursor, "SELECT abs_path, item_id FROM RAW_DATA_ITEM WHERE " +
         "raw_data_item_id = %s", (itemId,))
-    abspath, site_id = data_items[0]
+    absPath, site_id = data_items[0]
 
     # extract inType & outFolder, create outFolder in non-existent
-    inType, inKind, outFolder = extract_inType(abspath, site_id, osgDir)
-    inFile = abspath  # CORRECT ?
-
+    inType, inKind, outFolder = extract_inType(absPath, site_id, osgDir)
+    
+    # Get the inputFile for the converter (in the case of Meshes without OBJ we skip them,this method just returns)
+    # A PC SITE
+    if (inType == utils.PC_FT and inKind == utils.SITE_FT):
+        inputFiles = glob.glob(absPath + '/*.las') + glob.glob(absPath + '/*.laz')
+    # A PC BACKGROUND
+    elif (inType == utils.PC_FT and inKind == utils.BG_FT):  # A PC BG
+        numLAS = len(glob.glob(absPath + '/*.las'))
+        numLAZ = len(glob.glob(absPath + '/*.laz'))
+        if (numLAS != 0) and (numLAZ != 0):
+            error('Folder %s should contain LAS or LAZ but not both!' % absPath, outFolder)
+        if numLAS:
+            inputFiles = [absPath + '/*.las',]
+        elif numLAZ:
+            inputFiles = [absPath + '/*.laz',]
+        else:
+            error('Folder %s does not contain LAS or LAZ files' % absPath, outFolder)
+    # A MESH
+    elif inType == utils.MESH_FT:
+        inputFiles = glob.glob(absPath + '/*.obj') + glob.glob(absPath + '/*.OBJ') 
+        if len(inputFiles) == 0: #Meshes without OBJ are ignores
+            logging.warning('Ignoring ' + absPath + ': no OBJ is found')
+            shutil.rmtree(outFolder)
+            return 
+    # A PICTURE
+    elif inType == utils.PIC_FT:
+        inputFiles = glob.glob(absPath + '/*.png') + glob.glob(absPath + '/*.jpg') + glob.glob(absPath + '/*.jpeg') + glob.glob(absPath + '/*.PNG') + glob.glob(absPath + '/*.JPG') + glob.glob(absPath + '/*.JPEG')
+    if len(inputFiles) > 1:
+        error('Multiple valid files found in %s' % absPath,outFolder)
+    elif len(inputFiles) == 0:
+        error('None valid files found in %s' % absPath,outFolder)
+    inputFileAbsPath = inputFiles[0]
+    
     # Get 8bitcolor information from DB
     data_items, num_items = utils.fetchDataFromDB(
         cursor, 'SELECT RAW_DATA_ITEM_PC.color_8bit, ' +
@@ -90,14 +121,13 @@ def createOSG(cursor, itemId, osgDir):
         (abOffsetX, abOffsetY, abOffsetZ) = data_items[0]
     
     cwd = os.getcwd()
-    if os.path.isfile(inFile):
+    if os.path.isfile(absPath):
         # input was a file -> raise IOError
         error('Database key abspath should define a directory, ' +
-                      'file detected: ' + inFile, outFolder)
-        # os.chdir(os.path.dirname(inFile))
+                      'file detected: ' + absPath, outFolder)
     else:
         # input is already a directory
-        os.chdir(inFile)
+        os.chdir(absPath)
 
     outputPrefix = utils.OSG_DATA_PREFIX
     ofile = getOSGFileFormat(inType)
@@ -105,40 +135,22 @@ def createOSG(cursor, itemId, osgDir):
     # A PC SITE
     if (inType == utils.PC_FT and inKind == utils.SITE_FT):
         tmode = '--mode lodPoints --reposition'
-        inputFiles = glob.glob(inFile + '/*.las') + glob.glob(
-            inFile + '/*.laz')
     # A PC BACKGROUND
     elif (inType == utils.PC_FT and inKind == utils.BG_FT):  # A PC BG
         tmode = '--mode quadtree --reposition'
-        numLAS = len(glob.glob(inFile + '/*.las'))
-        numLAZ = len(glob.glob(inFile + '/*.laz'))
-        if (numLAS != 0) and (numLAZ != 0):
-            error('Folder %s should contain LAS or LAZ but not both!' % inFile, outFolder)
-        if numLAS:
-            inputFiles = [inFile + '/*.las',]
-        elif numLAZ:
-            inputFiles = [inFile + '/*.laz',]
-        else:
-            error('Folder %s does not contain LAS or LAZ files' % inFile, outFolder)
     # A MESH
     elif inType == utils.MESH_FT:
         tmode = '--mode polyMesh --convert --reposition'
-        inputFiles = glob.glob(inFile + '/*.obj') + glob.glob(inFile + '/*.OBJ') 
     # A PICTURE
     elif inType == utils.PIC_FT:
         tmode = '--mode picturePlane'
-        inputFiles = glob.glob(inFile + '/*.png') + glob.glob(inFile + '/*.jpg') + glob.glob(inFile + '/*.jpeg') + glob.glob(inFile + '/*.PNG') + glob.glob(inFile + '/*.JPG') + glob.glob(inFile + '/*.JPEG')
     
-    if len(inputFiles) > 1:
-        error('Multiple valid files found in %s' % inFile,outFolder)
-    elif len(inputFiles) == 0:
-        error('None valid files found in %s' % inFile,outFolder)
-    filename = inputFiles[0]
+    
     logFile = os.path.join(outFolder, outputPrefix + '.log')
     
     # Call CONVERTER_COMMAND for the inputFile
     command = CONVERTER_COMMAND + ' ' + tmode + ' --outputPrefix ' + \
-        outputPrefix + ' --files ' + os.path.basename(filename)
+        outputPrefix + ' --files ' + os.path.basename(inputFileAbsPath)
     if color8Bit:
         command += ' --8bitColor '
     if aligned:
@@ -313,7 +325,7 @@ def argument_parser():
 
     # fill argument groups
     parser.add_argument('-i','--itemid',default='',
-                       help='Comma-separated list of Raw Data Item Ids [default is to convert all raw data items related to sites that do not have a related OSG data item] (with ? the available raw data items are listed, with ! the list all the raw data items without any related OSG data item)',
+                       help='Comma-separated list of Raw Data Item Ids [default is to convert all raw data items related to sites that have a OBJ file and do not have a related OSG data item] (with ? the available raw data items are listed, with ! it lists all the raw data items with OBJ and without any related OSG data item)',
                        type=str, required=False)
     parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
                         help='Postgres DB name [default ' + utils.DEFAULT_DB +

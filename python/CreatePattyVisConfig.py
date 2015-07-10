@@ -115,17 +115,12 @@ def getOSGPosition(cursor, srid, osgLocationSRID, x, y, z, xs, ys, zs, h, p, r):
 def addMeshes(cursor, itemId, dataSite, srid):
     query = """
 SELECT 
-    A.abs_path, B.mtl_abs_path, F.abs_path, B.current_mesh, E.srid, 
-    E.x, E.y, E.z, E.xs, E.ys, E.zs, E.h, E.p, E.r
+    C.abs_path, B.current_mesh
 FROM 
-    raw_data_item A, raw_data_item_mesh B, osg_data_item_mesh C, 
-    osg_data_item D, osg_location E, nexus_data_item_mesh F
+    raw_data_item A, raw_data_item_mesh B, nexus_data_item_mesh C
 WHERE 
     A.raw_data_item_id = B.raw_data_item_id AND
-    B.raw_data_item_id = C.raw_data_item_id AND
-    C.osg_data_item_id = D.osg_data_item_id AND
     A.raw_data_item_id = F.raw_data_item_id AND
-    D.osg_location_id = E.osg_location_id AND
     A.item_id = %s"""
     queryArgs = [itemId,]
 
@@ -135,7 +130,7 @@ WHERE
     recMeshesData = []
     
     if num_site_meshes:
-        for (absPath, mtlAbsPath, nexusAbsPath, current, meshSrid, x, y, z, xs, ys, zs, h, p ,r) in site_meshes:
+        for (nexusAbsPath, current) in site_meshes:
             mData = {}
             if current:
                 mData['id'] = len(meshesData) + 1
@@ -145,7 +140,7 @@ WHERE
                 recMeshesData.append(mData)
             mData["data_location"] = utils.PATTYVIS_DATA_URL_PREFIX + glob.glob(nexusAbsPath + '/*.nxs')[0].replace(utils.PATTYVIS_SERVER_DATA_ROOT,'')
             #mData["mtl_location"] = utils.PATTYVIS_DATA_URL_PREFIX + mtlAbsPath.replace(utils.PATTYVIS_SERVER_DATA_ROOT,'')
-            mData['osg_position'] = getOSGPosition(cursor, srid, meshSrid, x, y, z, xs, ys, zs, h, p, r)
+            #mData['osg_position'] = getOSGPosition(cursor, srid, meshSrid, x, y, z, xs, ys, zs, h, p, r)
             
     else:
         logger.warning('No meshes found for item %d SRID %d' % (itemId, srid))

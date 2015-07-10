@@ -54,7 +54,7 @@ def createNexus(cursor, itemId, nexusDir):
     port = int(os.popen('docker-machine inspect mesh | grep SSHPort').read().split(':')[-1].split(',')[0])
 
     # Copy the data from local machine to the docker-machine   
-    command = "scp -P " + port + " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.docker/machine/machines/mesh/id_rsa " + inputFileName + " docker@localhost:/home/docker/data/"
+    command = "scp -P " + str(port) + " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.docker/machine/machines/mesh/id_rsa " + inputFileName + " docker@localhost:/home/docker/data/"
     logging.info(command)
     os.system(command)
 
@@ -64,7 +64,7 @@ def createNexus(cursor, itemId, nexusDir):
     os.system(command)
 
     # Copy the data out of the docker-machine back into the CWD
-    command = "scp -P " + port + " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.docker/machine/machines/mesh/id_rsa docker@localhost:/home/docker/data/" + outputFileName + " ."
+    command = "scp -P " + str(port) + " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.docker/machine/machines/mesh/id_rsa docker@localhost:/home/docker/data/" + outputFileName + " ."
     logging.info(command)
     os.system(command)
 
@@ -153,7 +153,7 @@ def run(opts):
         query = """
 SELECT raw_data_item_id,abs_path
 FROM RAW_DATA_ITEM JOIN ITEM USING (item_id) JOIN RAW_DATA_ITEM_MESH USING (raw_data_item_id) 
-WHERE srid is NULL AND ply_abs_path is NOT NULL AND raw_data_item_id NOT IN (
+WHERE ply_abs_path is NOT NULL AND raw_data_item_id NOT IN (
           SELECT raw_data_item_id FROM NEXUS_DATA_ITEM_MESH)"""
         # Get the list of items that are not converted yet (we sort by background to have the background converted first)
         raw_data_items, num_raw_data_items = utils.fetchDataFromDB(cursor, query)
@@ -183,12 +183,12 @@ WHERE srid is NULL AND ply_abs_path is NOT NULL AND raw_data_item_id NOT IN (
 
 def argument_parser():
 # define argument menu
-    description = "Generates the 3DHop data (nexus) for a raw data item (ONLY FOR unreferenced meshes (null SRID))"
+    description = "Generates the 3DHop data (nexus) for a raw data item (ONLY FOR meshes which have a related PLY file)"
     parser = argparse.ArgumentParser(description=description)
 
     # fill argument groups
     parser.add_argument('-i','--itemid',default='',
-                       help='Comma-separated list of Meshes Raw Data Item Ids [default is to convert all raw meshes data items which are unreferenced (srid=null) and have a PLY file and that do not have a related 3DHop data item] (with ? the available raw data items are listed, with ! the list of all the raw unreferenced meshes data items with PLY and without any related 3DHop data item)',
+                       help='Comma-separated list of Meshes Raw Data Item Ids [default is to convert all raw meshes data items which have a PLY file and that do not have a related 3DHop data item] (with ? the available raw data items are listed, with ! the list of all the raw meshes data items with PLY and without any related 3DHop data item)',
                        type=str, required=False)
     parser.add_argument('-d', '--dbname', default=utils.DEFAULT_DB,
                         help='Postgres DB name [default ' + utils.DEFAULT_DB +

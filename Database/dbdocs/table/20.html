@@ -2,12 +2,12 @@
 <html>
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<title>RAW_DATA_ITEM_MESH</title>
+		<title>tbl1_site</title>
 		<link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
 	</head>
 <script>
 function asd() {
-	parent.document.title="RAW_DATA_ITEM_MESH";
+	parent.document.title="tbl1_site";
 }
 </script>
 
@@ -62,13 +62,13 @@ function asd() {
 
 		<hr>
 		<a name="main"></a>
-		<h2>Table   RAW_DATA_ITEM_MESH</h2>
+		<h2>Table   tbl1_site</h2>
 		<hr>
 
 
 <dl>
 	<dt><b>Physical Name:</b></dt>
-		<dd>RAW_DATA_ITEM_MESH<br><br></dd>
+		<dd>tbl1_site<br><br></dd>
 </dl>
 
 <dl>
@@ -103,8 +103,8 @@ function asd() {
 	<tr>
 	<td align="center"><img src="../image/icons/pkey.gif">&nbsp;</td>
 	<td align="center"><img src="../image/icons/foreign_key.gif">&nbsp;</td>
-	<td><a href="#229">raw_data_item_id</a>&nbsp;</td>
-	<td>raw_data_item_id&nbsp;</td>
+	<td><a href="#157">site_id</a>&nbsp;</td>
+	<td>site_id&nbsp;</td>
 	<td>int&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">NOT NULL&nbsp;</td>
@@ -112,8 +112,26 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#288">mtl_abs_path</a>&nbsp;</td>
-	<td>mtl_abs_path&nbsp;</td>
+	<td><a href="#289">administrator</a>&nbsp;</td>
+	<td>administrator&nbsp;</td>
+	<td>varchar(255)&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#290">modern_composition</a>&nbsp;</td>
+	<td>modern_composition&nbsp;</td>
+	<td>boolean&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#291">description_site</a>&nbsp;</td>
+	<td>description_site&nbsp;</td>
 	<td>text&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -121,8 +139,26 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#289">ply_abs_path</a>&nbsp;</td>
-	<td>ply_abs_path&nbsp;</td>
+	<td><a href="#292">site_context</a>&nbsp;</td>
+	<td>site_context&nbsp;</td>
+	<td>varchar(255)&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#293">site_interpretation_keyword</a>&nbsp;</td>
+	<td>site_interpretation_keyword&nbsp;</td>
+	<td>varchar(255)&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+</tr>
+<tr>
+	<td align="center">&nbsp;</td>
+	<td align="center">&nbsp;</td>
+	<td><a href="#294">site_interpretation</a>&nbsp;</td>
+	<td>site_interpretation&nbsp;</td>
 	<td>text&nbsp;</td>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
@@ -130,20 +166,20 @@ function asd() {
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#290">current_mesh</a>&nbsp;</td>
-	<td>current_mesh&nbsp;</td>
-	<td>boolean&nbsp;</td>
+	<td><a href="#295">date_entry</a>&nbsp;</td>
+	<td>date_entry&nbsp;</td>
+	<td>timestamp&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
+	<td align="center">&nbsp;</td>
 </tr>
 <tr>
 	<td align="center">&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td><a href="#291">color_8bit</a>&nbsp;</td>
-	<td>color_8bit&nbsp;</td>
-	<td>boolean&nbsp;</td>
+	<td><a href="#296">description_m_composition</a>&nbsp;</td>
+	<td>description_m_composition&nbsp;</td>
+	<td>varchar(255)&nbsp;</td>
 	<td align="center">&nbsp;</td>
-	<td align="center">NOT NULL&nbsp;</td>
+	<td align="center">&nbsp;</td>
 </tr>
 
 	</tr>
@@ -168,11 +204,11 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#229">raw_data_item_id&nbsp;</a></td>
-	<td><a href="../table/12.html">RAW_DATA_ITEM&nbsp;</a></td>
-	<td><a href="../table/12.html#235">raw_data_item_id&nbsp;</a></td>
-	<td align="center">RESTRICT&nbsp;</td>
-	<td align="center">RESTRICT&nbsp;</td>
+	<td><a href="#157">site_id&nbsp;</a></td>
+	<td><a href="../table/7.html">ITEM&nbsp;</a></td>
+	<td><a href="../table/7.html#167">item_id&nbsp;</a></td>
+	<td align="center">NO ACTION&nbsp;</td>
+	<td align="center">NO ACTION&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 	<td align="center">0..1&nbsp;</td>
 </tr>
@@ -198,18 +234,36 @@ function asd() {
 		<th width="12%">Cardinality of child</th>
 	</tr>
 	<tr>
-	<td><a href="#229">raw_data_item_id&nbsp;</a></td>
-	<td><a href="../table/10.html">OSG_DATA_ITEM_MESH&nbsp;</a></td>
-	<td><a href="../table/10.html#228">raw_data_item_id&nbsp;</a></td>
+	<td><a href="#157">site_id&nbsp;</a></td>
+	<td><a href="../table/0.html">tbl2_site_relation&nbsp;</a></td>
+	<td><a href="../table/0.html#153">site_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#157">site_id&nbsp;</a></td>
+	<td><a href="../table/6.html">tbl1_object&nbsp;</a></td>
+	<td><a href="../table/6.html#175">site_id&nbsp;</a></td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">RESTRICT&nbsp;</td>
+	<td align="center">1&nbsp;</td>
+	<td align="center">1..n&nbsp;</td>
+</tr>
+<tr>
+	<td><a href="#197">item_id&nbsp;</a></td>
+	<td><a href="../table/6.html">tbl1_object&nbsp;</a></td>
+	<td><a href="../table/6.html#175">site_id&nbsp;</a></td>
+	<td align="center">NO ACTION&nbsp;</td>
+	<td align="center">NO ACTION&nbsp;</td>
 	<td align="center">1&nbsp;</td>
 	<td align="center">0..1&nbsp;</td>
 </tr>
 <tr>
-	<td><a href="#229">raw_data_item_id&nbsp;</a></td>
-	<td><a href="../table/23.html">NEXUS_DATA_ITEM_MESH&nbsp;</a></td>
-	<td><a href="../table/23.html#292">raw_data_item_id&nbsp;</a></td>
+	<td><a href="#157">site_id&nbsp;</a></td>
+	<td><a href="../table/0.html">tbl2_site_relation&nbsp;</a></td>
+	<td><a href="../table/0.html#154">related_site_id&nbsp;</a></td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">RESTRICT&nbsp;</td>
 	<td align="center">1&nbsp;</td>
@@ -270,11 +324,11 @@ function asd() {
 	</tr>
 </table>
 
-<a name="229"></a>
-<h3><img src="../image/icons/pkey.gif"> <img src="../image/icons/foreign_key.gif"> raw_data_item_id</h3>
+<a name="157"></a>
+<h3><img src="../image/icons/pkey.gif"> <img src="../image/icons/foreign_key.gif"> site_id</h3>
 
 <dl>
-	<dd>raw_data_item_id
+	<dd>site_id
 	<p>
 	<dd><pre></pre>
 	<p>
@@ -291,39 +345,18 @@ function asd() {
 <p>
 
 <hr>
-<a name="288"></a>
-<h3>  mtl_abs_path</h3>
-
-<dl>
-	<dd>mtl_abs_path
-	<p>
-	<dd><pre></pre>
-	<p>
-	<dl>
-		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>text<br></dt>
-		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
-		<dt><b>Default Value : </b><br></dt>
-		<dt><b>Constraint : </b><br></dt>
-	</dl>
-</dl>
-
-<p>
-
-<hr>
 <a name="289"></a>
-<h3>  ply_abs_path</h3>
+<h3>  administrator</h3>
 
 <dl>
-	<dd>ply_abs_path
+	<dd>administrator
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
 		<dt><b>NOT NULL : </b>FALSE<br></dt>
-		<dt><b>Type : </b>text<br></dt>
+		<dt><b>Type : </b>varchar(255)<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>
@@ -334,16 +367,16 @@ function asd() {
 
 <hr>
 <a name="290"></a>
-<h3>  current_mesh</h3>
+<h3>  modern_composition</h3>
 
 <dl>
-	<dd>current_mesh
+	<dd>modern_composition
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
 		<dt><b>Type : </b>boolean<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
@@ -355,17 +388,122 @@ function asd() {
 
 <hr>
 <a name="291"></a>
-<h3>  color_8bit</h3>
+<h3>  description_site</h3>
 
 <dl>
-	<dd>color_8bit
+	<dd>description_site
 	<p>
 	<dd><pre></pre>
 	<p>
 	<dl>
 		<dt><b>UNIQUE : </b>FALSE<br></dt>
-		<dt><b>NOT NULL : </b>TRUE<br></dt>
-		<dt><b>Type : </b>boolean<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>text<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="292"></a>
+<h3>  site_context</h3>
+
+<dl>
+	<dd>site_context
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>varchar(255)<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="293"></a>
+<h3>  site_interpretation_keyword</h3>
+
+<dl>
+	<dd>site_interpretation_keyword
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>varchar(255)<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="294"></a>
+<h3>  site_interpretation</h3>
+
+<dl>
+	<dd>site_interpretation
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>text<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="295"></a>
+<h3>  date_entry</h3>
+
+<dl>
+	<dd>date_entry
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>timestamp<br></dt>
+		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
+		<dt><b>Default Value : </b><br></dt>
+		<dt><b>Constraint : </b><br></dt>
+	</dl>
+</dl>
+
+<p>
+
+<hr>
+<a name="296"></a>
+<h3>  description_m_composition</h3>
+
+<dl>
+	<dd>description_m_composition
+	<p>
+	<dd><pre></pre>
+	<p>
+	<dl>
+		<dt><b>UNIQUE : </b>FALSE<br></dt>
+		<dt><b>NOT NULL : </b>FALSE<br></dt>
+		<dt><b>Type : </b>varchar(255)<br></dt>
 		<dt><b>AUTO INCREMENT : </b>FALSE<br></dt>
 		<dt><b>Default Value : </b><br></dt>
 		<dt><b>Constraint : </b><br></dt>
