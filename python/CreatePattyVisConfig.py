@@ -120,7 +120,7 @@ FROM
     raw_data_item A, raw_data_item_mesh B, nexus_data_item_mesh C
 WHERE 
     A.raw_data_item_id = B.raw_data_item_id AND
-    A.raw_data_item_id = F.raw_data_item_id AND
+    A.raw_data_item_id = C.raw_data_item_id AND
     A.item_id = %s"""
     queryArgs = [itemId,]
 

@@ -170,38 +170,7 @@ def getFileWithExtensionAbsPath(absPath, extension):
         extPath = extfiles[0]
         if len(extfiles) > 1:
             logging.warn('multiple ' + extension + 's file were found in ' + absPath + '. Using ' + extPath)
-        return extPath       
-
-
-def getMTLAbsPath(absPath):
-    mtlfiles = glob.glob(absPath + '/*mtl')
-    if len(mtlfiles) == 0:
-        return None
-    else:
-        mtlPath = mtlfiles[0]
-        if len(mtlfiles) > 1:
-            logging.warn('multiple MTLs file were found in ' + absPath + '. Using ' + mtlPath)
-        return mtlPath       
-
-def getPlyAbsPath(absPath):
-    plyfiles = glob.glob(absPath + '/*ply')
-    if len(plyfiles) == 0:
-        return None
-    else:
-        plyPath = plyfiles[0]
-        if len(plyfiles) > 1:
-            logging.warn('multiple PLYs file were found in ' + absPath + '. Using ' + plyPath)
-        return plyPath  
-
-def getXMLAbsPath(absPath):
-    xmlfiles = glob.glob(absPath + '/*xml')
-    if len(xmlfiles) == 0:
-        return None
-    else:
-        xmlPath = xmlfiles[0]
-        if len(xmlfiles) > 1:
-            logging.warn('multiple XMLs file were found in ' + outFolder + '. Using ' + xmlPath)
-        return xmlPath
+        return extPath         
 
 def run(opts):
     # Set logging
@@ -502,7 +471,7 @@ def addOSGDataItem(absPath, itemId, dataItemType):
             dbExecute(cursor, "INSERT INTO OSG_DATA_ITEM_PC_BACKGROUND (osg_data_item_pc_background_id, raw_data_item_id, abs_path, last_mod, last_check, offset_x, offset_y, offset_z) VALUES (DEFAULT,%s,%s,%s,%s,%s,%s,%s)", 
                         [rawDataItemId, absPath, modTime, initialTime, offsetX, offsetY, offsetZ])
         else:
-            xmlAbsPath = getXMLAbsPath(absPath)
+            xmlAbsPath = getFileWithExtensionAbsPath(absPath, 'xml')
             if xmlAbsPath == None:
                 logging.error('Skipping ' + absPath + '. None XML file found')
                 return
