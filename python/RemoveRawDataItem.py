@@ -44,7 +44,7 @@ def fetch_nexus_abs_paths(rawDataItemId):
     """ get the absolute data item paths for the nexus converted data given the rawDataItemId"""
     abs_paths = ""
     
-    fetch_nexus_abs_path_statement = 'select abs_path from nexus_data_item_mesh natural join raw_data_item_pc where raw_data_item_id = %s'
+    fetch_nexus_abs_path_statement = 'select abs_path from nexus_data_item_mesh natural join raw_data_item_mesh where raw_data_item_id = %s'
     abs_paths,num = utils.fetchDataFromDB(cursor, fetch_nexus_abs_path_statement, [rawDataItemId,],[], False)
         
     
