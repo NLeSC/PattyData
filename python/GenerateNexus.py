@@ -69,7 +69,7 @@ def createNexus(cursor, itemId, nexusDir):
     os.system(command)
 
     # Remove the temporal files used in the docker-container
-    command = "docker-machine ssh mesh rm /home/docker/data/" + inputFileName + ".*"
+    command = "docker-machine ssh mesh rm /home/docker/data/" + inputFileName + "*"
     logging.info(command)
     os.system(command)
 
