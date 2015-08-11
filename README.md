@@ -3,6 +3,12 @@ PattyData
 
 [![Join the chat at https://gitter.im/NLeSC/PattyData](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/NLeSC/PattyData?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+Other related repositories:
+
+ - [PattyVis](https://github.com/NLeSC/PattyVis): WebGL pointcloud visualization of the Via Appia based on potree.
+ - [PattyAnalytics](https://github.com/NLeSC/PattyAnalytics): Reusable point cloud analytics software. Includes segmentation, registration, file format conversion.
+ - [structure-from-motion](https://github.com/NLeSC/structure-from-motion): Structure from Motion Pipeline
+
 This repository contains:
 
 - Attributes: Explanation about the Attributes management. 
