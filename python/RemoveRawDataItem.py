@@ -37,8 +37,8 @@ def fetch_potree_abs_paths(rawDataItemId):
     fetch_potree_abs_path_statement = 'select abs_path from potree_data_item_pc natural join raw_data_item_pc where raw_data_item_id = %s'
     abs_paths,num = utils.fetchDataFromDB(cursor, fetch_potree_abs_path_statement, [rawDataItemId,],[], False)
         
-    
-    return abs_paths, num   
+    # Go up one dir as potree is always created in SXX/SITE_XX/SITE_XX_levels_Y and SXX/SITE_XX should be removed
+    return os.path.dirname(abs_paths), num
 
 def fetch_nexus_abs_paths(rawDataItemId):
     """ get the absolute data item paths for the nexus converted data given the rawDataItemId"""
