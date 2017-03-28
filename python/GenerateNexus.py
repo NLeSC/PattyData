@@ -110,7 +110,7 @@ def extract_inType(abspath, site_id, nexusDir):
 def error(errorMessage, outFolder):
      logging.error(errorMessage)
      logging.info('Removing %s ' % outFolder)
-#     shutil.rmtree(outFolder)
+     shutil.rmtree(outFolder)
      raise Exception(errorMessage)
  
 def run(opts):
