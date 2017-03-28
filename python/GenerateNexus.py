@@ -28,10 +28,10 @@ def createNexus(cursor, itemId, nexusDir):
     if len(inputFiles):
         inputFile = inputFiles[0]
     else:
-        error('none PLY file was found.', outFolder)
+        error('none PLY file was found.', abspath)
     
     if not os.path.isfile(inputFile):
-        error('none PLY file was found.' , outFolder)
+        error('none PLY file was found.' , abspath)
          
     inputFileName = os.path.basename(inputFile)
     outputFileName = inputFileName + '.nxs'
@@ -50,34 +50,15 @@ def createNexus(cursor, itemId, nexusDir):
     # create the output folder
     os.system('mkdir -p ' + outFolder)
     
-    # Get the SSH port where the docker-machine is running 
-    port = int(os.popen('docker-machine inspect mesh | grep SSHPort').read().split(':')[-1].split(',')[0])
-
-    # Copy the data from local machine to the docker-machine   
-    command = "scp -P " + str(port) + " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.docker/machine/machines/mesh/id_rsa " + inputFileName + " docker@localhost:/home/docker/data/"
+    # Run the nxsbuild in the docker container nxs in the docker-machine
+    outputPath = os.path.join(outFolder, outputFileName)
+    command = "nxsbuild " + inputFileName + " -o " + outputPath
     logging.info(command)
     os.system(command)
 
-    # Run the nxsbuild in the docker container nxs in the docker-machine    
-    command = "docker run -v /home/docker/data:/data nxs nxsbuild /data/" + inputFileName + " -o /data/" + outputFileName
-    logging.info(command)
-    os.system(command)
-
-    # Copy the data out of the docker-machine back into the CWD
-    command = "scp -P " + str(port) + " -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.docker/machine/machines/mesh/id_rsa docker@localhost:/home/docker/data/" + outputFileName + " ."
-    logging.info(command)
-    os.system(command)
-
-    # Remove the temporal files used in the docker-container
-    command = "docker-machine ssh mesh rm /home/docker/data/" + inputFileName + "*"
-    logging.info(command)
-    os.system(command)
-
-    os.system('mv ' + outputFileName+ ' ' + outFolder)
-    ofiles = sorted(glob.glob(os.path.join(outFolder, '*')))
-    if len(ofiles) == 0:
+    if os.path.isfile(outputPath):
         error('none Nexus file was generated (found in ' + outFolder +
-                     '). Check log: ' + logFile, outFolder)
+                     ').', outFolder)
 
 def extract_inType(abspath, site_id, nexusDir):
     '''
