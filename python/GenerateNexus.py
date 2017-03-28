@@ -56,7 +56,7 @@ def createNexus(cursor, itemId, nexusDir):
     logging.info(command)
     os.system(command)
 
-    if os.path.isfile(outputPath):
+    if not os.path.isfile(outputPath):
         error('none Nexus file was generated (found in ' + outFolder +
                      ').', outFolder)
 
