@@ -33,11 +33,11 @@ rm -rf qt-everywhere-opensource-src-5.8.0.tar.gz qt-everywhere-opensource-src-5.
 
 # Build
 
-
 ```shell
-git clone https://github.com/cnr-isti-vclab/vcglib.git
-git clone https://github.com/cnr-isti-vclab/nexus.git
-cd nexus/src/nxsbuild
-/opt/qt/bin/qmake -recursive nxsbuild.pro
+wget http://vcg.isti.cnr.it/nexus/download/nexus-4.1.2-src.tgz
+tar xf nexus-4.1.2-src.tgz
+cd nexus-4.1.2-src/nxsbuild
+/opt/qt/bin/qmake nxsbuild.pro
 make
+cp ../bin/nxsbuild /usr/bin/
 ```
